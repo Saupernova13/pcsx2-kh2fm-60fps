@@ -309,7 +309,9 @@ def main() -> int:
     print("written.")
 
     if emulator_running():
-        print("\n  !! PCSX2 IS RUNNING - it reads patches and the game ini at boot. Quit and relaunch it.")
+        # PINE cannot tell PCSX2 from another PINE server such as PCSXROO, so do not claim which.
+        print("\n  !! A PINE server answered - if PCSX2 is running, quit and relaunch it:"
+              " it reads patches and the game ini at boot.")
     return 0
 
 
