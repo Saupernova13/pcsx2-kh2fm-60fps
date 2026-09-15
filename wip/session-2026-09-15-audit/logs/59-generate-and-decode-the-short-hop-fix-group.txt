@@ -1,0 +1,102 @@
+# Generate and decode the short-hop fix group
+# (foreground run, transcript line 3288)
+--- input (line 3287) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\mkjumpfix.py
+"exit $LASTEXITCODE"
+--- result ---
+decoded:
+
+  000FE040  46010034  c.olt.s $f0, $f1                 // c.olt.s f0, f1        6.0 < clock (copied from 0017C798)
+
+  000FE044  45000006  bc1f 0xfe060                     // bc1f   not_yet
+
+  000FE048  00000000  nop                              // nop
+
+  000FE04C  460008E4  cvt.w.s $f3, $f1                 // cvt.w.s f3, f1        clock as an integer
+
+  000FE050  44081800  mfc1 $t0, $f3                    // mfc1   t0, f3
+
+  000FE054  31080001  andi $t0, $t0, 1                 // andi   t0, t0, 1
+
+  000FE058  11000004  beqz $t0, 0xfe06c                // beq    t0, zero, go   even: cut as the game does
+
+  000FE05C  00000000  nop                              // nop
+
+  000FE060  0805F207  j 0x17c81c                       // j      0017C81C       not_yet: odd, or not past 6.0
+
+  000FE064  3C0F0037  lui $t7, 0x37                    // lui    t7, 0x37       (copied from 0017C7A0, the displaced delay slot)
+
+  000FE068  00000000  nop                              // nop
+
+  000FE06C  0805F1E9  j 0x17c7a4                       // j      0017C7A4       go
+
+  000FE070  3C0F0037  lui $t7, 0x37                    // lui    t7, 0x37       (copied from 0017C7A0)
+
+  0017C798  0803F810  j 0xfe040                        // j      000FE040       (was 46010034 c.olt.s f0, f1)
+
+  0017C79C  00000000  nop                              // nop                   (was 4500001F bc1f 0017C81C)
+
+
+
+// 60 FPS - short hop. Derived 2026-09-15 on Sora in Twilight Town, A/B against
+
+// the unpatched game at 30fps in PCSXROO: same state, same input.
+
+//
+
+// A jump is a closed-form arc on a clock (obj+0xD0) that advances by delta, so a
+
+// held jump already matches 30fps. Releasing the button cuts the rise into a short
+
+// apex arc once the clock is past 6.0 (jump controller 0017C690, [0036C518]). At
+
+// 30fps the clock steps 2, 4, 6, 8, so a tap cuts at 8; at 60fps it cuts at 7, one
+
+// unit of rise early: a tap peaked 103.5 instead of 115.1. This lets the cut happen
+
+// only on an even clock - unchanged at 30fps, where the clock is always even.
+
+//
+
+// Hook at 0017C798 into a cave at 000FE040, after the ball physics cave. Nothing
+
+// branches into the displaced words; the delay-slot lui is replayed on both paths.
+
+[60 FPS - short hop]
+
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+
+description=Short hops and released jumps rise as high as at 30fps. Needs 60 FPS enabled.
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+(patch line from PCSX2's database redacted - not this project's)
+
+exit 0

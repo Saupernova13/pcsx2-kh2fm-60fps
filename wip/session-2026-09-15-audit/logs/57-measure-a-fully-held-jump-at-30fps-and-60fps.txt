@@ -1,0 +1,14 @@
+# Measure a fully held jump at 30fps and 60fps
+# (foreground run, transcript line 3264)
+--- input (line 3255) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\movetest.py --pos 01A94980 --script "wait:6,hold:Circle:40,wait:80" --what jump --save work\jump-held.npz
+"exit $LASTEXITCODE"
+--- result ---
+  30fps oracle     peak   185.00 at  41  air  60  fall   0.4022  path     0.00  net     0.00
+
+  60fps            peak   185.00 at  42  air  60  fall   0.4082  path     0.00  net     0.00
+
+PASS: 60fps unpatched matches 30fps within tolerance
+
+exit 0

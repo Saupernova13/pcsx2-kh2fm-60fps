@@ -1,0 +1,98 @@
+# Rerun the integrator scan with pointer constants and multiplies
+# (foreground run, transcript line 3088)
+--- input (line 3080) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\integrators.py 2>&1 | Tee-Object -FilePath work\integrators.txt | Select-Object -First 80
+"exit $LASTEXITCODE"
+"== ball drag site present?"; Select-String -Path work\integrators.txt -Pattern '002EA54|00352130' | ForEach-Object { $_.Line }
+"== pointer blocks by count"; Select-String -Path work\integrators.txt -Pattern '\[([0-9A-F]{8})\]' -AllMatches | ForEach-Object { $_.Matches[0].Groups[1].Value } | Group-Object | Sort-Object Count -Descending | Select-Object -First 15 Count, Name | Format-Table -AutoSize | Out-String
+--- result ---
+(89 sites add or subtract delta itself - timers in delta units, correct at 60fps - not listed)
+
+20 field = field {+,-,*} constant sites (constants from data, or through a data pointer)
+
+      site   function   field             constant        value op        store delta-in-fn
+
+  0014E93C  0014E90C  +0x064              0034A3F8      0.000000 sub  0014E944  yes
+
+  001E6340  001E6280  +0x0a4              00352BE0      0.000000 sub  001E6348  no
+
+  001E6400  001E6280  +0x098              00352BE0      0.000000 add  001E6414  no
+
+  0023D048  0023D02C  -0x14d4              0035EB2C      0.000000 add  0023D04C  no
+
+  002EA560  002EA41C  +0x024              00363404      0.408163 add  002EA570  yes
+
+  001C9F9C  001C9EE8  +0x018        [00351F34]+0x4       runtime add  001C9FA0  no
+
+  001C33B4  001C31E8  +0x034      [00352130]+0x12c       runtime add  001C33BC  no
+
+  001C3350  001C31E8  +0x03c      [00352130]+0x13c       runtime add  001C3358  no
+
+  001C3300  001C31E8  +0x040      [00352130]+0x140       runtime mul  001C3308  no
+
+  001C3580  001C31E8  +0x058      [00352130]+0x150       runtime add  001C3588  no
+
+  001C34B0  001C31E8  +0x05c      [00352130]+0x154       runtime mul  001C34B8  no
+
+  001C33EC  001C31E8  +0x064      [00352130]+0x15c       runtime add  001C33F4  no
+
+  001C33D0  001C31E8  +0x068      [00352130]+0x160       runtime add  001C33D8  no
+
+  001C3334  001C31E8  +0x06c      [00352130]+0x16c       runtime mul  001C333C  no
+
+  001C3550  001C31E8  +0x070      [00352130]+0x170       runtime mul  001C3558  no
+
+  001C3534  001C31E8  +0x074      [00352130]+0x174       runtime add  001C353C  no
+
+  0019FC9C  0019FBC4  +0x024       [00352130]+0x20       runtime mul  0019FCA4  yes
+
+  002EA548  002EA41C  +0x024       [00352130]+0x20       runtime mul  002EA550  yes
+
+  0017AA80  0017AA2C  +0x024       [00352130]+0x44       runtime mul  0017AA84  no
+
+  001D0418  001D039C  +0xb6c       [00352130]+0xd4       runtime add  001D041C  yes
+
+exit 0
+
+== ball drag site present?
+
+  001C33B4  001C31E8  +0x034      [00352130]+0x12c       runtime add  001C33BC  no
+
+  001C3350  001C31E8  +0x03c      [00352130]+0x13c       runtime add  001C3358  no
+
+  001C3300  001C31E8  +0x040      [00352130]+0x140       runtime mul  001C3308  no
+
+  001C3580  001C31E8  +0x058      [00352130]+0x150       runtime add  001C3588  no
+
+  001C34B0  001C31E8  +0x05c      [00352130]+0x154       runtime mul  001C34B8  no
+
+  001C33EC  001C31E8  +0x064      [00352130]+0x15c       runtime add  001C33F4  no
+
+  001C33D0  001C31E8  +0x068      [00352130]+0x160       runtime add  001C33D8  no
+
+  001C3334  001C31E8  +0x06c      [00352130]+0x16c       runtime mul  001C333C  no
+
+  001C3550  001C31E8  +0x070      [00352130]+0x170       runtime mul  001C3558  no
+
+  001C3534  001C31E8  +0x074      [00352130]+0x174       runtime add  001C353C  no
+
+  0019FC9C  0019FBC4  +0x024       [00352130]+0x20       runtime mul  0019FCA4  yes
+
+  002EA548  002EA41C  +0x024       [00352130]+0x20       runtime mul  002EA550  yes
+
+  0017AA80  0017AA2C  +0x024       [00352130]+0x44       runtime mul  0017AA84  no
+
+  001D0418  001D039C  +0xb6c       [00352130]+0xd4       runtime add  001D041C  yes
+
+== pointer blocks by count
+
+
+
+Count Name    
+
+----- ----    
+
+   14 00352130
+
+    1 00351F34

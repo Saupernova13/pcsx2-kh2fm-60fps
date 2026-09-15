@@ -1,0 +1,142 @@
+# Save walk and idle snapshots and count survivors per filter stage
+# (foreground run, transcript line 3170)
+--- input (line 3169) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys
+sys.path.insert(0, "tools")
+import numpy as np
+import _bootstrap
+import ratediff
+from game import sandlot
+roo = sandlot.connect()
+snaps = {}
+def run(tag, walk):
+    ratediff.start_arm(roo, "60", 1)
+    roo.frame_advance(10)
+    snaps[tag + "0"] = ratediff.snapshot(roo)
+    if walk: roo.input_set("LLeft", "LDown")
+    roo.frame_advance(40)
+    snaps[tag + "1"] = ratediff.snapshot(roo)
+    if walk: roo.input_set("LRight", "LUp")
+    roo.frame_advance(40); roo.input_release()
+    snaps[tag + "2"] = ratediff.snapshot(roo)
+    roo.frame_advance(20)
+    snaps[tag + "3"] = ratediff.snapshot(roo)
+run("w", True)
+run("i", False)
+np.savez_compressed("work/fp-walk.npz", lo=np.array([ratediff.LO]), **snaps)
+print("saved")
+z = snaps
+f = {k: v.view("<f4").astype(np.float64) for k, v in z.items()}
+w0, w1, w2, w3 = f["w0"], f["w1"], f["w2"], f["w3"]
+i0, i2, i3 = f["i0"], f["i2"], f["i3"]
+with np.errstate(all="ignore"):
+    sane = np.ones(w0.size, bool)
+    for s in (w0, w1, w2, w3, i0, i2, i3):
+        sane &= np.isfinite(s) & (np.abs(s) < 2e4)
+    d1, d2, d3 = w1 - w0, w2 - w1, w3 - w2
+    idle = np.maximum(np.abs(i2 - i0), np.abs(i3 - i2))
+st = {}
+m = sane; st["sane"] = m.sum()
+m = m & (np.abs(d1) >= 15) & (np.abs(d1) <= 2000); st["moved there 15..2000"] = m.sum()
+m = m & (np.abs(d2) >= 15) & (np.sign(d1) != np.sign(d2)); st["and back, reversed"] = m.sum()
+m2 = m & (idle < 5); st["idle drift < 5"] = m2.su
+--- result ---
+%USERPROFILE%\AppData\Local\Temp\kh2_fp_save.py:26: RuntimeWarning: invalid value encountered in cast
+
+  f = {k: v.view("<f4").astype(np.float64) for k, v in z.items()}
+
+saved
+
+  sane                         6342124
+
+  moved there 15..2000         3655
+
+  and back, reversed           1882
+
+  idle drift < 5               1494
+
+  settle < 10                  1063
+
+  w=1.0 within 12 bytes        795
+
+  00341728  w0  -2416.15 d1   -59.68 d2    59.26 d3   6.05 idle   0.00 w1? True  ctx(-2..+3)    722.47    550.00  -2416.57      1.00    754.34    550.00
+
+  00341738  w0  -2306.29 d1  -256.43 d2    35.67 d3   6.03 idle   0.00 w1? True  ctx(-2..+3)    754.34    550.00  -2527.05      1.00    804.13    550.00
+
+  00341758  w0  -2416.15 d1   -58.27 d2    55.83 d3   8.06 idle   0.00 w1? True  ctx(-2..+3)    730.21    550.00  -2418.59      1.00    762.11    550.00
+
+  00341768  w0  -2306.29 d1  -254.87 d2    32.10 d3   8.04 idle   0.00 w1? True  ctx(-2..+3)    762.11    550.00  -2529.06      1.00    811.85    550.00
+
+  00348778  w0  -2215.78 d1  -163.68 d2   165.28 d3   4.03 idle   0.00 w1? True  ctx(-2..+3)   1037.61    394.80  -2214.19      1.00   1045.35    394.80
+
+  00348788  w0  -2215.78 d1  -157.39 d2   156.97 d3   6.05 idle   0.00 w1? True  ctx(-2..+3)   1045.35    394.80  -2216.20      1.00    714.73    380.00
+
+  00348798  w0  -2416.15 d1   -61.08 d2    62.68 d3   4.03 idle   0.00 w1? True  ctx(-2..+3)    714.73    380.00  -2414.56      1.00    722.47    380.00
+
+  003487A8  w0  -2416.15 d1   -59.68 d2    59.26 d3   6.05 idle   0.00 w1? True  ctx(-2..+3)    722.47    380.00  -2416.57      1.00      1.50      0.00
+
+  0034889C  w0   -577.63 d1   -33.36 d2    25.46 d3   7.19 idle   0.00 w1? False  ctx(-2..+3)     -0.92     -0.31   -585.53      0.53      0.64     -0.56
+
+  003807D0  w0    322.15 d1  -145.51 d2   156.54 d3  -9.36 idle   0.00 w1? True  ctx(-2..+3)  -2420.85      1.00    333.19     14.70    195.63      1.00
+
+  003807D8  w0    201.94 d1   -78.16 d2    71.84 d3   4.42 idle   0.00 w1? True  ctx(-2..+3)    333.19     14.70    195.63      1.00    738.97    380.00
+
+  00380818  w0  -2416.15 d1   -61.08 d2    62.68 d3   4.03 idle   0.00 w1? True  ctx(-2..+3)    714.73    380.00  -2414.56      1.00   1037.61    394.80
+
+  00380828  w0  -2215.78 d1   -61.08 d2    62.68 d3   4.03 idle   0.00 w1? True  ctx(-2..+3)   1037.61    394.80  -2214.19      1.00      0.00      0.00
+
+  00380848  w0  -2416.15 d1   -61.08 d2    62.68 d3   4.03 idle   0.00 w1? True  ctx(-2..+3)    714.73    380.00  -2414.56      1.00    322.88     14.80
+
+  00380868  w0  -2416.15 d1   -61.08 d2    62.68 d3   4.03 idle   0.00 w1? False  ctx(-2..+3)    714.73    380.00  -2414.56   1037.61    394.80  -2214.19
+
+  00380874  w0  -2215.78 d1   -61.08 d2    62.68 d3   4.03 idle   0.00 w1? False  ctx(-2..+3)   1037.61    394.80  -2214.19      0.00      0.00      0.00
+
+  00380C28  w0     -2.91 d1    33.81 d2   -31.70 d3  -2.04 idle   0.24 w1? True  ctx(-2..+3)    -11.82     57.44     -0.81      1.00      8.93      0.00
+
+  003ABE64  w0      7.68 d1    32.65 d2   -30.35 d3  -2.30 idle   0.00 w1? True  ctx(-2..+3)      0.00    -18.62      9.98     12.52      1.00      0.12
+
+  003ABF24  w0      7.68 d1    32.65 d2   -30.35 d3  -2.30 idle   0.00 w1? True  ctx(-2..+3)      0.00    -18.62      9.98     12.52      1.00     -0.14
+
+  003ABF64  w0      7.68 d1    32.65 d2   -30.35 d3  -2.30 idle   0.00 w1? True  ctx(-2..+3)      0.00    -18.62      9.98     12.52      1.00     -0.14
+
+  003ABFA4  w0      3.72 d1    36.87 d2   -34.47 d3  -2.40 idle   0.00 w1? True  ctx(-2..+3)      0.00    -19.17      6.12     13.23      1.00     -0.14
+
+  003AC068  w0     -3.93 d1   -37.31 d2    40.42 d3  -2.64 idle   0.04 w1? True  ctx(-2..+3)    -11.82     57.44     -0.81      1.00      0.09     -0.14
+
+  003AC0A8  w0     -3.93 d1   -37.31 d2    40.42 d3  -2.64 idle   0.04 w1? True  ctx(-2..+3)    -11.82     57.44     -0.81      1.00      1.00      1.00
+
+  003AC128  w0      0.00 d1   -30.00 d2    31.00 d3  -1.00 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC164  w0      7.68 d1    32.65 d2   -39.32 d3   6.68 idle   0.00 w1? True  ctx(-2..+3)      0.00      1.00      1.00      1.00      0.00      1.00
+
+  003AC168  w0     -5.15 d1   -77.91 d2    84.06 d3  -6.15 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC1A4  w0      7.68 d1    40.18 d2   -46.86 d3   6.68 idle   0.00 w1? True  ctx(-2..+3)      0.00      1.00      1.00      1.00      0.00      1.00
+
+  003AC1A8  w0     -0.61 d1   -26.89 d2    28.50 d3  -1.61 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC1E8  w0     -0.65 d1   -34.79 d2    36.44 d3  -1.65 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC228  w0      2.37 d1   -24.82 d2    23.44 d3   1.37 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC2E8  w0      0.00 d1   -30.00 d2    31.00 d3  -1.00 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC328  w0     -5.15 d1   -47.91 d2    54.06 d3  -6.15 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC4A8  w0      0.00 d1   -30.00 d2    31.00 d3  -1.00 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC4E4  w0      7.68 d1    32.65 d2   -39.32 d3   6.68 idle   0.00 w1? True  ctx(-2..+3)      0.00      1.00      1.00      1.00      0.00      1.00
+
+  003AC4E8  w0     -5.15 d1   -77.91 d2    84.06 d3  -6.15 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC524  w0      7.68 d1    40.18 d2   -46.86 d3   6.68 idle   0.00 w1? True  ctx(-2..+3)      0.00      1.00      1.00      1.00      0.00      1.00
+
+  003AC528  w0     -0.61 d1   -26.89 d2    28.50 d3  -1.61 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC568  w0     -0.65 d1   -34.79 d2    36.44 d3  -1.65 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC5A8  w0      2.37 d1   -24.82 d2    23.44 d3   1.37 idle   0.00 w1? True  ctx(-2..+3)      1.00      1.00      1.00      0.00      1.00      1.00
+
+  003AC6A4  w0      4.03 d1    24.93 d2   -27.97 d3   3.03 idle   0.00 w1? True  ctx(-2..+3)      0.00      1.00      1.00      1.00      0.00      1.00

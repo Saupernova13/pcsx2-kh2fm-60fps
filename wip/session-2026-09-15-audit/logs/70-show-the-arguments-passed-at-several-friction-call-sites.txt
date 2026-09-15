@@ -1,0 +1,205 @@
+# Show the arguments passed at several friction call sites
+# (foreground run, transcript line 3392)
+--- input (line 3383) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+foreach ($s in "0017C2B8", "0017C8AC", "001C9510", "001D23B4", "002EAE44", "002BEC54", "0019FE60") {
+  "== call at $s"
+  $lo = "{0:X8}" -f ([Convert]::ToInt32($s, 16) - 40)
+  python tools\elfscan.py dis $lo 13
+}
+--- result ---
+== call at 0017C2B8
+
+  0017C290  27BDFFD0  addiu $sp, $sp, -0x30
+
+  0017C294  00C0282D  move $a1, $a2
+
+  0017C298  FFB00020  sd $s0, 0x20($sp)
+
+  0017C29C  FFBF0028  sd $ra, 0x28($sp)
+
+  0017C2A0  8CCF0160  lw $t7, 0x160($a2)
+
+  0017C2A4  31EF0040  andi $t7, $t7, 0x40
+
+  0017C2A8  11E0000A  beqz $t7, 0x17c2d4
+
+  0017C2AC  0080802D  move $s0, $a0
+
+  0017C2B0  C4CC00F0  lwc1 $f12, 0xf0($a2)
+
+  0017C2B4  46006346  mov.s $f13, $f12
+
+  0017C2B8  0C061150  jal 0x184540
+
+  0017C2BC  00000000  nop
+
+  0017C2C0  0200102D  move $v0, $s0
+
+== call at 0017C8AC
+
+  0017C884  00C0802D  move $s0, $a2
+
+  0017C888  FFBF0028  sd $ra, 0x28($sp)
+
+  0017C88C  0080882D  move $s1, $a0
+
+  0017C890  C5E19E10  lwc1 $f1, -0x61f0($t7)
+
+  0017C894  00A0902D  move $s2, $a1
+
+  0017C898  C4C000D0  lwc1 $f0, 0xd0($a2)
+
+  0017C89C  03A0202D  move $a0, $sp
+
+  0017C8A0  ACC00014  sw $zero, 0x14($a2)
+
+  0017C8A4  00C0282D  move $a1, $a2
+
+  0017C8A8  46010000  add.s $f0, $f0, $f1
+
+  0017C8AC  0C061150  jal 0x184540
+
+  0017C8B0  E4C000D0  swc1 $f0, 0xd0($a2)
+
+  0017C8B4  123D0004  beq $s1, $sp, 0x17c8c8
+
+== call at 001C9510
+
+  001C94E8  8CCE010C  lw $t6, 0x10c($a2)
+
+  001C94EC  31CF0010  andi $t7, $t6, 0x10
+
+  001C94F0  11E00011  beqz $t7, 0x1c9538
+
+  001C94F4  00A0202D  move $a0, $a1
+
+  001C94F8  8CCF012C  lw $t7, 0x12c($a2)
+
+  001C94FC  C5E00024  lwc1 $f0, 0x24($t7)
+
+  001C9500  E4C0001C  swc1 $f0, 0x1c($a2)
+
+  001C9504  C5EC0028  lwc1 $f12, 0x28($t7)
+
+  001C9508  46006346  mov.s $f13, $f12
+
+  001C950C  0200282D  move $a1, $s0
+
+  001C9510  0C061150  jal 0x184540
+
+  001C9514  0220202D  move $a0, $s1
+
+  001C9518  0220102D  move $v0, $s1
+
+== call at 001D23B4
+
+  001D238C  240E0001  addiu $t6, $zero, 1
+
+  001D2390  1000FFE7  b 0x1d2330
+
+  001D2394  240E0002  addiu $t6, $zero, 2
+
+  001D2398  27BDFFF0  addiu $sp, $sp, -0x10
+
+  001D239C  8CCF012C  lw $t7, 0x12c($a2)
+
+  001D23A0  FFB00000  sd $s0, ($sp)
+
+  001D23A4  00C0282D  move $a1, $a2
+
+  001D23A8  FFBF0008  sd $ra, 8($sp)
+
+  001D23AC  0080802D  move $s0, $a0
+
+  001D23B0  C5ED002C  lwc1 $f13, 0x2c($t7)
+
+  001D23B4  0C061150  jal 0x184540
+
+  001D23B8  C5EC0028  lwc1 $f12, 0x28($t7)
+
+  001D23BC  0200102D  move $v0, $s0
+
+== call at 002EAE44
+
+  002EAE1C  FFBF0020  sd $ra, 0x20($sp)
+
+  002EAE20  0080802D  move $s0, $a0
+
+  002EAE24  00C0882D  move $s1, $a2
+
+  002EAE28  03A0202D  move $a0, $sp
+
+  002EAE2C  C5E034F8  lwc1 $f0, 0x34f8($t7)
+
+  002EAE30  3C0F0037  lui $t7, 0x37
+
+  002EAE34  25EF60D8  addiu $t7, $t7, 0x60d8
+
+  002EAE38  C5ED0000  lwc1 $f13, ($t7)
+
+  002EAE3C  46006B41  sub.s $f13, $f13, $f0
+
+  002EAE40  3C0F0036  lui $t7, 0x36
+
+  002EAE44  0C061150  jal 0x184540
+
+  002EAE48  C5EC34F4  lwc1 $f12, 0x34f4($t7)
+
+  002EAE4C  121D0004  beq $s0, $sp, 0x2eae60
+
+== call at 002BEC54
+
+  002BEC2C  C5EC0000  lwc1 $f12, ($t7)
+
+  002BEC30  0805FD50  j 0x17f540
+
+  002BEC34  27BD0010  addiu $sp, $sp, 0x10
+
+  002BEC38  27BDFFF0  addiu $sp, $sp, -0x10
+
+  002BEC3C  8CCF012C  lw $t7, 0x12c($a2)
+
+  002BEC40  FFB00000  sd $s0, ($sp)
+
+  002BEC44  00C0282D  move $a1, $a2
+
+  002BEC48  FFBF0008  sd $ra, 8($sp)
+
+  002BEC4C  0080802D  move $s0, $a0
+
+  002BEC50  C5ED002C  lwc1 $f13, 0x2c($t7)
+
+  002BEC54  0C061150  jal 0x184540
+
+  002BEC58  C5EC0028  lwc1 $f12, 0x28($t7)
+
+  002BEC5C  0200102D  move $v0, $s0
+
+== call at 0019FE60
+
+  0019FE38  24050005  addiu $a1, $zero, 5
+
+  0019FE3C  DFBF0010  ld $ra, 0x10($sp)
+
+  0019FE40  03E00008  jr $ra
+
+  0019FE44  27BD0020  addiu $sp, $sp, 0x20
+
+  0019FE48  27BDFFF0  addiu $sp, $sp, -0x10
+
+  0019FE4C  00C0282D  move $a1, $a2
+
+  0019FE50  FFB00000  sd $s0, ($sp)
+
+  0019FE54  FFBF0008  sd $ra, 8($sp)
+
+  0019FE58  0080802D  move $s0, $a0
+
+  0019FE5C  C4CC00F0  lwc1 $f12, 0xf0($a2)
+
+  0019FE60  0C061150  jal 0x184540
+
+  0019FE64  46006346  mov.s $f13, $f12
+
+  0019FE68  0200102D  move $v0, $s0

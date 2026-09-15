@@ -1,0 +1,46 @@
+﻿import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+import ratediff
+import movetest
+from game import config, sandlot
+from game.pnachtext import group_words
+roo = sandlot.connect()
+SORA, BALL = 0x01A94440, 0x01ADD9D0
+fix = []
+for n in ("60 FPS - ball physics", "60 FPS - short hop", "60 FPS - friction"):
+    fix += group_words(config.WIP / "working.pnach", n)
+steps = movetest.parse("wait:6,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * 30))
+def fbits(b):
+    return struct.unpack("<f", struct.pack("<I", b & 0xFFFFFFFF))[0]
+for arm, words in (("30", []), ("60w", fix)):
+    print(f"===== arm {arm}")
+    ratediff.start_arm(roo, "30" if arm == "30" else "60", 1)
+    sandlot.apply_words(roo, words)
+    roo.bp_clear()
+    roo.bp_add(0x002E7EE8, condition="t5 == 0x01ADD9D0", description="vy write on the ball")
+    v = 0
+    try:
+        for kind, buttons, n in steps:
+            if kind == "hold":
+                roo.input_set(*buttons)
+            for _ in range(n):
+                st = roo.frame_advance(1)
+                guard = 0
+                while st is not None and getattr(st, "reason", "") == "breakpoint" and guard < 6:
+                    r = roo.regs("GPR"); fp = roo.regs("FPR")
+                    sp = r["sp"]
+                    stack = struct.unpack("<32I", roo.read_bytes(sp, 128))
+                    rets = [w for w in stack if 0x00100000 <= w < 0x00340000]
+                    clk = struct.unpack("<f", roo.read_bytes(SORA + 0x170, 4))[0]
+                    by = struct.unpack("<f", roo.read_bytes(BALL + 0x544, 4))[0]
+                    print(f"  vsync {v:3d} HIT vy={fbits(fp['f00']):7.2f}  sora clock {clk:5.1f}  ball y {by:7.2f}  ret chain " + " ".join(f"{w:08X}" for w in rets[:10]))
+                    st = roo.frame_advance(1)
+                    guard += 1
+                v += 1
+            if kind == "hold":
+                roo.input_release()
+    finally:
+        roo.bp_clear()
+        if not roo.paused():
+            roo.pause()

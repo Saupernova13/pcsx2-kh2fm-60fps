@@ -1,0 +1,128 @@
+# Disassemble the code that calls the hit handler
+# (foreground run, transcript line 3577)
+--- input (line 3576) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== function containing 001DAE88"; python tools\elfscan.py callers 001DAE88
+"== 001DAD80..001DAEB0"; python tools\elfscan.py dis 001DAD80 52
+--- result ---
+== function containing 001DAE88
+
+001DAE88 is in the function starting 001DA680
+
+  001DA680: jumps []
+
+  001DA680: data pointers ['0036E780']
+
+  001DA680: lui/addiu loads []
+
+  001DAE88: jumps []
+
+  001DAE88: data pointers []
+
+  001DAE88: lui/addiu loads []
+
+== 001DAD80..001DAEB0
+
+  001DAD80  3C0B0037  lui $t3, 0x37
+
+  001DAD84  C7AC0000  lwc1 $f12, ($sp)
+
+  001DAD88  256BE690  addiu $t3, $t3, -0x1970
+
+  001DAD8C  3C0D0037  lui $t5, 0x37
+
+  001DAD90  C5740000  lwc1 $f20, ($t3)
+
+  001DAD94  25ADE698  addiu $t5, $t5, -0x1968
+
+  001DAD98  C5A00000  lwc1 $f0, ($t5)
+
+  001DAD9C  3C0C0037  lui $t4, 0x37
+
+  001DADA0  46146302  mul.s $f12, $f12, $f20
+
+  001DADA4  258CE694  addiu $t4, $t4, -0x196c
+
+  001DADA8  C58D0000  lwc1 $f13, ($t4)
+
+  001DADAC  00000000  nop
+
+  001DADB0  00000000  nop
+
+  001DADB4  46006303  div.s $f12, $f12, $f0
+
+  001DADB8  0C0BE2C0  jal 0x2f8b00
+
+  001DADBC  46146300  add.s $f12, $f12, $f20
+
+  001DADC0  46140001  sub.s $f0, $f0, $f20
+
+  001DADC4  0240202D  move $a0, $s2
+
+  001DADC8  03A0282D  move $a1, $sp
+
+  001DADCC  1000FE36  b 0x1da6a8
+
+  001DADD0  E7A00000  swc1 $f0, ($sp)
+
+  001DADD4  0240202D  move $a0, $s2
+
+  001DADD8  0C0768FE  jal 0x1da3f8
+
+  001DADDC  03A0282D  move $a1, $sp
+
+  001DADE0  3C0E0037  lui $t6, 0x37
+
+  001DADE4  C7A00000  lwc1 $f0, ($sp)
+
+  001DADE8  25CEE698  addiu $t6, $t6, -0x1968
+
+  001DADEC  3C0F0037  lui $t7, 0x37
+
+  001DADF0  C5C10000  lwc1 $f1, ($t6)
+
+  001DADF4  25EFE690  addiu $t7, $t7, -0x1970
+
+  001DADF8  C5E20000  lwc1 $f2, ($t7)
+
+  001DADFC  0240202D  move $a0, $s2
+
+  001DAE00  46010002  mul.s $f0, $f0, $f1
+
+  001DAE04  00000000  nop
+
+  001DAE08  00000000  nop
+
+  001DAE0C  46020003  div.s $f0, $f0, $f2
+
+  001DAE10  1000FFEE  b 0x1dadcc
+
+  001DAE14  03A0282D  move $a1, $sp
+
+  001DAE18  320FFFFF  andi $t7, $s0, 0xffff
+
+  001DAE1C  8E4D0004  lw $t5, 4($s2)
+
+  001DAE20  000F7982  srl $t7, $t7, 6
+
+  001DAE24  000F7880  sll $t7, $t7, 2
+
+  001DAE28  000D7040  sll $t6, $t5, 1
+
+  001DAE2C  01FE7821  addu $t7, $t7, $fp
+
+  001DAE30  01C97021  addu $t6, $t6, $t1
+
+  001DAE34  8DF30000  lw $s3, ($t7)
+
+  001DAE38  25AD0001  addiu $t5, $t5, 1
+
+  001DAE3C  95CF0010  lhu $t7, 0x10($t6)
+
+  001DAE40  AE4D0004  sw $t5, 4($s2)
+
+  001DAE44  000F78C0  sll $t7, $t7, 3
+
+  001DAE48  026F9821  addu $s3, $s3, $t7
+
+  001DAE4C  96710004  lhu $s1, 4($s3)

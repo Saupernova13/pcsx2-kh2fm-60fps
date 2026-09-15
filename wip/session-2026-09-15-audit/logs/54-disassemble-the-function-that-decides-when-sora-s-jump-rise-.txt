@@ -1,0 +1,247 @@
+# Disassemble the function that decides when Sora's jump rise ends
+# (foreground run, transcript line 3248)
+--- input (line 3246) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 0017C690..0017C870"; python tools\elfscan.py dis 0017C690 120
+--- result ---
+== 0017C690..0017C870
+
+  0017C690  27BDFFD0  addiu $sp, $sp, -0x30
+
+  0017C694  FFB00010  sd $s0, 0x10($sp)
+
+  0017C698  FFB10018  sd $s1, 0x18($sp)
+
+  0017C69C  FFBF0020  sd $ra, 0x20($sp)
+
+  0017C6A0  00A0802D  move $s0, $a1
+
+  0017C6A4  8CAF0588  lw $t7, 0x588($a1)
+
+  0017C6A8  31EF0004  andi $t7, $t7, 4
+
+  0017C6AC  11E00009  beqz $t7, 0x17c6d4
+
+  0017C6B0  0080882D  move $s1, $a0
+
+  0017C6B4  0C05F2A2  jal 0x17ca88
+
+  0017C6B8  00000000  nop
+
+  0017C6BC  10400006  beqz $v0, 0x17c6d8
+
+  0017C6C0  3C0F0037  lui $t7, 0x37
+
+  0017C6C4  0C065634  jal 0x1958d0
+
+  0017C6C8  0200202D  move $a0, $s0
+
+  0017C6CC  5440004F  bnel $v0, $zero, 0x17c80c
+
+  0017C6D0  DFB00010  ld $s0, 0x10($sp)
+
+  0017C6D4  3C0F0037  lui $t7, 0x37
+
+  0017C6D8  C60100D0  lwc1 $f1, 0xd0($s0)
+
+  0017C6DC  25EFC518  addiu $t7, $t7, -0x3ae8
+
+  0017C6E0  C5E00000  lwc1 $f0, ($t7)
+
+  0017C6E4  46010034  c.olt.s $f0, $f1
+
+  0017C6E8  4500005F  bc1f 0x17c868
+
+  0017C6EC  C60200D4  lwc1 $f2, 0xd4($s0)
+
+  0017C6F0  46020834  c.olt.s $f1, $f2
+
+  0017C6F4  4500005C  bc1f 0x17c868
+
+  0017C6F8  3C0F0040  lui $t7, 0x40
+
+  0017C6FC  8E0D0108  lw $t5, 0x108($s0)
+
+  0017C700  01AF7824  and $t7, $t5, $t7
+
+  0017C704  11E0001E  beqz $t7, 0x17c780
+
+  0017C708  0220202D  move $a0, $s1
+
+  0017C70C  0C05F2D2  jal 0x17cb48
+
+  0017C710  0200282D  move $a1, $s0
+
+  0017C714  10400003  beqz $v0, 0x17c724
+
+  0017C718  0220202D  move $a0, $s1
+
+  0017C71C  0C05F2DE  jal 0x17cb78
+
+  0017C720  0200282D  move $a1, $s0
+
+  0017C724  8E04000C  lw $a0, 0xc($s0)
+
+  0017C728  0200282D  move $a1, $s0
+
+  0017C72C  8C8E0000  lw $t6, ($a0)
+
+  0017C730  8DCF000C  lw $t7, 0xc($t6)
+
+  0017C734  01E0F809  jalr $t7
+
+  0017C738  44806000  mtc1 $zero, $f12
+
+  0017C73C  8E0D0108  lw $t5, 0x108($s0)
+
+  0017C740  3C0FFFFD  lui $t7, 0xfffd
+
+  0017C744  35EFFFFF  ori $t7, $t7, 0xffff
+
+  0017C748  3C0EFFFB  lui $t6, 0xfffb
+
+  0017C74C  01AF6824  and $t5, $t5, $t7
+
+  0017C750  35CEFFFF  ori $t6, $t6, 0xffff
+
+  0017C754  01AE6824  and $t5, $t5, $t6
+
+  0017C758  8E0F0588  lw $t7, 0x588($s0)
+
+  0017C75C  31EF0004  andi $t7, $t7, 4
+
+  0017C760  11E0003E  beqz $t7, 0x17c85c
+
+  0017C764  AE0D0108  sw $t5, 0x108($s0)
+
+  0017C768  3C0F0035  lui $t7, 0x35
+
+  0017C76C  C60100D0  lwc1 $f1, 0xd0($s0)
+
+  0017C770  8DEE2130  lw $t6, 0x2130($t7)
+
+  0017C774  C60200D4  lwc1 $f2, 0xd4($s0)
+
+  0017C778  C5C00004  lwc1 $f0, 4($t6)
+
+  0017C77C  E60009B0  swc1 $f0, 0x9b0($s0)
+
+  0017C780  3C0F0004  lui $t7, 4
+
+  0017C784  01AF7824  and $t7, $t5, $t7
+
+  0017C788  11E00024  beqz $t7, 0x17c81c
+
+  0017C78C  3C0F0037  lui $t7, 0x37
+
+  0017C790  25EFC518  addiu $t7, $t7, -0x3ae8
+
+  0017C794  C5E00000  lwc1 $f0, ($t7)
+
+  0017C798  46010034  c.olt.s $f0, $f1
+
+  0017C79C  4500001F  bc1f 0x17c81c
+
+  0017C7A0  3C0F0037  lui $t7, 0x37
+
+  0017C7A4  25EFC51C  addiu $t7, $t7, -0x3ae4
+
+  0017C7A8  C5E00000  lwc1 $f0, ($t7)
+
+  0017C7AC  46001001  sub.s $f0, $f2, $f0
+
+  0017C7B0  46000834  c.olt.s $f1, $f0
+
+  0017C7B4  45000019  bc1f 0x17c81c
+
+  0017C7B8  0220202D  move $a0, $s1
+
+  0017C7BC  0C05F2D2  jal 0x17cb48
+
+  0017C7C0  0200282D  move $a1, $s0
+
+  0017C7C4  10400003  beqz $v0, 0x17c7d4
+
+  0017C7C8  0220202D  move $a0, $s1
+
+  0017C7CC  0C05F2DE  jal 0x17cb78
+
+  0017C7D0  0200282D  move $a1, $s0
+
+  0017C7D4  8E04000C  lw $a0, 0xc($s0)
+
+  0017C7D8  3C0F0037  lui $t7, 0x37
+
+  0017C7DC  25EFC520  addiu $t7, $t7, -0x3ae0
+
+  0017C7E0  8C8E0000  lw $t6, ($a0)
+
+  0017C7E4  C5EC0000  lwc1 $f12, ($t7)
+
+  0017C7E8  8DCF000C  lw $t7, 0xc($t6)
+
+  0017C7EC  01E0F809  jalr $t7
+
+  0017C7F0  0200282D  move $a1, $s0
+
+  0017C7F4  8E0E0108  lw $t6, 0x108($s0)
+
+  0017C7F8  3C0FFFFB  lui $t7, 0xfffb
+
+  0017C7FC  35EFFFFF  ori $t7, $t7, 0xffff
+
+  0017C800  01CF7024  and $t6, $t6, $t7
+
+  0017C804  AE0E0108  sw $t6, 0x108($s0)
+
+  0017C808  DFB00010  ld $s0, 0x10($sp)
+
+  0017C80C  DFB10018  ld $s1, 0x18($sp)
+
+  0017C810  DFBF0020  ld $ra, 0x20($sp)
+
+  0017C814  03E00008  jr $ra
+
+  0017C818  27BD0030  addiu $sp, $sp, 0x30
+
+  0017C81C  3C0F0037  lui $t7, 0x37
+
+  0017C820  25EFC51C  addiu $t7, $t7, -0x3ae4
+
+  0017C824  C5E00000  lwc1 $f0, ($t7)
+
+  0017C828  46000800  add.s $f0, $f1, $f0
+
+  0017C82C  46001036  c.ole.s $f2, $f0
+
+  0017C830  4500FFF5  bc1f 0x17c808
+
+  0017C834  0220202D  move $a0, $s1
+
+  0017C838  0C05F2D2  jal 0x17cb48
+
+  0017C83C  0200282D  move $a1, $s0
+
+  0017C840  10400003  beqz $v0, 0x17c850
+
+  0017C844  0220202D  move $a0, $s1
+
+  0017C848  0C05F2DE  jal 0x17cb78
+
+  0017C84C  0200282D  move $a1, $s0
+
+  0017C850  8E0E0108  lw $t6, 0x108($s0)
+
+  0017C854  1000FFE9  b 0x17c7fc
+
+  0017C858  3C0FFFFD  lui $t7, 0xfffd
+
+  0017C85C  C60100D0  lwc1 $f1, 0xd0($s0)
+
+  0017C860  1000FFC7  b 0x17c780
+
+  0017C864  C60200D4  lwc1 $f2, 0xd4($s0)
+
+  0017C868  1000FFC5  b 0x17c780
+
+  0017C86C  8E0D0108  lw $t5, 0x108($s0)

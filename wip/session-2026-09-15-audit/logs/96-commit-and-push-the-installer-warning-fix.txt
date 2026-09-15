@@ -1,0 +1,16 @@
+# Commit and push the installer warning fix
+# (foreground run, transcript line 3791)
+--- input (line 3790) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+if ((git branch --show-current) -ne "feat/global-60fps-audit") { throw "wrong branch" }
+git add -- tools/install.py
+git commit -q -F "<session scratchpad>\kh2-commit-fix-pine.txt"
+if (-not $?) { throw "commit failed" }
+git push
+git log --oneline -2; git status -sb
+--- result ---
+To https://github.com/Saupernova13/pcsx2-kh2fm-60fps.git
+   968bb03..57143c7  feat/global-60fps-audit -> feat/global-60fps-audit
+57143c7 fix(install): stop claiming PCSX2 is running when any PINE server answers
+968bb03 docs: record the global audit, Sora's movement fixes and what is still open
+## feat/global-60fps-audit...origin/feat/global-60fps-audit

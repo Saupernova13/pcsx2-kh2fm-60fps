@@ -1,0 +1,58 @@
+# List Kingdom Hearts saves on both memory cards
+# (foreground run, transcript line 2844)
+--- input (line 2841) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+foreach ($c in "Mcd001.ps2", "Mcd002.ps2") { python tools\memcard.py "$env:APPDATA\EmuDeck\Emulators\PCSX2-Qt\memcards\$c" --grep 66675; "exit $LASTEXITCODE" }
+"== all directories on card 2"; python tools\memcard.py "$env:APPDATA\EmuDeck\Emulators\PCSX2-Qt\memcards\Mcd002.ps2" | Select-String -Pattern '^\S' | ForEach-Object { $_.Line }
+--- result ---
+%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\memcards\Mcd001.ps2: 65536 clusters, spare 16, alloc_offset 265
+
+exit 0
+
+%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\memcards\Mcd002.ps2: 32768 clusters, spare 16, alloc_offset 137
+
+BISLPM-66675FM-SYS               modified 2026-09-13 04:10:54
+
+    kh2sys.ico                      35416  2026-09-13 04:10:54
+
+    icon.sys                          964  2026-09-13 04:10:54
+
+    BISLPM-66675FM-SYS               1024  2026-09-13 04:10:54
+
+BISLPM-66675FM-00                modified 2026-09-13 02:42:02
+
+    kh2.ico                         35416  2026-08-23 23:00:19
+
+    icon.sys                          964  2026-09-13 02:42:02
+
+    BISLPM-66675FM-00               69568  2026-09-13 02:42:02
+
+BISLPM-66675FM-01                modified 2026-09-13 03:43:28
+
+    kh2.ico                         35416  2026-09-13 03:19:09
+
+    icon.sys                          964  2026-09-13 03:43:28
+
+    BISLPM-66675FM-01               69568  2026-09-13 03:43:28
+
+BISLPM-66675FM-02                modified 2026-09-13 04:10:56
+
+    kh2.ico                         35416  2026-09-13 03:49:26
+
+    icon.sys                          964  2026-09-13 04:10:56
+
+    BISLPM-66675FM-02               69568  2026-09-13 04:10:56
+
+exit 0
+
+== all directories on card 2
+
+%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\memcards\Mcd002.ps2: 32768 clusters, spare 16, alloc_offset 137
+
+BISLPM-66675FM-SYS               modified 2026-09-13 04:10:54
+
+BISLPM-66675FM-00                modified 2026-09-13 02:42:02
+
+BISLPM-66675FM-01                modified 2026-09-13 03:43:28
+
+BISLPM-66675FM-02                modified 2026-09-13 04:10:56

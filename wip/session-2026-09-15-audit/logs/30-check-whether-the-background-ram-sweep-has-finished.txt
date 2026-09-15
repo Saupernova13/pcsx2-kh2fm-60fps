@@ -1,0 +1,20 @@
+# Check whether the background RAM sweep has finished
+# (foreground run, transcript line 2992)
+--- input (line 2991) ---
+$o = Get-Content "<session tasks>\b61o1st5e.output" -Raw
+$o.Substring([Math]::Max(0, $o.Length - 300))
+--- result ---
+
+    arm 60 36/60  160s
+    arm 60 37/60  164s
+    arm 60 38/60  169s
+    arm 60 39/60  173s
+    arm 60 40/60  178s
+    arm 60 41/60  182s
+    arm 60 42/60  186s
+    arm 60 43/60  191s
+    arm 60 44/60  195s
+    arm 60 45/60  200s
+    arm 60 46/60  204s
+    arm 60 47/60  209s
+    arm 60 48/60  213s

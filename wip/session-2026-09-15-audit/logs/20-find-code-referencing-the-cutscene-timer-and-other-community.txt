@@ -1,0 +1,238 @@
+# Find code referencing the cutscene timer and other community addresses
+# (foreground run, transcript line 2885)
+--- input (line 2884) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\elfscan.py refs 0035DE20 0035DE28 0035DE08 00349DE8 0035DAC4 00347D34 00347E08 0032BAE0
+"== functions writing the cutscene timer"; python tools\elfscan.py dis 0035DE20 1 2>$null | Out-Null
+--- result ---
+== 0035DE20: 19 refs in 17 functions
+
+   002247F0  lw    (function 002247E4)
+
+   00224830  lw    (function 00224824)
+
+   00225A8C  lw    (function 00225A64)
+
+   00225B24  lw    (function 00225B14)
+
+   00225BF8  lw    (function 00225BE8)
+
+   00225D70  addiu (function 00225D30)
+
+   00225D84  lwc1  (function 00225D30)
+
+   002260D8  lw    (function 00226090)
+
+   00226F44  sw    (function 00226EE4)
+
+   00226F74  sw    (function 00226F48)
+
+   0022832C  lw    (function 002282F0)
+
+   00228410  lw    (function 002283F4)
+
+   0022BAEC  lw    (function 0022B9B4)
+
+   0022CA34  lw    (function 0022C9FC)
+
+   0022F19C  lw    (function 0022F104)
+
+   0022F3DC  lw    (function 0022F3A8)
+
+   0023157C  lw    (function 002314FC)
+
+   00231608  lw    (function 002314FC)
+
+   00232778  lw    (function 00232734)
+
+== 0035DE28: 7 refs in 5 functions
+
+   00225C0C  lw    (function 00225BE8)
+
+   00225C34  lw    (function 00225BE8)
+
+   00225C7C  lw    (function 00225BE8)
+
+   002261A0  lw    (function 00226090)
+
+   00226FF0  sw    (function 00226FA8)
+
+   002283FC  lw    (function 002283F4)
+
+   0022D3C4  sw    (function 0022D3B8)
+
+== 0035DE08: 4 refs in 3 functions
+
+   00225CE8  lbu   (function 00225BE8)
+
+   00225E38  sb    (function 00225DC0)
+
+   00225E50  lbu   (function 00225DC0)
+
+   00227278  sb    (function 002271EC)
+
+== 00349DE8: 5 refs in 3 functions
+
+   0014C850  lw    (function 0014C838)
+
+   0014C8E8  sw    (function 0014C838)
+
+   0014C9C0  lw    (function 0014C9B4)
+
+   0014CA60  lw    (function 0014CA44)
+
+   0014CA68  sw    (function 0014CA44)
+
+== 0035DAC4: 6 refs in 5 functions
+
+   002247A8  sw    (function 0022477C)
+
+   002248FC  lw    (function 002248CC)
+
+   00224908  sw    (function 002248CC)
+
+   00224918  lw    (function 0022490C)
+
+   00224928  sw    (function 0022491C)
+
+   00224938  addiu (function 0022492C)
+
+== 00347D34: 0 refs in 0 functions
+
+== 00347E08: 6 refs in 4 functions
+
+   00138488  lw    (function 00138480)
+
+   00138498  sw    (function 00138480)
+
+   001384A8  lw    (function 0013849C)
+
+   001384BC  sw    (function 0013849C)
+
+   001384C4  lw    (function 001384C0)
+
+   001385D0  sw    (function 001384D0)
+
+== 0032BAE0: 67 refs in 48 functions
+
+   00104CD8  addiu (function 00104CAC)
+
+   001052C0  addiu (function 00105280)
+
+   001052CC  lbu   (function 00105280)
+
+   0011251C  lhu   (function 001124F8)
+
+   00136704  lbu   (function 001366B4)
+
+   00136724  lbu   (function 001366B4)
+
+   0013A618  lbu   (function 0013A58C)
+
+   0013A904  addiu (function 0013A8F4)
+
+   0013A910  lbu   (function 0013A8F4)
+
+   0014935C  addiu (function 0014934C)
+
+   00149D6C  addiu (function 00149BD0)
+
+   00149E08  addiu (function 00149DDC)
+
+   00149E20  lbu   (function 00149DDC)
+
+   0014CD1C  lbu   (function 0014CBE0)
+
+   0015AC28  lbu   (function 0015AB34)
+
+   0016904C  lbu   (function 00169030)
+
+   00169058  addiu (function 00169030)
+
+   0016918C  lbu   (function 00169030)
+
+   00169224  lbu   (function 00169030)
+
+   0016BF90  lbu   (function 0016BF38)
+
+   00172F54  lbu   (function 00172E84)
+
+   001730E8  addiu (function 001730E0)
+
+   00178234  addiu (function 00178220)
+
+   00178238  lbu   (function 00178220)
+
+   0017824C  addiu (function 00178220)
+
+   0018226C  addiu (function 00181E2C)
+
+   00191C54  lhu   (function 00191C4C)
+
+   001947C8  addiu (function 0019479C)
+
+   00194940  addiu (function 0019492C)
+
+   00194944  lbu   (function 0019492C)
+
+   00194950  lbu   (function 0019492C)
+
+   00195E9C  addiu (function 00195E24)
+
+   00195EA0  lbu   (function 00195E24)
+
+   00195F4C  addiu (function 00195ED4)
+
+   00195F50  lbu   (function 00195ED4)
+
+   00199744  lbu   (function 00199714)
+
+   0019A510  lbu   (function 0019A4F4)
+
+   0019A680  lbu   (function 0019A4F4)
+
+   0019F7F0  lbu   (function 0019F7CC)
+
+   0019F7F4  addiu (function 0019F7CC)
+
+   001A66DC  lbu   (function 001A6654)
+
+   001A86D8  addiu (function 001A86B4)
+
+   001A86E8  lbu   (function 001A86B4)
+
+   001A8BDC  lbu   (function 001A8BD0)
+
+   001A9820  lbu   (function 001A9808)
+
+   001AFD40  lbu   (function 001AFCB8)
+
+   001B82F0  lbu   (function 001B82B8)
+
+   001BAF44  addiu (function 001BAE34)
+
+   001BE578  lbu   (function 001BE480)
+
+   001C0A2C  lbu   (function 001C09FC)
+
+   001CD1EC  addiu (function 001CD154)
+
+   001CD4DC  addiu (function 001CD2B8)
+
+   001D3CB8  lbu   (function 001D3C74)
+
+   001D9F50  addiu (function 001D9F30)
+
+   001D9F60  lbu   (function 001D9F30)
+
+   002262F8  addiu (function 002261FC)
+
+   00226310  lbu   (function 002261FC)
+
+   002263A4  lbu   (function 00226348)
+
+   002283B4  lbu   (function 002283AC)
+
+   002283CC  lbu   (function 002283C4)
+
+== functions writing the cutscene timer

@@ -1,0 +1,46 @@
+# Trace Sora and the ball through the mash juggle in three arms
+# (foreground run, transcript line 3529)
+--- input (line 3527) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$mash = "wait:6,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * 16)
+$common = @("--arms", "30,60,60w", "--group", "60 FPS - ball physics", "--group", "60 FPS - short hop", "--group", "60 FPS - friction", "--script", $mash)
+"== Sora"; python tools\objtrace.py capture work\ot-mash-sora.npz --obj 01A94440 @common
+"== ball"; python tools\objtrace.py capture work\ot-mash-ball.npz --obj 01ADD9D0 --size 0x1200 @common
+"== classes Sora"; python tools\objtrace.py classes work\ot-mash-sora.npz
+"== classes ball"; python tools\objtrace.py classes work\ot-mash-ball.npz
+--- result ---
+== Sora
+
+  arm 30: 142 vsyncs, 71 ticks
+
+  arm 60: 142 vsyncs, 141 ticks
+
+  arm 60w: 142 vsyncs, 141 ticks
+
+saved work\ot-mash-sora.npz
+
+== ball
+
+  arm 30: 142 vsyncs, 71 ticks
+
+  arm 60: 142 vsyncs, 141 ticks
+
+  arm 60w: 142 vsyncs, 141 ticks
+
+saved work\ot-mash-ball.npz
+
+== classes Sora
+
+  arm 30: start 01C60030  65:01C60030->01C60040
+
+  arm 60: start 01C60030  65:01C60030->01C60040 128:01C60040->01C60030
+
+  arm 60w: start 01C60030  65:01C60030->01C60040
+
+== classes ball
+
+  arm 30: start 01C60030  41:01C60030->01C60340 131:01C60340->01C60030
+
+  arm 60: start 01C60030  40:01C60030->01C60340 110:01C60340->01C60030
+
+  arm 60w: start 01C60030  40:01C60030->01C60340

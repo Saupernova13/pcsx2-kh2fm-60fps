@@ -1,0 +1,12 @@
+# Check nothing branches into the friction hook site
+# (foreground run, transcript line 3399)
+--- input (line 3398) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\elfscan.py into 00184558 00184560
+python tools\elfscan.py range 00184558 00184560
+--- result ---
+branches from outside into 00184558..00184560: 0
+
+branches inside leaving it: 0
+
+0 references into 00184558..00184560

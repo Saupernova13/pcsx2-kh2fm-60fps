@@ -1,0 +1,232 @@
+# Disassemble the two smaller per-tick parameter update candidates
+# (foreground run, transcript line 3097)
+--- input (line 3094) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 0017AA2C"; python tools\elfscan.py dis 0017AA2C 40
+"== callers 0017AA2C"; python tools\elfscan.py callers 0017AA2C
+"== 001C9EE8"; python tools\elfscan.py dis 001C9EE8 60
+"== callers 001C9EE8"; python tools\elfscan.py callers 001C9EE8
+--- result ---
+== 0017AA2C
+
+  0017AA2C  31CF1000  andi $t7, $t6, 0x1000
+
+  0017AA30  51E00004  beql $t7, $zero, 0x17aa44
+
+  0017AA34  8CAE000C  lw $t6, 0xc($a1)
+
+  0017AA38  00A0202D  move $a0, $a1
+
+  0017AA3C  1000FFF3  b 0x17aa0c
+
+  0017AA40  2405002D  addiu $a1, $zero, 0x2d
+
+  0017AA44  8DCF0008  lw $t7, 8($t6)
+
+  0017AA48  31EF0002  andi $t7, $t7, 2
+
+  0017AA4C  15E00005  bnez $t7, 0x17aa64
+
+  0017AA50  0000682D  move $t5, $zero
+
+  0017AA54  8CAF0160  lw $t7, 0x160($a1)
+
+  0017AA58  31EF0040  andi $t7, $t7, 0x40
+
+  0017AA5C  11E00003  beqz $t7, 0x17aa6c
+
+  0017AA60  31AF00FF  andi $t7, $t5, 0xff
+
+  0017AA64  240D0001  addiu $t5, $zero, 1
+
+  0017AA68  31AF00FF  andi $t7, $t5, 0xff
+
+  0017AA6C  11E0000E  beqz $t7, 0x17aaa8
+
+  0017AA70  3C0F0035  lui $t7, 0x35
+
+  0017AA74  C6010024  lwc1 $f1, 0x24($s0)
+
+  0017AA78  8DEE2130  lw $t6, 0x2130($t7)
+
+  0017AA7C  C5C00044  lwc1 $f0, 0x44($t6)
+
+  0017AA80  46000842  mul.s $f1, $f1, $f0
+
+  0017AA84  E6010024  swc1 $f1, 0x24($s0)
+
+  0017AA88  8C8F0008  lw $t7, 8($a0)
+
+  0017AA8C  31EF0400  andi $t7, $t7, 0x400
+
+  0017AA90  11E00003  beqz $t7, 0x17aaa0
+
+  0017AA94  0200202D  move $a0, $s0
+
+  0017AA98  1000FFDC  b 0x17aa0c
+
+  0017AA9C  24050021  addiu $a1, $zero, 0x21
+
+  0017AAA0  1000FFDA  b 0x17aa0c
+
+  0017AAA4  24050008  addiu $a1, $zero, 8
+
+  0017AAA8  0200202D  move $a0, $s0
+
+  0017AAAC  1000FFD7  b 0x17aa0c
+
+  0017AAB0  24050004  addiu $a1, $zero, 4
+
+  0017AAB4  00000000  nop
+
+  0017AAB8  3C0F0035  lui $t7, 0x35
+
+  0017AABC  00042080  sll $a0, $a0, 2
+
+  0017AAC0  25EFE9F8  addiu $t7, $t7, -0x1608
+
+  0017AAC4  008F2021  addu $a0, $a0, $t7
+
+  0017AAC8  03E00008  jr $ra
+
+== callers 0017AA2C
+
+0017AA2C is in the function starting 0017AA2C
+
+  0017AA2C: jumps []
+
+  0017AA2C: data pointers []
+
+  0017AA2C: lui/addiu loads []
+
+== 001C9EE8
+
+  001C9EE8  27BDFFC0  addiu $sp, $sp, -0x40
+
+  001C9EEC  00A0202D  move $a0, $a1
+
+  001C9EF0  FFB10028  sd $s1, 0x28($sp)
+
+  001C9EF4  FFB20030  sd $s2, 0x30($sp)
+
+  001C9EF8  FFB00020  sd $s0, 0x20($sp)
+
+  001C9EFC  00A0882D  move $s1, $a1
+
+  001C9F00  FFBF0038  sd $ra, 0x38($sp)
+
+  001C9F04  0C072912  jal 0x1ca448
+
+  001C9F08  0000902D  move $s2, $zero
+
+  001C9F0C  50400008  beql $v0, $zero, 0x1c9f30
+
+  001C9F10  C621001C  lwc1 $f1, 0x1c($s1)
+
+  001C9F14  8E2F07F8  lw $t7, 0x7f8($s1)
+
+  001C9F18  31EF0004  andi $t7, $t7, 4
+
+  001C9F1C  55E00004  bnel $t7, $zero, 0x1c9f30
+
+  001C9F20  C621001C  lwc1 $f1, 0x1c($s1)
+
+  001C9F24  0C07292A  jal 0x1ca4a8
+
+  001C9F28  0220202D  move $a0, $s1
+
+  001C9F2C  C621001C  lwc1 $f1, 0x1c($s1)
+
+  001C9F30  44800000  mtc1 $zero, $f0
+
+  001C9F34  46010034  c.olt.s $f0, $f1
+
+  001C9F38  45000044  bc1f 0x1ca04c
+
+  001C9F3C  26300010  addiu $s0, $s1, 0x10
+
+  001C9F40  C6220010  lwc1 $f2, 0x10($s1)
+
+  001C9F44  46001034  c.olt.s $f2, $f0
+
+  001C9F48  4502003C  bc1fl 0x1ca03c
+
+  001C9F4C  46020034  c.olt.s $f0, $f2
+
+  001C9F50  24120097  addiu $s2, $zero, 0x97
+
+  001C9F54  26300010  addiu $s0, $s1, 0x10
+
+  001C9F58  27AF0010  addiu $t7, $sp, 0x10
+
+  001C9F5C  DA010000  bbit032 $s0, 1, 0x1c9f60
+
+  001C9F60  44080800  mfc1 $t0, $f1
+
+  001C9F64  48A81000  dmtc2 $t0, $v0, 0
+
+  001C9F68  4BE20858  .word
+
+  001C9F6C  F9E10000  bbit132 $t7, 1, 0x1c9f70
+
+  001C9F70  120F0003  beq $s0, $t7, 0x1c9f80
+
+  001C9F74  00000000  nop
+
+  001C9F78  79E80000  ori.b $w0, $w0, 0xe8
+
+  001C9F7C  7E080000  ext $t0, $s0, 0, 1
+
+  001C9F80  0C072912  jal 0x1ca448
+
+  001C9F84  0220202D  move $a0, $s1
+
+  001C9F88  10400025  beqz $v0, 0x1ca020
+
+  001C9F8C  3C0F0035  lui $t7, 0x35
+
+  001C9F90  C6210018  lwc1 $f1, 0x18($s1)
+
+  001C9F94  8DEE1F34  lw $t6, 0x1f34($t7)
+
+  001C9F98  C5C00004  lwc1 $f0, 4($t6)
+
+  001C9F9C  46000840  add.s $f1, $f1, $f0
+
+  001C9FA0  E6210018  swc1 $f1, 0x18($s1)
+
+  001C9FA4  DA010000  bbit032 $s0, 1, 0x1c9fa8
+
+  001C9FA8  4BC108AA  .word
+
+  001C9FAC  4B021081  .word
+
+  001C9FB0  4B021082  .word
+
+  001C9FB4  4A0203BD  .word
+
+  001C9FB8  4A0003BF  .word
+
+  001C9FBC  4848B000  .word
+
+  001C9FC0  4B0000A0  .word
+
+  001C9FC4  44880000  mtc1 $t0, $f0
+
+  001C9FC8  4A0002FF  .word
+
+  001C9FCC  4A6203BC  .word
+
+  001C9FD0  4A0003BF  .word
+
+  001C9FD4  4BC0085C  .word
+
+== callers 001C9EE8
+
+001C9EE8 is in the function starting 001C9EE8
+
+  001C9EE8: jumps []
+
+  001C9EE8: data pointers ['00351F58']
+
+  001C9EE8: lui/addiu loads []

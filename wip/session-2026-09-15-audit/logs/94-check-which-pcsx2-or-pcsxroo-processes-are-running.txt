@@ -1,0 +1,10 @@
+# Check which PCSX2 or PCSXROO processes are running
+# (foreground run, transcript line 3755)
+--- input (line 3754) ---
+Get-Process | Where-Object { $_.ProcessName -match 'pcsx2|pcsxroo' } | Select-Object ProcessName, Id, @{n='Path';e={$_.Path}} | Format-Table -AutoSize | Out-String -Width 200
+--- result ---
+ProcessName    Id Path                                                        
+
+-----------    -- ----                                                        
+
+pcsxroo-qt  21252 %USERPROFILE%\Documents\GitHub\pcsxroo\bin\pcsxroo-qt.exe

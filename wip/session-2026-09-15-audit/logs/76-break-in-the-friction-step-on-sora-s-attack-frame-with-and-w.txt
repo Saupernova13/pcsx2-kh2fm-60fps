@@ -1,0 +1,72 @@
+# Break in the friction step on Sora's attack frame with and without the fix
+# (foreground run, transcript line 3467)
+--- input (line 3466) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+import ratediff
+from game import config, sandlot
+from game.pnachtext import group_words
+roo = sandlot.connect()
+OBJ = 0x01A94440
+fix = group_words(config.WIP / "working.pnach", "60 FPS - friction")
+def f(bits):
+    return struct.unpack("<f", struct.pack("<I", bits & 0xFFFFFFFF))[0]
+for label, words in (("60 plain", []), ("60 + friction", fix)):
+    print(f"===== {label}")
+    ratediff.start_arm(roo, "60", 1)
+    sandlot.apply_words(roo, words)
+    roo.frame_advance(6)
+    roo.input_set("Circle"); roo.frame_advance(14); roo.input_release()
+    roo.frame_advance(4)
+    roo.input_set("Cross"); roo.frame_advance(2); roo.input_release()
+    roo.frame_advance(1)
+    roo.bp_clear()
+    roo.bp_add(0x00184560, condition="a1 == 0x01A94440", description="friction step for Sora")
+    try:
+        for k in range(6):
+            seq = roo.seq(); roo.resume(); st = roo.wait(seq, timeout_ms=4000)
+            if st is None:
+                print("  no stop"); break
+            fp = roo.regs("FPR")
+            v = struct.unpack("<3f", roo.read_bytes(OBJ + 0x20, 12))
+            spd = struct.unpack("<f", roo.read_bytes(OBJ + 0x1C, 4))[0]
+            names = {n.lower(): val for n, val in fp.items()}
+            def g(n):
+                for key in (n, n.replace("f", "fpr"), "f" + n[1:].zfill(2)):
+                    if key in names:
+                        
+--- result ---
+===== 60 plain
+
+  stop 0: pc 00184560  f12 0.9000 f13 0.9500 f20 0.9000 f21 0.9500  vel (5.102,0.000,-5.633) speed 0.000
+
+  FPR names: f00, f01, f02, f03, f04, f05, f06, f07
+
+  stop 1: pc 00184560  f12 0.9000 f13 0.9500 f20 0.9000 f21 0.9500  vel (4.847,0.000,-5.351) speed 0.000
+
+  stop 2: pc 00184560  f12 0.9000 f13 0.9500 f20 0.9000 f21 0.9500  vel (4.605,0.000,-5.084) speed 0.000
+
+  stop 3: pc 00184560  f12 0.9000 f13 0.9500 f20 0.9000 f21 0.9500  vel (4.374,0.000,-4.830) speed 0.000
+
+  stop 4: pc 00184560  f12 0.9000 f13 0.9500 f20 0.9000 f21 0.9500  vel (4.156,0.000,-4.588) speed 0.000
+
+  stop 5: pc 00184560  f12 0.9000 f13 0.9500 f20 0.9000 f21 0.9500  vel (3.948,0.000,-4.359) speed 0.000
+
+===== 60 + friction
+
+  stop 0: pc 00184560  f12 0.9000 f13 0.9500 f20 0.0000 f21 0.0000  vel (0.000,0.000,-0.000) speed 0.000
+
+  FPR names: f00, f01, f02, f03, f04, f05, f06, f07
+
+  stop 1: pc 00184560  f12 0.9000 f13 0.9500 f20 0.0000 f21 0.0000  vel (0.000,0.000,-0.000) speed 0.000
+
+  stop 2: pc 00184560  f12 0.9000 f13 0.9500 f20 0.0000 f21 0.0000  vel (0.000,0.000,-0.000) speed 0.000
+
+  stop 3: pc 00184560  f12 0.9000 f13 0.9500 f20 0.0000 f21 0.0000  vel (0.000,0.000,-0.000) speed 0.000
+
+  stop 4: pc 00184560  f12 0.9000 f13 0.9500 f20 0.0000 f21 0.0000  vel (0.000,0.000,-0.000) speed 0.000
+
+  stop 5: pc 00184560  f12 0.9000 f13 0.9500 f20 0.0000 f21 0.0000  vel (0.000,0.000,-0.000) speed 0.000

@@ -1,0 +1,15 @@
+# Show the tail of the background sweep log
+# (foreground run, transcript line 2903)
+--- input (line 2901) ---
+$o = Get-Content "<session tasks>\b61o1st5e.output" -Raw
+$o.Substring([Math]::Max(0, $o.Length - 300))
+--- result ---
+pcsx2-kh2fm-60fps\tools\ratesweep.py:106: RuntimeWarning: overflow encountered in cast
+
+  return {"tv_f": tv_f.astype(np.float32), "tv_i": tv_i.astype(np.float32), "rev_f": rev_f, "rev_i": rev_i,
+
+    arm 60 1/60  4s
+    arm 60 2/60  9s
+    arm 60 3/60  13s
+    arm 60 4/60  18s
+    arm 60 5/60  22s

@@ -1,0 +1,193 @@
+# Disassemble the shared friction routine with VU instructions via PCSXROO
+# (foreground run, transcript line 3384)
+--- input (line 3382) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys
+sys.path.insert(0, "tools")
+import _bootstrap
+from game import sandlot
+roo = sandlot.connect()
+if not roo.paused():
+    roo.pause()
+for a, text in roo.dis(0x00184540, 88):
+    print(f"  {a:08X}  {roo.read(a):08X}  {text}")
+'@
+$f = "$env:TEMP\kh2_friction_dis.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+  00184540  27BDFFA0  addiu	sp, -0x60
+
+  00184544  44800000  mtc1	zero, f00
+
+  00184548  E7B5004C  swc1	f21, 0x  4C(sp)
+
+  0018454C  E7B40048  swc1	f20, 0x  48(sp)
+
+  00184550  46006D46  mov.s	f21, f13
+
+  00184554  FFB00030  sd	s0, 0x  30(sp)
+
+  00184558  46006506  mov.s	f20, f12
+
+  0018455C  FFB10038  sd	s1, 0x  38(sp)
+
+  00184560  46006032  c.eq.s	f12, f00
+
+  00184564  FFBF0040  sd	ra, 0x  40(sp)
+
+  00184568  E7B60050  swc1	f22, 0x  50(sp)
+
+  0018456C  0080882D  dmove	s1, a0
+
+  00184570  45010010  bc1t	->$0x001845B4
+
+  00184574  00A0802D  dmove	s0, a1
+
+  00184578  3C0F0037  lui	t7, 0x0037
+
+  0018457C  C4AC0020  lwc1	f12, 0x  20(a1)
+
+  00184580  25EFC8A8  addiu	t7, -0x3758
+
+  00184584  0C0BE21C  jal	->$0x002F8870
+
+  00184588  C5F60000  lwc1	f22,(t7)
+
+  0018458C  46160034  c.lt.s	f00, f22
+
+  00184590  45020009  bc1fl	->$0x001845B8
+
+  00184594  C601001C  lwc1	f01, 0x  1C(s0)
+
+  00184598  0C0BE21C  jal	->$0x002F8870
+
+  0018459C  C60C0024  lwc1	f12, 0x  24(s0)
+
+  001845A0  46160034  c.lt.s	f00, f22
+
+  001845A4  45020004  bc1fl	->$0x001845B8
+
+  001845A8  C601001C  lwc1	f01, 0x  1C(s0)
+
+  001845AC  0C0BE21C  jal	->$0x002F8870
+
+  001845B0  C60C0028  lwc1	f12, 0x  28(s0)
+
+  001845B4  C601001C  lwc1	f01, 0x  1C(s0)
+
+  001845B8  44800000  mtc1	zero, f00
+
+  001845BC  46010034  c.lt.s	f00, f01
+
+  001845C0  4500002A  bc1f	->$0x0018466C
+
+  001845C4  260E0010  addiu	t6,s0, 0x10
+
+  001845C8  27AF0020  addiu	t7,sp, 0x20
+
+  001845CC  D9C10000  lqc2	vf01,(t6)
+
+  001845D0  44080800  mfc1	t0, f01
+
+  001845D4  48A81000  qmtc2	t0, vf02
+
+  001845D8  4BE20858  vmulx.xyzw vf01,vf01,vf02x
+
+  001845DC  F9E10000  sqc2	vf01,(t7)
+
+  001845E0  26050020  addiu	a1,s0, 0x20
+
+  001845E4  27AE0010  addiu	t6,sp, 0x10
+
+  001845E8  D9E10000  lqc2	vf01,(t7)
+
+  001845EC  D8A20000  lqc2	vf02,(a1)
+
+  001845F0  4408A000  mfc1	t0, f20
+
+  001845F4  48A81800  qmtc2	t0, vf03
+
+  001845F8  4B000103  vaddw.x vf04, vf00, vf00w
+
+  001845FC  4B03212C  vsub.x vf04, vf04, vf03
+
+  00184600  4BE311BC  vmulax.xyzw ACC,vf02,vf03x
+
+  00184604  4BE40848  vmaddx.xyzw vf01, vf01, vf04x
+
+  00184608  F9C10000  sqc2	vf01,(t6)
+
+  0018460C  13AE0003  beq	sp, t6, ->$0x0018461C
+
+  00184610  00000000  nop
+
+  00184614  79C80000  lq	t0,(t6)
+
+  00184618  7FA80000  sq	t0,(sp)
+
+  0018461C  10BD0004  beq	a1, sp, ->$0x00184630
+
+  00184620  3C0F0035  lui	t7, 0x0035
+
+  00184624  7BA80000  lq	t0,(sp)
+
+  00184628  7CA80000  sq	t0,(a1)
+
+  0018462C  3C0F0035  lui	t7, 0x0035
+
+  00184630  C5E09E10  lwc1	f00, -0x61F0(t7)
+
+  00184634  DBA10000  lqc2	vf01,(sp)
+
+  00184638  44080000  mfc1	t0, f00
+
+  0018463C  48A81000  qmtc2	t0, vf02
+
+  00184640  4BE20858  vmulx.xyzw vf01,vf01,vf02x
+
+  00184644  FA210000  sqc2	vf01,(s1)
+
+  00184648  0220102D  dmove	v0, s1
+
+  0018464C  DFB00030  ld	s0, 0x  30(sp)
+
+  00184650  DFB10038  ld	s1, 0x  38(sp)
+
+  00184654  DFBF0040  ld	ra, 0x  40(sp)
+
+  00184658  C7B60050  lwc1	f22, 0x  50(sp)
+
+  0018465C  C7B5004C  lwc1	f21, 0x  4C(sp)
+
+  00184660  C7B40048  lwc1	f20, 0x  48(sp)
+
+  00184664  03E00008  jr	->ra
+
+  00184668  27BD0060  addiu	sp, 0x60
+
+  0018466C  26050020  addiu	a1,s0, 0x20
+
+  00184670  27AF0010  addiu	t7,sp, 0x10
+
+  00184674  D8A10000  lqc2	vf01,(a1)
+
+  00184678  4408A800  mfc1	t0, f21
+
+  0018467C  48A81000  qmtc2	t0, vf02
+
+  00184680  4BE20858  vmulx.xyzw vf01,vf01,vf02x
+
+  00184684  F9E10000  sqc2	vf01,(t7)
+
+  00184688  13AFFFE4  beq	sp, t7, ->$0x0018461C
+
+  0018468C  00000000  nop
+
+  00184690  79E80000  lq	t0,(t7)
+
+  00184694  7FA80000  sq	t0,(sp)
+
+  00184698  1000FFE0  b	->$0x0018461C
+
+  0018469C  00000000  nop

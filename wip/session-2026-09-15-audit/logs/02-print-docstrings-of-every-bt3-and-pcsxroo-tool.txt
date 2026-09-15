@@ -1,0 +1,104 @@
+# Print docstrings of every BT3 and PCSXROO tool
+# (foreground run, transcript line 2605)
+--- input (line 2604) ---
+$py = @'
+import ast, pathlib, sys
+for root in sys.argv[1:]:
+    print(f"##### {root}")
+    for p in sorted(pathlib.Path(root).glob("*.py")):
+        try:
+            doc = ast.get_docstring(ast.parse(p.read_text(encoding="utf-8")))
+        except Exception as e:
+            doc = f"(unparsable: {e})"
+        print(f"=== {p.name}")
+        print((doc or "(no docstring)")[:900])
+'@
+$f = "$env:TEMP\docstrings.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f "%USERPROFILE%\Documents\GitHub\pcsx2-bt3-60fps\tools" "%USERPROFILE%\Documents\GitHub\pcsxroo\pcsxroo\tools"
+--- result ---
+<persisted-output>
+Output too large (32.3KB). Full output saved to: %USERPROFILE%\.claude\projects\C--Users-<user>-Documents-GitHub\75640eb9-9f41-4273-a232-b3d6d7d779e2\tool-results\bftpgizf7.txt
+
+Preview (first 2KB):
+##### %USERPROFILE%\Documents\GitHub\pcsx2-bt3-60fps\tools
+
+=== _bootstrap.py
+
+Make game/ and PCSXROO's ps2ee library importable for the tools.
+
+
+
+The tools and the game knowledge (tools/game/) live side by side, so this adds
+
+tools/ itself. The generic ps2ee library lives in PCSXROO
+
+(https://github.com/Saupernova13/pcsxroo), under pcsxroo/ps2ee/. The PCSXROO
+
+checkout is found from the first of these that is set:
+
+
+
+1. the PCSXROO_REPO environment variable,
+
+2. a "PCSXROO_REPO" key in this repo's local.json,
+
+3. a sibling checkout named pcsxroo, next to this repo.
+
+=== apply-live.py
+
+Re-apply the current patch into a running PCSX2 over PINE.
+
+
+
+Loading a save state restores EE RAM wholesale and wipes any live writes, and
+
+a freshly deployed cheat file is only read at boot. This puts the patch back
+
+without restarting.
+
+
+
+    python tools/apply-live.py                    # apply wip/working.pnach
+
+    python tools/apply-live.py --check            # report only
+
+=== bisect.py
+
+Find the code that drives a live value, by disabling calls and watching it.
+
+
+
+Write breakpoints do not always work here - the effect clocks are not written
+
+by plain cached EE stores, so the PCSX2 memory breakpoint never trips on them.
+
+But a value that ticks continuously is enough on its own: nop out one call at a
+
+time, see whether it stops, and descend into whichever call owned it.
+
+
+
+Every write is restored immediately and verified, and the frame counter is
+
+checked after each test so a call that hangs the game is put back at once.
+
+
+
+    python tools/bisect.py 01B1F038 --from 12B6E0
+
+    python tools/bisect.py 01B1F038 --from 12B6E0 --depth 4
+
+=== blasttest.py
+
+Fire a scripted blast at both rates and time how long the beam is on screen.
+
+
+
+The ki-blast bug has no memory signal anyone has found yet, but it has an
+
+obvious visual one: a Kamehameha whites out the screen, so mean screen
+
+brightness says exactly when the beam starts and stops. Same save state, same
+
+...
+</persisted-output>

@@ -1,0 +1,19 @@
+# Push the audit branch and open the v03 pull request
+# (foreground run, transcript line 3751)
+--- input (line 3750) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+git push -u origin feat/global-60fps-audit
+if (-not $?) { throw "push failed" }
+gh pr create --repo Saupernova13/pcsx2-kh2fm-60fps --base main --head feat/global-60fps-audit --title "feat: v03 movement physics - short hops and the shared velocity step" --body-file "<session scratchpad>\kh2-pr2-body.md"
+gh pr list --repo Saupernova13/pcsx2-kh2fm-60fps --json number,title,state --jq ".[] | [.number, .state, .title] | @tsv"
+--- result ---
+remote: 
+remote: Create a pull request for 'feat/global-60fps-audit' on GitHub by visiting:        
+remote:      https://github.com/Saupernova13/pcsx2-kh2fm-60fps/pull/new/feat/global-60fps-audit        
+remote: 
+branch 'feat/global-60fps-audit' set up to track 'origin/feat/global-60fps-audit'.
+To https://github.com/Saupernova13/pcsx2-kh2fm-60fps.git
+ * [new branch]      feat/global-60fps-audit -> feat/global-60fps-audit
+https://github.com/Saupernova13/pcsx2-kh2fm-60fps/pull/2
+2	OPEN	feat: v03 movement physics - short hops and the shared velocity step
+1	OPEN	feat: import KH2FM findings, patches and tools

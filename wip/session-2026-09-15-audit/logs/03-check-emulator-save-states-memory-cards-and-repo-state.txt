@@ -1,0 +1,153 @@
+# Check emulator, save states, memory cards and repo state
+# (foreground run, transcript line 2615)
+--- input (line 2606) ---
+"== PCSXROO listening?"; python -c "import socket; s=socket.socket(); s.settimeout(1); print('yes' if s.connect_ex(('127.0.0.1',28110))==0 else 'no')"
+"== PCSXROO KH2 states"; Get-ChildItem "%USERPROFILE%\Documents\GitHub\pcsxroo\bin\sstates" -Filter "*66675*" -ErrorAction SilentlyContinue | Select-Object Name, Length, LastWriteTime | Format-Table -AutoSize | Out-String -Width 200
+"== user PCSX2 KH2 states"; Get-ChildItem "$env:APPDATA\EmuDeck\Emulators\PCSX2-Qt\sstates" -Filter "*66675*" -ErrorAction SilentlyContinue | Select-Object Name, Length, LastWriteTime | Format-Table -AutoSize | Out-String -Width 200
+"== user memcards"; Get-ChildItem "$env:APPDATA\EmuDeck\Emulators\PCSX2-Qt\memcards" -ErrorAction SilentlyContinue | Select-Object Name, Length, LastWriteTime, @{n='target';e={$_.Target}} | Format-Table -AutoSize | Out-String -Width 200
+"== PCSXROO memcards"; Get-ChildItem "%USERPROFILE%\Documents\GitHub\pcsxroo\bin\memcards" -ErrorAction SilentlyContinue | Select-Object Name, Length, LastWriteTime | Format-Table -AutoSize | Out-String -Width 200
+"== repo"; Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"; git status -sb; gh pr view 1 --json state --jq .state
+"== pcsxroo repo"; Set-Location "%USERPROFILE%\Documents\GitHub\pcsxroo"; git status -sb | Select-Object -First 3; gh pr list --json number,state,title --jq ".[] | [.number, .state, .title] | @tsv"
+--- result ---
+== PCSXROO listening?
+
+no
+
+== PCSXROO KH2 states
+
+
+
+Name                           Length LastWriteTime      
+
+----                           ------ -------------      
+
+SLPM-66675 (FAF99301).01.p2s 16650680 2026/09/15 00:09:19
+
+
+
+
+
+
+
+== user PCSX2 KH2 states
+
+
+
+Name                                  Length LastWriteTime      
+
+----                                  ------ -------------      
+
+SLPM-66675 (FAF99301).01.p2s        16438960 2026/09/14 23:56:13
+
+SLPM-66675 (FAF99301).01.p2s.backup 16798606 2026/09/14 23:54:53
+
+
+
+
+
+
+
+== user memcards
+
+
+
+Name                 Length   LastWriteTime       target                                             
+
+----                 ------   -------------       ------                                             
+
+bak                           2026/04/14 21:30:58 C:\Emulation\saves\pcsx2\saves\bak                 
+
+BASCUS-97481GOWII             2025/11/05 00:33:59 C:\Emulation\saves\pcsx2\saves\BASCUS-97481GOWII   
+
+BASLUS-21842DBZIW             2025/11/05 00:33:59 C:\Emulation\saves\pcsx2\saves\BASLUS-21842DBZIW   
+
+BESLES-54123MUA               2025/11/05 00:33:54 C:\Emulation\saves\pcsx2\saves\BESLES-54123MUA     
+
+BESLES-54123MUAs0             2025/11/05 00:33:58 C:\Emulation\saves\pcsx2\saves\BESLES-54123MUAs0   
+
+BESLES-55609Scooby 1          2025/11/05 00:33:59 C:\Emulation\saves\pcsx2\saves\BESLES-55609Scooby 1
+
+my memory card.ps2            2025/11/05 00:34:00 C:\Emulation\saves\pcsx2\saves\my memory card.ps2  
+
+Mcd001.ps2           69206016 2026/09/15 00:05:49 C:\Emulation\saves\pcsx2\saves\Mcd001.ps2          
+
+Mcd002.ps2           34603008 2026/09/15 00:05:49 C:\Emulation\saves\pcsx2\saves\Mcd002.ps2          
+
+
+
+
+
+
+
+== PCSXROO memcards
+
+
+
+Name                 Length   LastWriteTime      
+
+----                 ------   -------------      
+
+bak                           2026/09/04 14:22:26
+
+bak-20260915                  2026/09/15 00:00:54
+
+BASCUS-97481GOWII             2026/09/04 14:22:26
+
+BASLUS-21842DBZIW             2026/09/04 14:22:26
+
+BESLES-54123MUA               2026/09/04 14:22:26
+
+BESLES-54123MUAs0             2026/09/04 14:22:26
+
+BESLES-55609Scooby 1          2026/09/04 14:22:26
+
+my memory card.ps2            2026/09/04 14:22:26
+
+Mcd001.ps2           69206016 2026/09/15 07:10:02
+
+Mcd002.ps2           34603008 2026/09/15 07:10:02
+
+
+
+
+
+
+
+== repo
+
+## feat/import-findings-and-tools...origin/feat/import-findings-and-tools
+OPEN
+== pcsxroo repo
+
+## master...origin/master
+
+14959	OPEN	GS/GL: Remove extra fb attachment binding.
+14953	OPEN	Qt: Allow customizing toolbar actions
+14951	OPEN	GS:HW: Prince of Persia Warrior Within invalidation/frame lookup issues.
+14950	OPEN	Memcard: Fix compatibility with MemCardPro (mc2) and conversion crashes
+14938	OPEN	GS/DX12: Compile shaders to Shader Model 6.5
+14922	OPEN	Qt: Various fixes for localisation
+14920	OPEN	GS:VK: Use vkCmdPipelineBarrier2KHR
+14916	OPEN	Misc: WoA build fixes
+14915	OPEN	Qt/VMManager: Add -gamecfg command-line argument
+14878	OPEN	Qt: Preserve game list column widths across relayouts
+14869	OPEN	Expose PS2 memory to same-user tools via named shm
+14857	OPEN	GS: Support loading replacement textures from zip files
+14850	OPEN	GS:HW: Unify TFX shaders among backends.
+14849	OPEN	Low Latency Audio Sync
+14789	OPEN	Patch: Clean up PatchCommand struct
+14787	OPEN	GS:VK: Migrate to VK 1.3 and use dynamic rendering.
+14770	OPEN	USB: Follow the PCRTC video mode for GunCon2 aim
+14753	OPEN	CDVD: validate CSO frame and index sizes
+14752	OPEN	Build: Fix for cross-compilation
+14747	OPEN	precompile StringUtil.h and STL stream headers (~11% faster core rebuild)
+14737	OPEN	GS:DX12:VK: Experimental uber/hybrid shader cache (WIP).
+14691	OPEN	GHActions: Clean old stuff out of ccache
+14648	OPEN	Input: Combo bindings fix
+14607	OPEN	GS/HW: Add continuous and oneshot ROV heuristics.
+14591	OPEN	GameDB: Various fixes
+14584	OPEN	GS: add texture replacement wildcard aliases
+14583	OPEN	GS/DX12: Use Shader Linking To Improve Shader Stutter
+14566	OPEN	Qt: Add button to main menu's view tab to allow GUI to enter fullscreen.
+14557	OPEN	Debugger Breakpoint Instrumentation
+14530	OPEN	Simplify EE/IOP cycle sync

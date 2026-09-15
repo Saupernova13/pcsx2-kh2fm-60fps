@@ -1,0 +1,138 @@
+# Check PCSXROO launch syntax and its KH2 patch settings
+# (foreground run, transcript line 2674)
+--- input (line 2666) ---
+$bin = "%USERPROFILE%\Documents\GitHub\pcsxroo\bin"
+"== launch help"; & "$bin\pcsxroo.exe" launch --help 2>&1 | Select-Object -First 30
+"== PCSXROO KH2 ini"; Get-Content "$bin\gamesettings\SLPM-66675_FAF99301.ini"
+"== PCSXROO KH2 patch groups"; Select-String -Path "$bin\patches\SLPM-66675_FAF99301.pnach" -Pattern '^\[' | ForEach-Object { $_.Line }
+"== inis cheats/patch settings"; Select-String -Path "$bin\inis\PCSX2.ini" -Pattern 'EnablePatches|EnableCheats|EnableWideScreen|EnableFastBoot|EECycleRate' | ForEach-Object { $_.Line }
+--- result ---
+== launch help
+
+pcsxroo - drive the PCSXROO debugger from the command line
+
+
+
+usage: pcsxroo [global flags] <group> <verb> [arguments]
+
+
+
+global flags:
+
+  --port N          debug server port (default 28110, or $PCSXROO_PORT)
+
+  --host H          default 127.0.0.1
+
+  --cpu ee|iop      which CPU to address (default ee)
+
+  --json            print the raw JSON reply instead of a rendered one
+
+  --timeout MS      wait, step, pause and frame-advance: the command's own time limit
+
+                    (defaults 60000, 5000, 2000, 10000). Any other command: give up
+
+                    after MS with no reply. Without it the server's own limits apply.
+
+  --help, -h        this text
+
+
+
+starting up:
+
+  launch [game] [--bios] [--pause-on-entry] [--emulator PATH]
+
+                                   [--ready-timeout MS]
+
+                                   start the emulator; with no game it comes up
+
+                                   idle with the server listening and no VM
+
+  boot <game>                      boot a game in an emulator already running
+
+  boot --bios                      boot the PS2 BIOS with no disc
+
+  boot --elf PATH                  boot an ELF directly
+
+      all accept [--pause-on-entry] [--fast-boot]
+
+
+
+session:
+
+  version                          emulator, PCSX2 base revision, protocol
+
+  status                           VM state, PCs, game identity, last stop
+
+  wait [--since N]                 block until a stop newer than N
+
+  events                           stream stop events until interrupted
+
+
+
+== PCSXROO KH2 ini
+
+[EmuCore]
+
+EnableCheats = true
+
+ShowPatchesForAllCRCs = true
+
+
+
+
+
+[Patches]
+
+Enable = Remove Blackbars
+
+Enable = Widescreen 19.5:9 - S24 Ultra
+
+Enable = Remove Blur
+
+Enable = Swap X and O
+
+
+
+
+
+[EmuCore/GS]
+
+LoadTextureReplacements = true
+
+
+
+
+
+[EmuCore/Speedhacks]
+
+EECycleRate = 1
+
+== PCSXROO KH2 patch groups
+
+[Widescreen 16:9]
+
+[Widescreen 19.5:9 - S24 Ultra]
+
+[Remove Blackbars]
+
+[60 FPS]
+
+[Remove Blur]
+
+[Subtitles off]
+
+[Swap X and O]
+
+== inis cheats/patch settings
+
+EnablePatches = true
+
+EnableCheats = false
+
+EnableWideScreenPatches = false
+
+EnableFastBoot = true
+
+EnableFastBootFastForward = false
+
+EECycleRate = 0

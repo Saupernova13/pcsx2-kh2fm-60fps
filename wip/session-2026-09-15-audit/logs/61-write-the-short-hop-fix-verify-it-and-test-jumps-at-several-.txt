@@ -1,0 +1,73 @@
+# Write the short-hop fix, verify it, and test jumps at several hold lengths
+# (foreground run, transcript line 3316)
+--- input (line 3315) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== working.pnach untouched by the failed run?"; git diff --stat -- wip/working.pnach
+python tools\mkjumpfix.py --write | Select-Object -Last 1
+if (-not $?) { throw "write failed" }
+python tools\mkjumpfix.py --check | Select-Object -Last 2
+python -c "import sys; sys.path.insert(0,'tools'); import _bootstrap; from game.pnachtext import headers; print([n for _, n in headers(open('wip/working.pnach',encoding='utf-8').read().splitlines())])"
+foreach ($n in 2, 6, 10, 14, 18) {
+  "==================== hold Circle $n vsyncs"
+  python tools\movetest.py --pos 01A94980 --script "wait:6,hold:Circle:$n,wait:90" --what jump --group "60 FPS - short hop"
+}
+--- result ---
+== working.pnach untouched by the failed run?
+
+wrote [60 FPS - short hop] into %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\wip\working.pnach
+
+working.pnach [60 FPS - short hop]: matches the generated words
+
+kh2fm-60fps.pnach: no [60 FPS - short hop] group
+
+['60 FPS - ball physics', '60 FPS - short hop', 'EXPERIMENT ball physics constant scaling']
+
+==================== hold Circle 2 vsyncs
+
+  30fps oracle     peak   115.08 at  23  air  36  fall   0.3981  path     0.00  net     0.00
+
+  60fps            peak   103.53 at  24  air  34  fall   0.4082  path     0.00  net     0.00
+
+  60fps + fix      peak   115.10 at  25  air  36  fall   0.4082  path     0.00  net     0.00
+
+PASS: 60fps + fix matches 30fps within tolerance
+
+==================== hold Circle 6 vsyncs
+
+  30fps oracle     peak   115.08 at  23  air  36  fall   0.3981  path     0.00  net     0.00
+
+  60fps            peak   103.53 at  24  air  34  fall   0.4082  path     0.00  net     0.00
+
+  60fps + fix      peak   115.10 at  25  air  36  fall   0.4082  path     0.00  net     0.00
+
+PASS: 60fps + fix matches 30fps within tolerance
+
+==================== hold Circle 10 vsyncs
+
+  30fps oracle     peak   115.08 at  23  air  36  fall   0.3981  path     0.00  net     0.00
+
+  60fps            peak   103.53 at  24  air  34  fall   0.4082  path     0.00  net     0.00
+
+  60fps + fix      peak   115.10 at  25  air  36  fall   0.4082  path     0.00  net     0.00
+
+PASS: 60fps + fix matches 30fps within tolerance
+
+==================== hold Circle 14 vsyncs
+
+  30fps oracle     peak   135.57 at  25  air  40  fall   0.3995  path     0.00  net     0.00
+
+  60fps            peak   135.58 at  27  air  40  fall   0.4082  path     0.00  net     0.00
+
+  60fps + fix      peak   135.58 at  27  air  40  fall   0.4082  path     0.00  net     0.00
+
+PASS: 60fps + fix matches 30fps within tolerance
+
+==================== hold Circle 18 vsyncs
+
+  30fps oracle     peak   165.38 at  29  air  46  fall   0.4007  path     0.00  net     0.00
+
+  60fps            peak   165.39 at  31  air  47  fall   0.4082  path     0.00  net     0.00
+
+  60fps + fix      peak   165.39 at  31  air  47  fall   0.4082  path     0.00  net     0.00
+
+PASS: 60fps + fix matches 30fps within tolerance

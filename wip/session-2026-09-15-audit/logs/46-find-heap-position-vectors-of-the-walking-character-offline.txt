@@ -1,0 +1,86 @@
+# Find heap position vectors of the walking character offline
+# (foreground run, transcript line 3176)
+--- input (line 3175) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import numpy as np, collections
+z = np.load("work/fp-walk.npz")
+lo = int(z["lo"][0])
+raw = {k: z[k] for k in ("w0", "w1", "w2", "w3", "i0", "i2", "i3")}
+with np.errstate(all="ignore"):
+    f = {k: v.view("<f4").astype(np.float64) for k, v in raw.items()}
+n = f["w0"].size
+# vec4 base b: words b,b+1,b+2 = x,y,z and b+3 = 1.0 in w2
+one = raw["w2"] == 0x3F800000
+bases = np.flatnonzero(one) - 3
+bases = bases[(bases >= 0)]
+rows = []
+for b in bases:
+    x0, y0, z0 = f["w0"][b:b + 3]
+    x1, y1, z1 = f["w1"][b:b + 3]
+    x2, y2, z2 = f["w2"][b:b + 3]
+    ix, iy, iz = f["i2"][b:b + 3] - f["i0"][b:b + 3]
+    vals = np.array([x0, y0, z0, x1, y1, z1, x2, y2, z2])
+    if not np.all(np.isfinite(vals)) or np.any(np.abs(vals) > 2e4):
+        continue
+    dxz1 = np.hypot(x1 - x0, z1 - z0)
+    dxz2 = np.hypot(x2 - x1, z2 - z1)
+    if dxz1 < 15 or dxz2 < 15 or dxz1 > 2000:
+        continue
+    if abs(y0 - 550) > 60:
+        continue
+    if max(abs(ix), abs(iz)) > 5:
+        continue
+    rows.append((b, (round(x2, 1), round(y2, 1), round(z2, 1)), dxz1, dxz2, x1 - x0, z1 - z0))
+print(f"{len(rows)} vec4s near ground height that walked there and back and hold still idle")
+groups = collections.defaultdict(list)
+for r in rows:
+    groups[r[1]].append(r)
+for key, g in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+    addrs = " ".join(f"{lo + 4 * r[0]:08X}" for r in g[:12])
+    r = g[0]
+    print(f"  pos {key}  moved {r[2
+--- result ---
+49 vec4s near ground height that walked there and back and hold still idle
+
+  pos (np.float64(767.4), np.float64(553.3), np.float64(-2498.6))  moved 143.0 there, 65.1 back (dx 142.9 dz -4.2)  x9: 01AADC00 01AAE0D0 01AAE120 01AAE150 01AAE270 01AAE2B0 01AAE2C0 01AAE3D0 01AAE950
+
+  pos (np.float64(811.6), np.float64(550.0), np.float64(-2378.7))  moved 151.7 there, 51.1 back (dx 145.9 dz 41.4)  x9: 01AC2500 01AC29D0 01AC2A20 01AC2A50 01AC2B70 01AC2BB0 01AC2BC0 01AC2CD0 01AC3250
+
+  pos (np.float64(714.7), np.float64(550.0), np.float64(-2414.6))  moved 304.0 there, 279.8 back (dx 297.8 dz -61.1)  x6: 01A944B0 01A94980 01A94A00 01A94B20 01A94B70 01A95080
+
+  pos (np.float64(722.5), np.float64(550.0), np.float64(-2416.6))  moved 296.0 there, 263.8 back (dx 289.9 dz -59.7)  x4: 00341720 01A949D0 01A94B60 01A94C80
+
+  pos (np.float64(804.7), np.float64(494.0), np.float64(-2482.5))  moved 139.4 there, 90.1 back (dx 138.5 dz -16.5)  x3: 01AC1320 01AC1990 01AC19E0
+
+  pos (np.float64(780.7), np.float64(523.5), np.float64(-2382.2))  moved 174.2 there, 39.0 back (dx 168.1 dz 45.6)  x3: 01AD4490 01AD4B00 01AD4B50
+
+  pos (np.float64(754.3), np.float64(550.0), np.float64(-2527.1))  moved 313.7 there, 154.1 back (dx 180.6 dz -256.4)  x1: 00341730
+
+  pos (np.float64(804.1), np.float64(550.0), np.float64(-2335.6))  moved 369.3 there, 139.2 back (dx 362.4 dz 71.0)  x1: 00341740
+
+  pos (np.float64(730.2), np.float64(550.0), np.float64(-2418.6))  moved 288.0 there, 247.9 back (dx 282.0 dz -58.3)  x1: 00341750
+
+  pos (np.float64(762.1), np.float64(550.0), np.float64(-2529.1))  moved 307.8 there, 137.9 back (dx 172.6 dz -254.9)  x1: 00341760
+
+  pos (np.float64(811.8), np.float64(550.0), np.float64(-2337.6))  moved 362.1 there, 123.4 back (dx 354.8 dz 72.5)  x1: 00341770
+
+  pos (np.float64(693.9), np.float64(498.4), np.float64(-2420.0))  moved 303.0 there, 317.8 back (dx 298.7 dz -50.6)  x1: 01AABBB0
+
+  pos (np.float64(745.9), np.float64(480.9), np.float64(-2411.4))  moved 286.3 there, 222.6 back (dx 280.0 dz -59.9)  x1: 01AABBD0
+
+  pos (np.float64(753.5), np.float64(517.9), np.float64(-2495.9))  moved 124.3 there, 80.4 back (dx 123.5 dz 14.2)  x1: 01AC1230
+
+  pos (np.float64(780.5), np.float64(509.8), np.float64(-2476.8))  moved 72.3 there, 137.1 back (dx 72.3 dz -0.1)  x1: 01AC1250
+
+  pos (np.float64(811.6), np.float64(500.0), np.float64(-2378.7))  moved 151.7 there, 51.1 back (dx 145.9 dz 41.4)  x1: 01AD4380
+
+  pos (np.float64(814.5), np.float64(522.5), np.float64(-2372.8))  moved 156.9 there, 56.9 back (dx 149.6 dz 47.1)  x1: 01AD43E0
+
+  pos (np.float64(808.9), np.float64(503.2), np.float64(-2389.5))  moved 166.9 there, 24.2 back (dx 160.8 dz 44.8)  x1: 01AD4400
+
+  pos (np.float64(712.2), np.float64(404.0), np.float64(-2388.4))  moved 311.6 there, 302.3 back (dx 294.5 dz 101.8)  x1: 01E2B910
+
+  pos (np.float64(987.5), np.float64(551.8), np.float64(-2477.2))  moved 203.4 there, 160.0 back (dx 186.6 dz -80.9)  x1: 01E2B990
+
+  pos (np.float64(753.4), np.float64(550.0), np.float64(-2424.6))  moved 208.9 there, 147.6 back (dx -94.7 dz 186.2)  x1: 01E2BA50

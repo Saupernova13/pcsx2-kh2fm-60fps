@@ -1,0 +1,33 @@
+# Scan changed files for leaks and check markdown links
+# (foreground run, transcript line 3709)
+--- input (line 3708) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== changed/new files"; git status --short
+"== leaks (user name, absolute paths, third-party patch words)"
+$files = git status --short | ForEach-Object { $_.Substring(3) } | Where-Object { Test-Path $_ -PathType Leaf }
+Select-String -Path $files -Pattern '<user>|AppData\\|C:\\Users|3c013f4c|3421cccc|e61f004c|43f90000|240a0190|0803f414|080bd7a1|E0010005' -CaseSensitive:$false | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" }
+"== patch= lines outside our pnach files"
+Select-String -Path $files -Pattern '^\s*patch=' | Where-Object { $_.Path -notmatch 'kh2fm-60fps\.pnach|working\.pnach|001-ball-physics-candidates' } | ForEach-Object { "$($_.Path):$($_.LineNumber)" }
+"== links"; python "<session scratchpad>\check_links.py" "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+--- result ---
+== changed/new files
+
+ M README.md
+ M docs/addresses.md
+ M docs/findings.md
+ M docs/global-audit.md
+ M docs/status.md
+ M docs/tools.md
+ M docs/versions/README.md
+ M patch/kh2fm-60fps.pnach
+ M tools/install.py
+ M tools/objtrace.py
+ M wip/working.pnach
+?? docs/versions/v03-movement-physics.md
+== leaks (user name, absolute paths, third-party patch words)
+
+== patch= lines outside our pnach files
+
+== links
+
+0 problems

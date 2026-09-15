@@ -1,0 +1,99 @@
+# Disassemble the playtime clock writers
+# (foreground run, transcript line 2919)
+--- input (line 2910) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== playtime clock writers 0014C838 / 0014CA44"; python tools\elfscan.py dis 0014C838 30; python tools\elfscan.py dis 0014CA44 16
+--- result ---
+== playtime clock writers 0014C838 / 0014CA44
+
+  0014C838  91EE9E00  lbu $t6, -0x6200($t7)
+
+  0014C83C  15CD0012  bne $t6, $t5, 0x14c888
+
+  0014C840  3C0F0035  lui $t7, 0x35
+
+  0014C844  3C0E0035  lui $t6, 0x35
+
+  0014C848  8DCC9DF0  lw $t4, -0x6210($t6)
+
+  0014C84C  3C0A0035  lui $t2, 0x35
+
+  0014C850  8DED9DE8  lw $t5, -0x6218($t7)
+
+  0014C854  3C0E0035  lui $t6, 0x35
+
+  0014C858  8DCF9DF4  lw $t7, -0x620c($t6)
+
+  0014C85C  01AC6823  subu $t5, $t5, $t4
+
+  0014C860  01ED7823  subu $t7, $t7, $t5
+
+  0014C864  1DE0FFF1  bgtz $t7, 0x14c82c
+
+  0014C868  AD4F9DF8  sw $t7, -0x6208($t2)
+
+  0014C86C  AD409DF8  sw $zero, -0x6208($t2)
+
+  0014C870  AD609DFC  sw $zero, -0x6204($t3)
+
+  0014C874  2404004A  addiu $a0, $zero, 0x4a
+
+  0014C878  DFBF0000  ld $ra, ($sp)
+
+  0014C87C  0000282D  move $a1, $zero
+
+  0014C880  0806646A  j 0x1991a8
+
+  0014C884  27BD0010  addiu $sp, $sp, 0x10
+
+  0014C888  3C0A0035  lui $t2, 0x35
+
+  0014C88C  8DED9DE8  lw $t5, -0x6218($t7)
+
+  0014C890  3C0C0003  lui $t4, 3
+
+  0014C894  358C4BBF  ori $t4, $t4, 0x4bbf
+
+  0014C898  3C0F0035  lui $t7, 0x35
+
+  0014C89C  8DEE9DF0  lw $t6, -0x6210($t7)
+
+  0014C8A0  01AE6823  subu $t5, $t5, $t6
+
+  0014C8A4  018D782A  slt $t7, $t4, $t5
+
+  0014C8A8  11E00003  beqz $t7, 0x14c8b8
+
+  0014C8AC  AD4D9DF8  sw $t5, -0x6208($t2)
+
+  0014CA44  00000000  nop
+
+  0014CA48  27BDFFF0  addiu $sp, $sp, -0x10
+
+  0014CA4C  FFBF0000  sd $ra, ($sp)
+
+  0014CA50  0C053284  jal 0x14ca10
+
+  0014CA54  00000000  nop
+
+  0014CA58  14400004  bnez $v0, 0x14ca6c
+
+  0014CA5C  3C0E0035  lui $t6, 0x35
+
+  0014CA60  8DCF9DE8  lw $t7, -0x6218($t6)
+
+  0014CA64  25EF0001  addiu $t7, $t7, 1
+
+  0014CA68  ADCF9DE8  sw $t7, -0x6218($t6)
+
+  0014CA6C  DFBF0000  ld $ra, ($sp)
+
+  0014CA70  03E00008  jr $ra
+
+  0014CA74  27BD0010  addiu $sp, $sp, 0x10
+
+  0014CA78  03E00008  jr $ra
+
+  0014CA7C  0080102D  move $v0, $a0
+
+  0014CA80  27BDFFD0  addiu $sp, $sp, -0x30

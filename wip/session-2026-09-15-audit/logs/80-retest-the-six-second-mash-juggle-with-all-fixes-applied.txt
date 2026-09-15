@@ -1,0 +1,19 @@
+# Retest the six-second mash juggle with all fixes applied
+# (foreground run, transcript line 3522)
+--- input (line 3514) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$g = @("--group", "60 FPS - ball physics", "--group", "60 FPS - short hop", "--group", "60 FPS - friction")
+$mash = "wait:6,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * 45)
+python tools\movetest.py --pos 01ADEAC0 --script $mash --what all --air 5 --save work\mash-allfix.npz @g
+"exit $LASTEXITCODE"
+--- result ---
+Exit code 1
+  30fps oracle     peak   345.90 at 227  air 246  fall   0.1953  path   190.90  net    78.51
+
+  60fps            peak   403.92 at 269  air 278  fall   0.1724  path   629.57  net   370.42
+
+  60fps + fix      peak   606.26 at 290  air 334  fall        -  path  1191.38  net   182.27
+
+FAIL: 60fps + fix differs from 30fps: peak 606.26 vs 345.90; airtime 334 vs 246; path 1191.38 vs 190.90
+
+exit 1

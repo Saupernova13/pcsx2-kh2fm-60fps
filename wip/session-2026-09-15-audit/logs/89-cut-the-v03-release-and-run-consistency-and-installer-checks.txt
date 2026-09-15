@@ -1,0 +1,96 @@
+# Cut the v03 release and run consistency and installer checks
+# (foreground run, transcript line 3692)
+--- input (line 3691) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== release"; python tools\export.py --release v03-movement-physics; "exit $LASTEXITCODE"
+"== export --check"; python tools\export.py --check; "exit $LASTEXITCODE"
+"== generators"
+python tools\mkballfix.py --check | Select-Object -Last 2
+python tools\mkjumpfix.py --check | Select-Object -Last 2
+python tools\mkfrictionfix.py --check | Select-Object -Last 2
+"== groups in patch/"; python -c "import sys; sys.path.insert(0,'tools'); import _bootstrap; from game.pnachtext import headers; print([n for _, n in headers(open('patch/kh2fm-60fps.pnach',encoding='utf-8').read().splitlines())])"
+"== compile"; python -m py_compile (Get-ChildItem tools, tools\game -Filter *.py | ForEach-Object FullName); "exit $LASTEXITCODE"
+"== install --status (read-only)"; python tools\install.py --status
+"== install --dry-run --widescreen (read-only)"; python tools\install.py --dry-run --widescreen
+--- result ---
+== release
+
+wrote %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\patch\kh2fm-60fps.pnach; now: git tag -a v03-movement-physics -m "v03-movement-physics: <one line from the note>"
+
+exit 0
+
+== export --check
+
+%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\patch\kh2fm-60fps.pnach matches wip/working.pnach minus ['EXPERIMENT ball physics constant scaling']
+
+exit 0
+
+== generators
+
+patch/ [60 FPS - ball physics]: matches the generated words
+
+wip/ [EXPERIMENT ball physics constant scaling]: matches the generated words
+
+working.pnach [60 FPS - short hop]: matches the generated words
+
+kh2fm-60fps.pnach [60 FPS - short hop]: matches the generated words
+
+working.pnach [60 FPS - friction]: matches the generated words
+
+kh2fm-60fps.pnach [60 FPS - friction]: matches the generated words
+
+== groups in patch/
+
+['60 FPS - ball physics', '60 FPS - short hop', '60 FPS - friction']
+
+== compile
+
+exit 0
+
+== install --status (read-only)
+
+PCSX2         %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt
+
+patch file    %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+game ini      %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini
+
+  [60 FPS]  present  enabled
+
+  [Widescreen 16:9]  present  off
+
+  [60 FPS - ball physics]  present  enabled
+
+  [60 FPS - short hop]  absent   off
+
+  [60 FPS - friction]  absent   off
+
+  [Widescreen 19.5:9 - S24 Ultra]  present  enabled
+
+  [60 FPS - ball physics] words match this repo: True
+
+  [Widescreen 19.5:9 - S24 Ultra] words match this repo: True
+
+== install --dry-run --widescreen (read-only)
+
+base          %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+writes        %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+game ini      %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini
+
+  [60 FPS - ball physics]  unchanged  (18 patch lines)
+
+  [60 FPS - short hop]  added  (15 patch lines)
+
+  [60 FPS - friction]  added  (16 patch lines)
+
+  [Widescreen 19.5:9 - S24 Ultra]  unchanged  (15 patch lines)
+
+  enable  ['60 FPS - short hop', '60 FPS - friction']
+
+  disable []
+
+
+
+(dry run - nothing written)
