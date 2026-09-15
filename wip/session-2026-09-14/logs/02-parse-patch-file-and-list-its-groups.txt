@@ -1,0 +1,18 @@
+# Parse patch file and list its groups
+# (foreground run, transcript line 233)
+--- input (line 231) ---
+$env:PYTHONPATH = "$env:USERPROFILE\Documents\GitHub\pcsxroo\pcsxroo"; python -c "from ps2ee.pnach import Pnach; p = Pnach.load(r'%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach'); [print(f'[{g.name}]  {len(g.lines)} lines') for g in p.groups]"
+--- result ---
+[Widescreen 16:9]  14 lines
+
+[Widescreen 19.5:9 - S24 Ultra]  15 lines
+
+[Remove Blackbars]  4 lines
+
+[60 FPS]  5 lines
+
+[Remove Blur]  1 lines
+
+[Subtitles off]  1 lines
+
+[Swap X and O]  19 lines

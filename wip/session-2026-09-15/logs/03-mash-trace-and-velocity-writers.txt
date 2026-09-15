@@ -1,0 +1,120 @@
+##### determinism: 60fps unpatched mash traced twice
+  max ball position difference 0.0000; first divergence at vsync None
+===== 30fps oracle: ticks/vsync 0.502  hits (vy<-20) at vsyncs [27, 183]
+  ball horizontal path                127.8
+  sum|v xz| per vsync (obj+20/28)       0.0   (v is per 60Hz frame: per-vsync sum = distance)
+  sum|disp/delta| obj+850 xz          113.1
+  sum|disp/delta| obj+860 xz          127.8
+  sum|+560 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  sum|+870 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  sum|+880 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  +88C range 0.000..0.000
+   hit @ 27: v=(  -0.00, -60.00,  -0.00)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+   hit @183: v=(  -0.00, -60.00,  -0.00)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+===== 60fps unpatched: ticks/vsync 1.000  hits (vy<-20) at vsyncs [26, 150, 223]
+  ball horizontal path                380.2
+  sum|v xz| per vsync (obj+20/28)     228.6   (v is per 60Hz frame: per-vsync sum = distance)
+  sum|disp/delta| obj+850 xz          418.2
+  sum|disp/delta| obj+860 xz          380.2
+  sum|+560 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  sum|+870 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  sum|+880 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  +88C range 0.000..0.000
+   hit @ 26: v=(  -0.00, -60.00,  -0.00)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+   hit @150: v=(  -0.00, -60.00,  -0.00)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+   hit @223: v=( -51.00, -42.00,   0.00)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+===== 60fps + FIX-D: ticks/vsync 1.000  hits (vy<-20) at vsyncs [26, 116]
+  ball horizontal path                647.4
+  sum|v xz| per vsync (obj+20/28)     463.0   (v is per 60Hz frame: per-vsync sum = distance)
+  sum|disp/delta| obj+850 xz          647.4
+  sum|disp/delta| obj+860 xz          647.4
+  sum|+560 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  sum|+870 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  sum|+880 xz| over ticks (raw add)      0.0   nonzero ticks 0
+  +88C range 0.000..0.000
+   hit @ 26: v=(  -0.00, -60.00,  -0.00)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+   hit @116: v=(  49.82, -42.00,  10.91)  +560=(  0.00,  0.00,  0.00)  +870=(  0.00,  0.00,  0.00)
+##### write watchpoint on obj+0x20..0x2C across one hit, 60fps + FIX-D
+  pc 0017C3F4  ra 00183198  hits   6  OTHER
+        0017C3E0  dmove	v0, s0
+        0017C3E4  vsub.xyzw vf01, vf00, vf00
+        0017C3E8  sqc2	vf01,(sp)
+        0017C3EC  addiu	t7,a1, 0x20
+        0017C3F0  vsub.xyzw vf01, vf00, vf00
+     -> 0017C3F4  sqc2	vf01,(t7)
+        0017C3F8  b	->$0x0017C3C8
+        0017C3FC  lui	t7, 0x0037
+        0017C400  lw	t5, 0x 10C(a0)
+        0017C404  li	t7, -0x2
+  pc 002E7E70  ra 001DAE88  hits   1  OTHER
+        002E7E5C  sd	ra,(sp)
+        002E7E60  lw	t7,(a0)
+        002E7E64  lw	t6, 0x   4(a0)
+        002E7E68  lw	t5, 0x   4(t7)
+        002E7E6C  addiu	t7,t5, 0x20
+     -> 002E7E70  beql	t7, t6, ->$0x002E7E84
+        002E7E74  sw	zero, 0x  24(t5)
+        002E7E78  lq	t0,(t6)
+        002E7E7C  sq	t0,(t7)
+        002E7E80  sw	zero, 0x  24(t5)
+  pc 002E7E7C  ra 001DAE88  hits   1  OTHER
+        002E7E68  lw	t5, 0x   4(t7)
+        002E7E6C  addiu	t7,t5, 0x20
+        002E7E70  beql	t7, t6, ->$0x002E7E84
+        002E7E74  sw	zero, 0x  24(t5)
+        002E7E78  lq	t0,(t6)
+     -> 002E7E7C  sq	t0,(t7)
+        002E7E80  sw	zero, 0x  24(t5)
+        002E7E84  lqc2	vf01,(t7)
+        002E7E88  vmul.xyz vf02, vf01, vf01
+        002E7E8C  vaddy.x vf02, vf02, vf02y
+  pc 002E7E80  ra 001DAE88  hits   1  OTHER
+        002E7E6C  addiu	t7,t5, 0x20
+        002E7E70  beql	t7, t6, ->$0x002E7E84
+        002E7E74  sw	zero, 0x  24(t5)
+        002E7E78  lq	t0,(t6)
+        002E7E7C  sq	t0,(t7)
+     -> 002E7E80  sw	zero, 0x  24(t5)
+        002E7E84  lqc2	vf01,(t7)
+        002E7E88  vmul.xyz vf02, vf01, vf01
+        002E7E8C  vaddy.x vf02, vf02, vf02y
+        002E7E90  vaddz.x vf02, vf02, vf02z
+  pc 002E7EB8  ra 001DAE88  hits   1  OTHER
+        002E7EA4  mtc1	t0, f00
+        002E7EA8  vnop
+        002E7EAC  vdiv Q, vf00w, vf02x
+        002E7EB0  vwaitq
+        002E7EB4  vmulq.xyz vf01,vf01,Q
+     -> 002E7EB8  sqc2	vf01,(t7)
+        002E7EBC  lwc1	f01, 0x   C(a0)
+        002E7EC0  lqc2	vf01,(t7)
+        002E7EC4  mfc1	t0, f01
+        002E7EC8  qmtc2	t0, vf02
+  pc 002E7ED0  ra 001DAE88  hits   1  OTHER
+        002E7EBC  lwc1	f01, 0x   C(a0)
+        002E7EC0  lqc2	vf01,(t7)
+        002E7EC4  mfc1	t0, f01
+        002E7EC8  qmtc2	t0, vf02
+        002E7ECC  vmulx.xyzw vf01,vf01,vf02x
+     -> 002E7ED0  sqc2	vf01,(t7)
+        002E7ED4  lwc1	f00, 0x   8(a0)
+        002E7ED8  li	a1, 0x24
+        002E7EDC  ld	ra,(sp)
+        002E7EE0  neg.s	f00, f00
+  pc 002E7EE8  ra 001DAE88  hits   1  OTHER
+        002E7ED4  lwc1	f00, 0x   8(a0)
+        002E7ED8  li	a1, 0x24
+        002E7EDC  ld	ra,(sp)
+        002E7EE0  neg.s	f00, f00
+        002E7EE4  dmove	a0, t5
+     -> 002E7EE8  swc1	f00, 0x  24(t5)
+        002E7EEC  j	->$0x0016BD60
+        002E7EF0  addiu	sp, 0x10
+        002E7EF4  nop
+        002E7EF8  addiu	sp, -0x20
+  pc 002EA524  ra 002EA498  hits  18  motion fn
+  pc 002EA534  ra 002EA498  hits  17  motion fn
+  pc 002EA550  ra 002EA498  hits  16  motion fn
+  pc 002EA570  ra 002EA498  hits  17  motion fn
+
+[exited with code 0]

@@ -1,0 +1,183 @@
+# Track real ball object both arms, find velocity, watch Y writers
+# (foreground run, transcript line 944)
+--- input (line 933) ---
+$env:PYTHONPATH = "<session scratchpad>"; python -c @"
+import struct
+import numpy as np
+import kh2lab
+roo = kh2lab.connect()
+LO, HI = 0x01ADE000, 0x01ADF000
+N = (HI - LO) // 4
+Y = 0x01ADEAC4
+
+def play(fps):
+    kh2lab.start(roo, fps)
+    roo.frame_advance(6)
+    roo.input_set('LLeft', 'LDown'); roo.frame_advance(8); roo.input_release()
+    roo.input_set('Cross'); roo.frame_advance(2); roo.input_release()
+
+for fps in (60, 30):
+    play(fps)
+    blk = np.zeros((180, N), dtype=np.uint32)
+    tk = np.zeros(180, dtype=np.int64)
+    for t in range(180):
+        blk[t] = np.frombuffer(roo.read_bytes(LO, HI - LO), dtype=np.uint32)
+        tk[t] = roo.read(kh2lab.TICKS)
+        roo.frame_advance(1)
+    np.savez(kh2lab.SCRATCH / f'ballobj-{fps}.npz', lo=LO, block=blk, ticks=tk)
+    with np.errstate(invalid='ignore', over='ignore'):
+        f = blk.view(np.float32).astype(np.float64)
+    y = f[:, (Y - LO) // 4]
+    rest = y[0]
+    h = rest - y
+    tmax = int(np.argmax(h))
+    lift = next(t for t in range(180) if h[t] > 0.5)
+    land = next((t for t in range(tmax + 1, 180) if h[t] <= 0.5), None)
+    air = None if land is None else land - lift
+    print(f'===== {fps}fps  rest {rest:.2f}  lift {lift}  peak {h[tmax]:.1f} at {tmax}  land {land}  air {air}  ticks/vsync {(tk[-1]-tk[0])/179:.3f}')
+    print('  height per vsync from lift: ' + ' '.join(f'{v:.0f}' for v in h[lift:lift + 110]))
+ 
+--- result ---
+===== 60fps  rest 526.22  lift 25  peak 208.8 at 39  land 72  air 47  ticks/vsync 1.000
+
+  height per vsync from lift: 48 85 115 138 157 171 182 190 196 201 204 207 208 209 209 209 208 207 205 203 201 198 195 191 188 183 178 173 168 162 155 148 141 133 125 117 108 99 89 79 69 59 49 39 29 19 9 -1 -1 -6 -12 -6 -1 -5 -1 -4 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+
+  fall accel 0.3666 per vsync^2
+
+  velocity candidates vs height change per tick (47 ticks):
+
+    01ADE234  lag 1  corr +1.0000  value/dy_per_tick +1.0000
+
+    01ADE224  lag 1  corr +1.0000  value/dy_per_tick +1.0000
+
+    01ADE234  lag 0  corr +0.9989  value/dy_per_tick +0.9578
+
+    01ADE224  lag 0  corr +0.9989  value/dy_per_tick +0.9578
+
+    01ADE54C  lag 0  corr -0.8938  value/dy_per_tick +33.9847
+
+    01ADE54C  lag 1  corr -0.8886  value/dy_per_tick +33.4948
+
+    01ADEA88  lag 0  corr -0.8437  value/dy_per_tick -274.7278
+
+    01ADE218  lag 0  corr -0.8437  value/dy_per_tick -274.7278
+
+    01ADE0F8  lag 0  corr -0.8437  value/dy_per_tick -274.7278
+
+    01ADE510  lag 1  corr +0.8319  value/dy_per_tick +189.2431
+
+===== 30fps  rest 526.22  lift 27  peak 341.8 at 55  land 115  air 88  ticks/vsync 0.503
+
+  height per vsync from lift: 95 95 171 171 230 230 277 277 313 313 340 340 341 341 341 341 341 341 342 342 342 342 342 342 342 342 342 342 342 342 341 341 340 340 338 338 335 335 331 331 326 326 321 321 314 314 307 307 299 299 290 290 281 281 271 271 259 259 247 247 234 234 221 221 206 206 191 191 175 175 158 158 140 140 122 122 102 102 82 82 62 62 42 42 22 22 2 2 -1 -1 -12 -12 -1 -1 -9 -9 -7 -7 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+
+  fall accel 0.1953 per vsync^2
+
+  velocity candidates vs height change per tick (44 ticks):
+
+    01ADE234  lag 1  corr +1.0000  value/dy_per_tick +0.5000
+
+    01ADE234  lag 0  corr +0.9812  value/dy_per_tick +0.4775
+
+    01ADE224  lag 0  corr +0.9716  value/dy_per_tick +0.4775
+
+    01ADE224  lag 1  corr +0.9689  value/dy_per_tick +0.5000
+
+    01ADE968  lag 1  corr -0.8890  value/dy_per_tick +0.0578
+
+    01ADE970  lag 1  corr -0.8885  value/dy_per_tick +0.0578
+
+    01ADE954  lag 1  corr +0.8632  value/dy_per_tick +0.0578
+
+    01ADE54C  lag 1  corr -0.8552  value/dy_per_tick +21.3782
+
+    01ADE54C  lag 0  corr -0.8534  value/dy_per_tick +21.4203
+
+    01ADEA88  lag 0  corr -0.8324  value/dy_per_tick -153.6316
+
+===== write watchpoint on ball object Y 01ADEAC4, 60fps mid-flight
+
+   {'start': 28175044, 'start_hex': '0x01adeac4', 'end': 28175048, 'end_hex': '0x01adeac8', 'note': 'write memchecks are not observed by every write path; see pcsxroo/docs/cli.md'}
+
+  pc 0018A90C ra 0018A8D0 hits 12  a0=00A38C90 a1=00000080 s0=00A4DB84 s1=01ADEAB0 s2=003810D0 s3=01D50000 v0=00A38F00 sp=00381090
+
+        0018A8DC  lqc2	vf01,(sp)
+
+        0018A8E0  lqc2	vf02, 0x  10(sp)
+
+        0018A8E4  lqc2	vf03, 0x  20(sp)
+
+        0018A8E8  lqc2	vf04, 0x  30(sp)
+
+        0018A8EC  vmulax.xyzw ACC,vf01,vf05x
+
+        0018A8F0  vmadday.xyzw ACC,vf02,vf05y
+
+        0018A8F4  vmaddaz.xyzw ACC,vf03,vf05z
+
+        0018A8F8  vmaddw.xyzw vf05, vf04, vf05w
+
+        0018A8FC  sqc2	vf05,(t6)
+
+        0018A900  beql	t7, t6, ->$0x0018A914
+
+        0018A904  lh	t7, 0x   E(s0)
+
+        0018A908  lq	t0,(t6)
+
+     -> 0018A90C  sq	t0,(t7)
+
+        0018A910  lh	t7, 0x   E(s0)
+
+        0018A914  lwc1	f00, 0x  14(s1)
+
+        0018A918  mtc1	t7, f01
+
+        0018A91C  cvt.s.w	f01, f01
+
+        0018A920  sub.s	f00, f00, f01
+
+        0018A924  swc1	f00, 0x  14(s1)
+
+        0018A928  ld	s0, 0x  60(sp)
+
+  pc 0018A924 ra 0018A8D0 hits 12  a0=00A38C90 a1=00000080 s0=00A4DB84 s1=01ADEAB0 s2=003810D0 s3=01D50000 v0=00A38F00 sp=00381090
+
+        0018A8F4  vmaddaz.xyzw ACC,vf03,vf05z
+
+        0018A8F8  vmaddw.xyzw vf05, vf04, vf05w
+
+        0018A8FC  sqc2	vf05,(t6)
+
+        0018A900  beql	t7, t6, ->$0x0018A914
+
+        0018A904  lh	t7, 0x   E(s0)
+
+        0018A908  lq	t0,(t6)
+
+        0018A90C  sq	t0,(t7)
+
+        0018A910  lh	t7, 0x   E(s0)
+
+        0018A914  lwc1	f00, 0x  14(s1)
+
+        0018A918  mtc1	t7, f01
+
+        0018A91C  cvt.s.w	f01, f01
+
+        0018A920  sub.s	f00, f00, f01
+
+     -> 0018A924  swc1	f00, 0x  14(s1)
+
+        0018A928  ld	s0, 0x  60(sp)
+
+        0018A92C  ld	s1, 0x  68(sp)
+
+        0018A930  ld	s2, 0x  70(sp)
+
+        0018A934  ld	ra, 0x  78(sp)
+
+        0018A938  jr	->ra
+
+        0018A93C  addiu	sp, 0x80
+
+        0018A940  addiu	t7,s1, 0x10

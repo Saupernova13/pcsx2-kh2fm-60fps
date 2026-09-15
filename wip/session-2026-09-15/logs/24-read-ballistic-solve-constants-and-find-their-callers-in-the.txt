@@ -1,0 +1,120 @@
+# Read ballistic solve constants and find their callers in the ELF
+# (foreground run, transcript line 1241)
+--- input (line 1240) ---
+python -c @"
+import struct
+p = r'<session scratchpad>\SLPM_666.75'
+elf = open(p, 'rb').read()
+BASE, OFF, FILESZ = 0x00100000, 0x1000, 0x0027A800
+TEXT_END = 0x00340000
+def w(a): return struct.unpack_from('<I', elf, OFF + a - BASE)[0]
+def fl(x): return struct.unpack('<f', struct.pack('<I', x))[0]
+print('neighbour constants of the ballistic solves:')
+for a in (0x0036C1A8, 0x0036C1AC, 0x0036C1B0, 0x0036C1B4, 0x0036C50C, 0x0036C510, 0x0036C514, 0x0036C530, 0x0036C534, 0x0036C538,
+          0x0036C550, 0x0036C554, 0x0036C558, 0x0036C8A8, 0x0036C8AC, 0x0036C8B0, 0x0036C8B4):
+    print(f'  {a:08X}  {w(a):08X}  {fl(w(a)):.6f}')
+
+def fn_start(a):
+    while not (w(a - 8) == 0x03E00008):
+        a -= 4
+    return a
+print('solve functions, true starts, and how they are reached:')
+for site in (0x0016AAE8, 0x0017C49C, 0x0017CA58, 0x0017D138, 0x00184718):
+    s = fn_start(site)
+    entries = {s, site & ~3}
+    # entry points: the start, plus any label that a branch or jal reaches inside [s, site]
+    jal = {}
+    for a in range(BASE, TEXT_END, 4):
+        x = w(a)
+        op = x >> 26
+        if op in (0x02, 0x03):
+            t = (x & 0x03FFFFFF) << 2
+            if s <= t <= site:
+                jal.setdefault(t, []).append((a, 'jal' if op == 3 else 'j'))
+    ptrs = []
+    for a in range(BASE, BASE + FILESZ, 4):
+        v = w(a)
+        if s <= v <= site and (v & 3) == 0:
+            pt
+--- result ---
+neighbour constants of the ballistic solves:
+
+  0036C1A8  3F800000  1.000000
+
+  0036C1AC  3ED0FAC6  0.408163
+
+  0036C1B0  3F000000  0.500000
+
+  0036C1B4  3F800000  1.000000
+
+  0036C50C  C0000000  -2.000000
+
+  0036C510  3ED0FAC6  0.408163
+
+  0036C514  3F800000  1.000000
+
+  0036C530  3F000000  0.500000
+
+  0036C534  3ED0FAC6  0.408163
+
+  0036C538  41700000  15.000000
+
+  0036C550  3F800000  1.000000
+
+  0036C554  3ED0FAC6  0.408163
+
+  0036C558  3F800000  1.000000
+
+  0036C8A8  4CBEBC20  100000000.000000
+
+  0036C8AC  3ED0FAC6  0.408163
+
+  0036C8B0  3F000000  0.500000
+
+  0036C8B4  3ECCCCCD  0.400000
+
+solve functions, true starts, and how they are reached:
+
+  site 0016AAE8: function start 0016A99C
+
+     reached at 0016A9A0 by jal 0018575C, jal 001C2584, jal 001C6EF4, j 002BF598, jal 002D31DC, jal 002D42F4, jal 002D61D8, j 002DABDC, jal 002DAFEC, jal 002DB7DC, jal 002DE050
+
+     reached at 0016A9B8 by jal 001986DC
+
+     data pointer at 0034D864 -> 0016A9A0
+
+     data pointer at 0034D868 -> 0016A9B8
+
+     data pointer at 0034E8CC -> 0016A9A0
+
+     data pointer at 0034EBDC -> 0016A9A0
+
+     data pointer at 0034ED8C -> 0016A9A0
+
+     data pointer at 0034EE1C -> 0016A9A0
+
+     data pointer at 0034EEA4 -> 0016A9A0
+
+     data pointer at 0035039C -> 0016A9A0
+
+     data pointer at 003503A0 -> 0016A9B8
+
+     data pointer at 003503F4 -> 0016A9A0
+
+     data pointer at 00350924 -> 0016A9A0
+
+     data pointer at 003509D4 -> 0016A9A0
+
+  site 0017C49C: function start 0017C42C
+
+     reached at 0017C430 by jal 0017A948, jal 0017C4E0, jal 001B27D0, jal 001B2C28, jal 001C90D0, jal 001CE860, jal 002EAAFC, jal 002EB428, jal 002EB4BC, jal 002F05E4
+
+  site 0017CA58: function start 0017CA50
+
+  site 0017D138: function start 0017D130
+
+     reached at 0017D130 by jal 00174008, jal 0017718C, jal 001771B0, jal 001771D0, jal 0017C458
+
+  site 00184718: function start 001846F4
+
+     reached at 001846F8 by j 00173ECC

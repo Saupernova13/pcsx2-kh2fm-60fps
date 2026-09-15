@@ -1,0 +1,20 @@
+# Transplant save state 1 memory into PCSXROO
+# (foreground run, transcript line 575)
+--- input (line 574) ---
+$d = "<session scratchpad>"; python "$d\kh2_transplant.py" "%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\sstates\SLPM-66675 (FAF99301).01.p2s" --shot "$d\roo-transplant1.png"
+--- result ---
+source: PCSX2 v2.5.274
+
+  EE 32 MB, scratchpad 16384 bytes
+
+  EE written in 7.8s
+
+  00349E10 = 3F800000
+
+  00349E1C = 00000000
+
+  0036B0F8 = 3F800000
+
+  0036EF20 = 3F800000
+
+  screenshot <session scratchpad>\roo-transplant1.png exists=True

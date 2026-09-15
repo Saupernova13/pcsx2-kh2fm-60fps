@@ -1,0 +1,72 @@
+# Disable 60 FPS group in PCSXROO's KH2 game settings
+# (foreground run, transcript line 770)
+--- input (line 769) ---
+python -c @"
+p = r'%USERPROFILE%\Documents\GitHub\pcsxroo\bin\gamesettings\SLPM-66675_FAF99301.ini'
+data = open(p, 'rb').read()
+crlf = b'\r\n' in data
+line = b'Enable = 60 FPS' + (b'\r\n' if crlf else b'\n')
+n = data.count(line)
+print('matches', n, 'crlf', crlf)
+if n == 1:
+    open(p, 'wb').write(data.replace(line, b''))
+    print('removed')
+print(open(p, 'rb').read().decode())
+"@
+--- result ---
+matches 1 crlf True
+
+removed
+
+[EmuCore]
+
+
+EnableCheats = true
+
+
+ShowPatchesForAllCRCs = true
+
+
+
+
+
+
+
+
+[Patches]
+
+
+Enable = Remove Blackbars
+
+
+Enable = Widescreen 19.5:9 - S24 Ultra
+
+
+Enable = Remove Blur
+
+
+Enable = Swap X and O
+
+
+
+
+
+
+
+
+[EmuCore/GS]
+
+
+LoadTextureReplacements = true
+
+
+
+
+
+
+
+
+[EmuCore/Speedhacks]
+
+
+EECycleRate = 1

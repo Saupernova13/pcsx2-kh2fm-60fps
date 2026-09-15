@@ -1,0 +1,133 @@
+##### breakpoint sanity under resume/wait: hit handler 002E7EE8, single hit at 60fps
+  fired: reason breakpoint pc 002E7EE8 t5 01ADD9D0 (ball 01ADD9D0) tick 601
+##### physics objects through the displacement builder 00183088
+  obj 01A8C4F0 calls  5  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (     0.0,     0.0,     0.0) 
+  obj 01A94440 calls  6  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (   752.1,   550.0, -2430.2) 
+  obj 01AABC30 calls  5  class 01C60060  vtable 0034EB30  motion(+1C) 0017A968  pos (     0.0,     0.0,     0.0) 
+  obj 01AADB90 calls  6  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (   560.0,   552.4, -2485.0) 
+  obj 01AC12B0 calls  5  class 01C60060  vtable 0034EB30  motion(+1C) 0017A968  pos (     0.0,     0.0,     0.0) 
+  obj 01AC2490 calls  6  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (   616.5,   550.0, -2433.9) 
+  obj 01AD4420 calls  5  class 01C60060  vtable 0034EB30  motion(+1C) 0017A968  pos (     0.0,     0.0,     0.0) 
+  obj 01AD86D0 calls  6  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (   -26.0,  -280.0,  1062.2) 
+  obj 01ADD9D0 calls  6  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (   704.8,   563.2, -2646.3) BALL
+  obj 01AFD310 calls  5  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (   532.8,   550.0, -1608.5) 
+  obj 01B09620 calls  5  class 01C60030  vtable 0034EB60  motion(+1C) 0017C290  pos (  1564.6,   550.0, -1493.4) 
+##### disassembly of 0019FBC4 (other reader of the drag params)
+  0019FBC4  nop
+  0019FBC8  addiu	sp, -0x10
+  0019FBCC  dmove	a0, a1
+  0019FBD0  sd	ra,(sp)
+  0019FBD4  ld	ra,(sp)
+  0019FBD8  j	->$0x001878E8
+  0019FBDC  addiu	sp, 0x10
+  0019FBE0  lui	t7, 0x0035
+  0019FBE4  lwc1	f00, 0x  F8(a2)
+  0019FBE8  lwc1	f01, -0x61F0(t7)
+  0019FBEC  addiu	sp, -0x10
+  0019FBF0  dmove	v0, a0
+  0019FBF4  addiu	t5,a2, 0x20
+  0019FBF8  add.s	f00, f00, f01
+  0019FBFC  beq	a0, t5, ->$0x0019FC0C
+  0019FC00  swc1	f00, 0x  F8(a2)
+  0019FC04  lq	t0,(t5)
+  0019FC08  sq	t0,(a0)
+  0019FC0C  sw	zero, 0x   4(v0)
+  0019FC10  lqc2	vf01,(v0)
+  0019FC14  vmul.xyz vf02, vf01, vf01
+  0019FC18  vaddy.x vf02, vf02, vf02y
+  0019FC1C  vaddz.x vf02, vf02, vf02z
+  0019FC20  vsqrt Q, vf02x
+  0019FC24  vwaitq
+  0019FC28  cfc2	t0, Q
+  0019FC2C  vaddq.x vf02,vf00,Q
+  0019FC30  mtc1	t0, f03
+  0019FC34  vnop
+  0019FC38  vdiv Q, vf00w, vf02x
+  0019FC3C  vwaitq
+  0019FC40  vmulq.xyz vf01,vf01,Q
+  0019FC44  sqc2	vf01,(v0)
+  0019FC48  lui	t7, 0x0035
+  0019FC4C  lwc1	f01, 0x  F4(a2)
+  0019FC50  lw	t6, 0x2130(t7)
+  0019FC54  lwc1	f00, 0x  18(t6)
+  0019FC58  mul.s	f00, f03, f00
+  0019FC5C  c.lt.s	f01, f00
+  0019FC60  bc1fl	->$0x0019FC68
+  0019FC64  mov.s	f00, f01
+  0019FC68  lwc1	f02,(v0)
+  0019FC6C  lwc1	f01, 0x   8(v0)
+  0019FC70  mul.s	f02, f02, f00
+  0019FC74  mul.s	f01, f01, f00
+  0019FC78  lwc1	f04, 0x  24(a2)
+  0019FC7C  swc1	f02, 0x  20(a2)
+  0019FC80  mtc1	zero, f00
+  0019FC84  c.lt.s	f04, f00
+  0019FC88  bc1f	->$0x0019FCA8
+  0019FC8C  swc1	f01, 0x  28(a2)
+  0019FC90  lui	t7, 0x0035
+  0019FC94  lw	t6, 0x2130(t7)
+  0019FC98  lwc1	f00, 0x  20(t6)
+  0019FC9C  mul.s	f00, f04, f00
+  0019FCA0  mov.s	f04, f00
+  0019FCA4  swc1	f00, 0x  24(a2)
+  0019FCA8  lui	t7, 0x0037
+  0019FCAC  lwc1	f01, 0x 120(a2)
+  0019FCB0  addiu	t7, -0x2BC0
+  0019FCB4  lwc1	f00,(t7)
+  0019FCB8  add.s	f00, f04, f00
+  0019FCBC  c.lt.s	f00, f01
+  0019FCC0  bc1fl	->$0x0019FCC8
+  0019FCC4  mov.s	f00, f01
+  0019FCC8  swc1	f00, 0x  24(a2)
+  0019FCCC  lui	t7, 0x0035
+  0019FCD0  lwc1	f00, -0x61F0(t7)
+  0019FCD4  lqc2	vf01,(t5)
+  0019FCD8  mfc1	t0, f00
+  0019FCDC  qmtc2	t0, vf02
+  0019FCE0  vmulx.xyzw vf01,vf01,vf02x
+  0019FCE4  sqc2	vf01,(sp)
+  0019FCE8  beq	v0, sp, ->$0x0019FCF8
+  0019FCEC  nop
+  0019FCF0  lq	t0,(sp)
+  0019FCF4  sq	t0,(v0)
+  0019FCF8  jr	->ra
+  0019FCFC  addiu	sp, 0x10
+##### mash traces of every physics object (height = rest Y - Y, KH2 negative-up)
+== 30fps
+   01A8C4F0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01A94440  max height   238.0 at  83  min   -14.0  xz path   405.2  heights/10v:    0    0    0   -9  -12  -14  144  223  238  233  193  112   88 
+   01AABC30  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AADB90  max height     0.0 at   0  min    -3.6  xz path    68.7  heights/10v:    0    0    0   -0   -0   -1   -2   -3   -3   -3   -3   -3   -3 
+   01AC12B0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AC2490  max height     0.0 at   0  min    -3.0  xz path    84.4  heights/10v:    0    0    0    0    0   -0   -1   -2   -3   -3   -3   -3   -3 
+   01AD4420  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AD86D0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01ADD9D0  max height   341.8 at  57  min    -0.9  xz path    68.3  heights/10v:    0    0    0   95  340  342  341  326  290  234  158   62   -1 BALL
+   01AFD310  max height     0.0 at   0  min     0.0  xz path   151.7  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01B09620  max height     0.0 at   0  min     0.0  xz path   134.3  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+== 60 unpatched
+   01A8C4F0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01A94440  max height   166.1 at  84  min   -14.1  xz path   445.5  heights/10v:    0    0    0   -9  -12  -14  104  143  165  159  115   30  -14 
+   01AABC30  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AADB90  max height     0.0 at   0  min    -7.6  xz path   135.8  heights/10v:    0    0    0   -0   -0   -1   -2   -2   -2   -3   -4   -6   -7 
+   01AC12B0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AC2490  max height     0.0 at   0  min    -5.5  xz path   142.3  heights/10v:    0    0    0    0    0   -1   -2   -3   -3   -3   -3   -4   -5 
+   01AD4420  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AD86D0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01ADD9D0  max height   208.8 at  41  min    -0.9  xz path    71.2  heights/10v:    0    0    0  138  209  191  133  141  118   55   -1   -1   -1 BALL
+   01AFD310  max height     0.0 at   0  min     0.0  xz path   150.5  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01B09620  max height     0.0 at   0  min     0.0  xz path   135.7  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+== 60+FIX-D
+   01A8C4F0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01A94440  max height   321.2 at 129  min   -14.1  xz path   498.4  heights/10v:    0    0    0   -9  -13  -14  144  223  281  301  304  314  286 
+   01AABC30  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AADB90  max height     0.0 at   0  min    -5.8  xz path   111.9  heights/10v:    0    0    0   -0   -1   -2   -3   -4   -4   -4   -4   -4   -4 
+   01AC12B0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AC2490  max height     0.0 at   0  min    -3.8  xz path   102.0  heights/10v:    0    0    0    0   -0   -1   -2   -3   -3   -3   -3   -3   -3 
+   01AD4420  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01AD86D0  max height     0.0 at   0  min     0.0  xz path     0.0  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01ADD9D0  max height   486.1 at 129  min     0.0  xz path   453.5  heights/10v:    0    0    0  171  341  342  340  347  345  339  342  336  363 BALL
+   01AFD310  max height     0.0 at   0  min     0.0  xz path   150.5  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+   01B09620  max height     0.0 at   0  min     0.0  xz path   135.7  heights/10v:    0    0    0    0    0    0    0    0    0    0    0    0    0 
+
+[exited with code 0]

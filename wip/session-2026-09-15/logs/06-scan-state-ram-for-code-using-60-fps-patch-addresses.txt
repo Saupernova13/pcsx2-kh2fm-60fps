@@ -1,0 +1,60 @@
+# Scan state RAM for code using 60 FPS patch addresses
+# (foreground run, transcript line 366)
+--- input (line 365) ---
+python "<session scratchpad>\kh2_refs.py"
+--- result ---
+== 00349E1C  7 refs
+
+   lui@0014CE34  use@0014CE3C  sw $a0, -0x61e4($t7)
+
+   lui@0014CE88  use@0014CE90  lw $t6, -0x61e4($t7)
+
+   lui@0014D09C  use@0014D0A4  lw $t5, -0x61e4($t4)
+
+   lui@0014D190  use@0014D19C  lw $t5, -0x61e4($t3)
+
+   lui@0023D288  use@0023D290  lw $t4, -0x61e4($t6)
+
+   lui@0023D32C  use@0023D330  lw $t4, -0x61e4($t6)
+
+   lui@0023D3A8  use@0023D3AC  lw $t7, -0x61e4($t5)
+
+== 0032BA24  12 refs
+
+   lui@001035D0  use@001035D8  lw $t4, -0x45dc($t7)
+
+   lui@00103764  use@00103768  lw $t5, -0x45dc($t7)
+
+   lui@00103818  use@00103820  lw $t5, -0x45dc($t7)
+
+   lui@0010384C  use@00103854  lw $t5, -0x45dc($t7)
+
+   lui@00103888  use@00103890  lw $s0, -0x45dc($t7)
+
+   lui@001038F0  use@001038F8  lw $t5, -0x45dc($t7)
+
+   lui@001039B8  use@001039DC  lw $t5, -0x45dc($t7)
+
+   lui@00103A68  use@00103A70  lw $t5, -0x45dc($t7)
+
+   lui@00103C00  use@00103C04  sw $s0, -0x45dc($t7)
+
+   lui@00103C50  use@00103C58  sw $t6, -0x45dc($t7)
+
+   lui@00103C60  use@00103C68  lw $v0, -0x45dc($t7)
+
+   lui@00103D4C  use@00103D54  lw $t5, -0x45dc($t7)
+
+== 0036B0F4  1 refs
+
+   lui@0014D098  use@0014D0A0  addiu $t6, $t6, -0x4f0c
+
+== 0036B0F8  1 refs
+
+   lui@0014D0F4  use@0014D0F8  addiu $t5, $t5, -0x4f08
+
+== 0036EF20  2 refs
+
+   lui@001E63FC  use@001E6404  addiu $t7, $t7, -0x10e0
+
+   lui@001E645C  use@001E6464  addiu $t7, $t7, -0x10e0

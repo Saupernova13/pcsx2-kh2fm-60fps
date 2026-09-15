@@ -1,0 +1,53 @@
+# Check whether 30fps arm values stick across vsyncs
+# (foreground run, transcript line 756)
+--- input (line 755) ---
+$env:PYTHONPATH = "<session scratchpad>"; python -c @"
+import struct, kh2lab
+roo = kh2lab.connect()
+def f(a): return struct.unpack('<f', roo.read_bytes(a, 4))[0]
+def row(tag):
+    print(f'{tag:10s} delta={f(0x349E10):.3f} d14={f(0x349E14):.3f} vsyncwait={roo.read(0x349E1C):08X} flag20={roo.read(0x349E20, 1)} cap={f(0x36B0F8):.3f} thresh={f(0x36EF20):.3f} mode32BA24={roo.read(0x32BA24, 1)} vcount={roo.read(0x349E08)}')
+kh2lab.start(roo, 30)
+row('after arm')
+for i in range(6):
+    roo.frame_advance(1)
+    row(f'vsync +{i + 1}')
+print('--- writes without reload, direct:')
+for a, v in kh2lab.STOCK.items():
+    print(f'  write {a:08X}={v:08X} verified={roo.write(a, v)}')
+for i in range(3):
+    roo.frame_advance(1)
+    row(f'vsync +{i + 1}')
+kh2lab.set_group(True)
+print('group restored')
+"@
+--- result ---
+after arm  delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +1   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +2   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +3   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +4   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +5   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +6   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+--- writes without reload, direct:
+
+  write 00349E1C=00000001 verified=True
+
+  write 0036B0F8=40C00000 verified=True
+
+  write 0036EF20=40000000 verified=True
+
+vsync +1   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=1
+
+vsync +2   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+vsync +3   delta=1.000 d14=1.000 vsyncwait=00000000 flag20=1 cap=1.000 thresh=1.000 mode32BA24=1 vcount=0
+
+group restored

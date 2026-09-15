@@ -1,0 +1,589 @@
+# Survey live code cave and disassemble rest of motion function
+# (foreground run, transcript line 1027)
+--- input (line 1026) ---
+$env:PYTHONPATH = "<session scratchpad>"; python -c @"
+import struct
+import numpy as np
+import kh2lab
+roo = kh2lab.connect()
+if not roo.paused():
+    roo.pause()
+lo, hi = 0x00080000, 0x00100000
+live = np.frombuffer(roo.read_bytes(lo, hi - lo), dtype=np.uint32)
+def runs(arr, base, minlen=64):
+    out, start = [], None
+    for i, v in enumerate(arr):
+        if v == 0 and start is None:
+            start = i
+        elif v != 0 and start is not None:
+            if i - start >= minlen:
+                out.append((base + 4 * start, base + 4 * i))
+            start = None
+    if start is not None and len(arr) - start >= minlen:
+        out.append((base + 4 * start, base + 4 * len(arr)))
+    return out
+print('live zero runs >= 64 words in 00080000..00100000:')
+for a, b in runs(live, lo):
+    print(f'  {a:08X}..{b:08X}  ({(b - a) // 4} words)')
+print('nonzero words 000FC000..00100000 live:')
+for i in range((0xFC000 - lo) // 4, len(live)):
+    if live[i]:
+        print(f'  {lo + 4 * i:08X}  {live[i]:08X}')
+print('===== motion function 002EA41C .. return')
+lines = roo.dis(0x002EA41C, 400)
+started = False
+for a, text in lines:
+    if a >= 0x002EA6A0:
+        print(f'  {a:08X}  {text}')
+    w = roo.read(a)
+    if a >= 0x002EA6A0 and w == 0x03E00008:
+        nxt = roo.dis(a + 4, 1)[0]
+        print(f'  {nxt[0]:08X}  {nxt[1]}')
+        break
+print('--- head 002EA41C..002EA450')
+for a, 
+--- result ---
+live zero runs >= 64 words in 00080000..00100000:
+
+  00080000..00081DD0  (1908 words)
+
+  00090024..000902B4  (164 words)
+
+  00091210..00092BC4  (1645 words)
+
+  00092FD4..000931A0  (115 words)
+
+  000931D4..00093400  (139 words)
+
+  00093910..000950C0  (1516 words)
+
+  000950E4..000FD050  (106459 words)
+
+  000FD094..00100000  (3035 words)
+
+nonzero words 000FC000..00100000 live:
+
+  000FD050  nonzero (Swap X and O code, redacted - not this project's)
+  000FD054  nonzero (Swap X and O code, redacted - not this project's)
+  000FD058  nonzero (Swap X and O code, redacted - not this project's)
+  000FD05C  nonzero (Swap X and O code, redacted - not this project's)
+  000FD060  nonzero (Swap X and O code, redacted - not this project's)
+  000FD064  nonzero (Swap X and O code, redacted - not this project's)
+  000FD068  nonzero (Swap X and O code, redacted - not this project's)
+  000FD06C  nonzero (Swap X and O code, redacted - not this project's)
+  000FD070  nonzero (Swap X and O code, redacted - not this project's)
+  000FD074  nonzero (Swap X and O code, redacted - not this project's)
+  000FD078  nonzero (Swap X and O code, redacted - not this project's)
+  000FD07C  nonzero (Swap X and O code, redacted - not this project's)
+  000FD080  nonzero (Swap X and O code, redacted - not this project's)
+  000FD084  nonzero (Swap X and O code, redacted - not this project's)
+  000FD088  nonzero (Swap X and O code, redacted - not this project's)
+  000FD08C  nonzero (Swap X and O code, redacted - not this project's)
+  000FD090  nonzero (Swap X and O code, redacted - not this project's)
+===== motion function 002EA41C .. return
+
+  002EA6A0  ld	t7, 0x  C0(sp)
+
+  002EA6A4  lq	t0,(s7)
+
+  002EA6A8  sq	t0,(s3)
+
+  002EA6AC  ld	t7, 0x  C0(sp)
+
+  002EA6B0  ori	t7, 0x1
+
+  002EA6B4  sd	t7, 0x  C0(sp)
+
+  002EA6B8  lqc2	vf01,(s4)
+
+  002EA6BC  lqc2	vf02,(s3)
+
+  002EA6C0  vadd.xyzw vf01, vf01, vf02
+
+  002EA6C4  sqc2	vf01,(s1)
+
+  002EA6C8  beq	sp, s1, ->$0x002EA6DC
+
+  002EA6CC  dmove	a0, s4
+
+  002EA6D0  lq	t0,(s1)
+
+  002EA6D4  sq	t0,(sp)
+
+  002EA6D8  dmove	a0, s4
+
+  002EA6DC  jal	->$0x00143928
+
+  002EA6E0  addiu	s3,sp, 0xF0
+
+  002EA6E4  lqc2	vf01,(s5)
+
+  002EA6E8  lqc2	vf02,(sp)
+
+  002EA6EC  vsub.xyzw vf01, vf01, vf02
+
+  002EA6F0  sqc2	vf01,(s3)
+
+  002EA6F4  lui	t7, 0x0035
+
+  002EA6F8  lwc1	f00, -0x61E8(t7)
+
+  002EA6FC  lqc2	vf01,(s3)
+
+  002EA700  mfc1	t0, f00
+
+  002EA704  qmtc2	t0, vf02
+
+  002EA708  vmulx.xyzw vf01,vf01,vf02x
+
+  002EA70C  sqc2	vf01,(s1)
+
+  002EA710  beql	sp, s1, ->$0x002EA724
+
+  002EA714  sw	zero, 0x   4(sp)
+
+  002EA718  lq	t0,(s1)
+
+  002EA71C  sq	t0,(sp)
+
+  002EA720  sw	zero, 0x   4(sp)
+
+  002EA724  lqc2	vf01,(sp)
+
+  002EA728  vmul.xyz vf02, vf01, vf01
+
+  002EA72C  vaddy.x vf02, vf02, vf02y
+
+  002EA730  vaddz.x vf02, vf02, vf02z
+
+  002EA734  vsqrt Q, vf02x
+
+  002EA738  vwaitq
+
+  002EA73C  cfc2	t0, Q
+
+  002EA740  vaddq.x vf02,vf00,Q
+
+  002EA744  mtc1	t0, f20
+
+  002EA748  vnop
+
+  002EA74C  vdiv Q, vf00w, vf02x
+
+  002EA750  vwaitq
+
+  002EA754  vmulq.xyz vf01,vf01,Q
+
+  002EA758  sqc2	vf01,(sp)
+
+  002EA75C  mov.s	f12, f20
+
+  002EA760  jal	->$0x00313B80
+
+  002EA764  swc1	f20, 0x   C(sp)
+
+  002EA768  li	a0, 0x3FF
+
+  002EA76C  dmove	a1, v0
+
+  002EA770  jal	->$0x003142E0
+
+  002EA774  dsll32	a0, 0x14
+
+  002EA778  bgez	v0, ->$0x002EAA08
+
+  002EA77C  lui	t7, 0x0035
+
+  002EA780  lwc1	f00, 0x  20(s0)
+
+  002EA784  lui	t7, 0x0037
+
+  002EA788  addiu	t7, 0x60CC
+
+  002EA78C  add.s	f00, f20, f00
+
+  002EA790  lwc1	f01,(t7)
+
+  002EA794  add.s	f00, f00, f01
+
+  002EA798  neg.s	f00, f00
+
+  002EA79C  lqc2	vf01,(sp)
+
+  002EA7A0  mfc1	t0, f00
+
+  002EA7A4  qmtc2	t0, vf02
+
+  002EA7A8  vmulx.xyzw vf01,vf01,vf02x
+
+  002EA7AC  sqc2	vf01,(sp)
+
+  002EA7B0  addiu	s0,sp, 0x10
+
+  002EA7B4  beq	s0, s5, ->$0x002EA7C8
+
+  002EA7B8  addiu	s4,sp, 0x20
+
+  002EA7BC  lq	t0,(s5)
+
+  002EA7C0  sq	t0,(s0)
+
+  002EA7C4  addiu	s4,sp, 0x20
+
+  002EA7C8  lqc2	vf01,(s0)
+
+  002EA7CC  lqc2	vf02,(sp)
+
+  002EA7D0  vadd.xyzw vf01, vf01, vf02
+
+  002EA7D4  sqc2	vf01,(s1)
+
+  002EA7D8  beq	s4, s1, ->$0x002EA7EC
+
+  002EA7DC  addiu	fp,sp, 0x30
+
+  002EA7E0  lq	t0,(s1)
+
+  002EA7E4  sq	t0,(s4)
+
+  002EA7E8  addiu	fp,sp, 0x30
+
+  002EA7EC  dmove	a0, s0
+
+  002EA7F0  dmove	a1, s4
+
+  002EA7F4  dmove	a2, fp
+
+  002EA7F8  jal	->$0x001A7588
+
+  002EA7FC  dmove	a3, zero
+
+  002EA800  bltz	v0, ->$0x002EAA04
+
+  002EA804  andi	s5,v0, 0xFFFF
+
+  002EA808  dmove	a1, zero
+
+  002EA80C  jal	->$0x00143EE8
+
+  002EA810  dmove	a0, s5
+
+  002EA814  lw	t7,(v0)
+
+  002EA818  li	t6, 0x2
+
+  002EA81C  andi	t7, 0x000F
+
+  002EA820  bne	t7, t6, ->$0x002EAA08
+
+  002EA824  lui	t7, 0x0035
+
+  002EA828  dmove	a1, s5
+
+  002EA82C  dmove	a0, s1
+
+  002EA830  addiu	s5,sp, 0x40
+
+  002EA834  jal	->$0x00143E50
+
+  002EA838  dmove	a2, zero
+
+  002EA83C  beq	s5, s1, ->$0x002EA84C
+
+  002EA840  nop
+
+  002EA844  lq	t0,(s1)
+
+  002EA848  sq	t0,(s5)
+
+  002EA84C  beq	sp, s6, ->$0x002EA85C
+
+  002EA850  nop
+
+  002EA854  lq	t0,(s6)
+
+  002EA858  sq	t0,(sp)
+
+  002EA85C  lqc2	vf01,(s5)
+
+  002EA860  lqc2	vf02,(sp)
+
+  002EA864  vmul.xyz vf01, vf01, vf02
+
+  002EA868  vaddy.x vf01, vf01, vf01y
+
+  002EA86C  vaddz.x vf01, vf01, vf01z
+
+  002EA870  qmfc2	t0, vf01
+
+  002EA874  mtc1	t0, f00
+
+  002EA878  lqc2	vf01,(s5)
+
+  002EA87C  mfc1	t0, f00
+
+  002EA880  qmtc2	t0, vf02
+
+  002EA884  vmulx.xyzw vf01,vf01,vf02x
+
+  002EA888  sqc2	vf01,(s1)
+
+  002EA88C  beq	s0, s1, ->$0x002EA89C
+
+  002EA890  nop
+
+  002EA894  lq	t0,(s1)
+
+  002EA898  sq	t0,(s0)
+
+  002EA89C  lqc2	vf01,(sp)
+
+  002EA8A0  lqc2	vf02,(s0)
+
+  002EA8A4  vsub.xyzw vf01, vf01, vf02
+
+  002EA8A8  sqc2	vf01,(s1)
+
+  002EA8AC  beq	s4, s1, ->$0x002EA8C0
+
+  002EA8B0  lui	t7, 0x0036
+
+  002EA8B4  lq	t0,(s1)
+
+  002EA8B8  sq	t0,(s4)
+
+  002EA8BC  lui	t7, 0x0036
+
+  002EA8C0  lwc1	f00, 0x3400(t7)
+
+  002EA8C4  neg.s	f00, f00
+
+  002EA8C8  lqc2	vf01,(s0)
+
+  002EA8CC  mfc1	t0, f00
+
+  002EA8D0  qmtc2	t0, vf02
+
+  002EA8D4  vmulx.xyzw vf01,vf01,vf02x
+
+  002EA8D8  sqc2	vf01,(s0)
+
+  002EA8DC  lqc2	vf01,(s0)
+
+  002EA8E0  lqc2	vf02,(s4)
+
+  002EA8E4  vadd.xyzw vf01, vf01, vf02
+
+  002EA8E8  sqc2	vf01,(s1)
+
+  002EA8EC  beql	s0, s1, ->$0x002EA900
+
+  002EA8F0  sw	zero, 0x  14(sp)
+
+  002EA8F4  lq	t0,(s1)
+
+  002EA8F8  sq	t0,(s0)
+
+  002EA8FC  sw	zero, 0x  14(sp)
+
+  002EA900  lqc2	vf01,(s0)
+
+  002EA904  vmul.xyz vf02, vf01, vf01
+
+  002EA908  vaddy.x vf02, vf02, vf02y
+
+  002EA90C  vaddz.x vf02, vf02, vf02z
+
+  002EA910  vsqrt Q, vf02x
+
+  002EA914  vwaitq
+
+  002EA918  cfc2	t0, Q
+
+  002EA91C  vaddq.x vf02,vf00,Q
+
+  002EA920  mtc1	t0, f20
+
+  002EA924  vnop
+
+  002EA928  vdiv Q, vf00w, vf02x
+
+  002EA92C  vwaitq
+
+  002EA930  vmulq.xyz vf01,vf01,Q
+
+  002EA934  sqc2	vf01,(s0)
+
+  002EA938  jal	->$0x0016B0D0
+
+  002EA93C  nop
+
+  002EA940  jal	->$0x0016C028
+
+  002EA944  dmove	a0, v0
+
+  002EA948  lqc2	vf01,(v0)
+
+  002EA94C  lqc2	vf02,(fp)
+
+  002EA950  vsub.xyzw vf01, vf01, vf02
+
+  002EA954  sqc2	vf01,(s1)
+
+  002EA958  beq	sp, s1, ->$0x002EA968
+
+  002EA95C  nop
+
+  002EA960  lq	t0,(s1)
+
+  002EA964  sq	t0,(sp)
+
+  002EA968  lq	t0,(s0)
+
+  002EA96C  sq	t0,(s3)
+
+  002EA970  addiu	a2,sp, 0x100
+
+  002EA974  lq	t0,(sp)
+
+  002EA978  sq	t0,(a2)
+
+  002EA97C  lui	t7, 0x0037
+
+  002EA980  dmove	a1, s3
+
+  002EA984  addiu	t7, 0x60D0
+
+  002EA988  dmove	a0, s1
+
+  002EA98C  jal	->$0x002EA360
+
+  002EA990  lwc1	f12,(t7)
+
+  002EA994  beql	sp, s1, ->$0x002EA9A8
+
+  002EA998  sw	zero, 0x   4(sp)
+
+  002EA99C  lq	t0,(s1)
+
+  002EA9A0  sq	t0,(sp)
+
+  002EA9A4  sw	zero, 0x   4(sp)
+
+  002EA9A8  lqc2	vf01,(sp)
+
+  002EA9AC  vmul.xyz vf02, vf01, vf01
+
+  002EA9B0  vaddy.x vf02, vf02, vf02y
+
+  002EA9B4  vaddz.x vf02, vf02, vf02z
+
+  002EA9B8  vsqrt Q, vf02x
+
+  002EA9BC  vwaitq
+
+  002EA9C0  cfc2	t0, Q
+
+  002EA9C4  vaddq.x vf02,vf00,Q
+
+  002EA9C8  mtc1	t0, f00
+
+  002EA9CC  vnop
+
+  002EA9D0  vdiv Q, vf00w, vf02x
+
+  002EA9D4  vwaitq
+
+  002EA9D8  vmulq.xyz vf01,vf01,Q
+
+  002EA9DC  sqc2	vf01,(sp)
+
+  002EA9E0  lqc2	vf01,(sp)
+
+  002EA9E4  mfc1	t0, f20
+
+  002EA9E8  qmtc2	t0, vf02
+
+  002EA9EC  vmulx.xyzw vf01,vf01,vf02x
+
+  002EA9F0  sqc2	vf01,(sp)
+
+  002EA9F4  lwc1	f00,(sp)
+
+  002EA9F8  lwc1	f01, 0x   8(sp)
+
+  002EA9FC  swc1	f00, 0x  20(s2)
+
+  002EAA00  swc1	f01, 0x  28(s2)
+
+  002EAA04  lui	t7, 0x0035
+
+  002EAA08  lwc1	f00, -0x61F0(t7)
+
+  002EAA0C  lqc2	vf01,(s6)
+
+  002EAA10  mfc1	t0, f00
+
+  002EAA14  qmtc2	t0, vf02
+
+  002EAA18  vmulx.xyzw vf01,vf01,vf02x
+
+  002EAA1C  sqc2	vf01,(s1)
+
+  002EAA20  beq	sp, s1, ->$0x002EAA34
+
+  002EAA24  dmove	v0, s7
+
+  002EAA28  lq	t0,(s1)
+
+  002EAA2C  sq	t0,(sp)
+
+  002EAA30  dmove	v0, s7
+
+  002EAA34  ld	s0, 0x 110(sp)
+
+  002EAA38  ld	s1, 0x 118(sp)
+
+  002EAA3C  ld	s2, 0x 120(sp)
+
+  002EAA40  ld	s3, 0x 128(sp)
+
+  002EAA44  ld	s4, 0x 130(sp)
+
+  002EAA48  ld	s5, 0x 138(sp)
+
+  002EAA4C  ld	s6, 0x 140(sp)
+
+  002EAA50  ld	s7, 0x 148(sp)
+
+  002EAA54  ld	fp, 0x 150(sp)
+
+  002EAA58  ld	ra, 0x 158(sp)
+
+--- head 002EA41C..002EA450
+
+  002EA41C  c.lt.s	f00, f01
+
+  002EA420  bc1f	->$0x002EA434
+
+  002EA424  nop
+
+  002EA428  lwc1	f12, 0x   C(s0)
+
+  002EA42C  b	->$0x002EA3D4
+
+  002EA430  sub.s	f12, f12, f21
+
+  002EA434  beql	s2, s1, ->$0x002EA3FC
+
+  002EA438  dmove	v0, s2
+
+  002EA43C  lq	t0,(s1)
+
+  002EA440  sq	t0,(s2)
+
+  002EA444  b	->$0x002EA3FC
+
+  002EA448  dmove	v0, s2
+
+  002EA44C  nop

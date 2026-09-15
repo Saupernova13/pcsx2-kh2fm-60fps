@@ -1,0 +1,300 @@
+# Watch ball bump writers, read prop class vtables, watch ground prop pushers
+# (foreground run, transcript line 1305)
+--- input (line 1304) ---
+$d = "<session scratchpad>"; $env:PYTHONPATH = $d; python -u -c @"
+import struct
+import kh2lab
+import kh2_balltest as bt
+roo = kh2lab.connect()
+BALL, PROP2, GPROP = 0x01ADD9D0, 0x01A94440, 0x01AC2490
+FIX_D = bt.load_group(r'$d\kh2_ballfix_candidates.pnach', 'BALLFIX-D tick gate')
+
+def mash_to(t_end):
+    for t in range(t_end):
+        ph = t % 8
+        if ph == 0:
+            roo.input_set('Cross')
+        elif ph == 2:
+            roo.input_release()
+        roo.frame_advance(1)
+
+def watch(ranges, skip, max_hits, tick_budget):
+    roo.mc_clear()
+    for lo, hi in ranges:
+        roo.mc_add(lo, hi, on=('write',))
+    seen = {}
+    t_end = roo.read(kh2lab.TICKS) + tick_budget
+    try:
+        for _ in range(max_hits):
+            seq = roo.seq(); roo.resume(); st = roo.wait(seq, timeout_ms=5000)
+            if st is None:
+                print('   (no hit within 5s)'); break
+            r = roo.regs('GPR')
+            pc = getattr(st, 'pc', None) or r.get('pc')
+            madr = getattr(st, 'mem_addr', 0) or 0
+            key = (pc, r.get('ra'))
+            if key not in seen:
+                seen[key] = {'n': 0, 'addrs': set(), 'tick': roo.read(kh2lab.TICKS), 'regs': r}
+            seen[key]['n'] += 1
+            seen[key]['addrs'].add(madr)
+            if roo.read(kh2lab.TICKS) >= t_end:
+                break
+    finally:
+        roo.mc_clear()
+        roo.input_release(
+--- result ---
+##### 1. writers of the ball vy from vsync 64, 60fps + FIX-D mash
+
+   pc 002EA570 ra 002EA498 hits  21  (known per-tick writer)
+
+   pc 002E7E70 ra 001DAE88 hits   1 first tick 642  mem 00000000  a0 00381050 a1 00381050 s0 0038104C s1 FFFFFFFF
+
+         002E7E58  addiu	sp, -0x10
+
+         002E7E5C  sd	ra,(sp)
+
+         002E7E60  lw	t7,(a0)
+
+         002E7E64  lw	t6, 0x   4(a0)
+
+         002E7E68  lw	t5, 0x   4(t7)
+
+         002E7E6C  addiu	t7,t5, 0x20
+
+      -> 002E7E70  beql	t7, t6, ->$0x002E7E84
+
+         002E7E74  sw	zero, 0x  24(t5)
+
+         002E7E78  lq	t0,(t6)
+
+         002E7E7C  sq	t0,(t7)
+
+         002E7E80  sw	zero, 0x  24(t5)
+
+   pc 002E7E7C ra 001DAE88 hits   1 first tick 642  mem 00000000  a0 00381050 a1 00381050 s0 0038104C s1 FFFFFFFF
+
+         002E7E64  lw	t6, 0x   4(a0)
+
+         002E7E68  lw	t5, 0x   4(t7)
+
+         002E7E6C  addiu	t7,t5, 0x20
+
+         002E7E70  beql	t7, t6, ->$0x002E7E84
+
+         002E7E74  sw	zero, 0x  24(t5)
+
+         002E7E78  lq	t0,(t6)
+
+      -> 002E7E7C  sq	t0,(t7)
+
+         002E7E80  sw	zero, 0x  24(t5)
+
+         002E7E84  lqc2	vf01,(t7)
+
+         002E7E88  vmul.xyz vf02, vf01, vf01
+
+         002E7E8C  vaddy.x vf02, vf02, vf02y
+
+   pc 002E7E80 ra 001DAE88 hits   1 first tick 642  mem 00000000  a0 00381050 a1 00381050 s0 0038104C s1 FFFFFFFF
+
+         002E7E68  lw	t5, 0x   4(t7)
+
+         002E7E6C  addiu	t7,t5, 0x20
+
+         002E7E70  beql	t7, t6, ->$0x002E7E84
+
+         002E7E74  sw	zero, 0x  24(t5)
+
+         002E7E78  lq	t0,(t6)
+
+         002E7E7C  sq	t0,(t7)
+
+      -> 002E7E80  sw	zero, 0x  24(t5)
+
+         002E7E84  lqc2	vf01,(t7)
+
+         002E7E88  vmul.xyz vf02, vf01, vf01
+
+         002E7E8C  vaddy.x vf02, vf02, vf02y
+
+         002E7E90  vaddz.x vf02, vf02, vf02z
+
+   pc 002E7EB8 ra 001DAE88 hits   1 first tick 642  mem 00000000  a0 00381050 a1 00381050 s0 0038104C s1 FFFFFFFF
+
+         002E7EA0  vaddq.x vf02,vf00,Q
+
+         002E7EA4  mtc1	t0, f00
+
+         002E7EA8  vnop
+
+         002E7EAC  vdiv Q, vf00w, vf02x
+
+         002E7EB0  vwaitq
+
+         002E7EB4  vmulq.xyz vf01,vf01,Q
+
+      -> 002E7EB8  sqc2	vf01,(t7)
+
+         002E7EBC  lwc1	f01, 0x   C(a0)
+
+         002E7EC0  lqc2	vf01,(t7)
+
+         002E7EC4  mfc1	t0, f01
+
+         002E7EC8  qmtc2	t0, vf02
+
+   pc 002E7ED0 ra 001DAE88 hits   1 first tick 642  mem 00000000  a0 00381050 a1 00381050 s0 0038104C s1 FFFFFFFF
+
+         002E7EB8  sqc2	vf01,(t7)
+
+         002E7EBC  lwc1	f01, 0x   C(a0)
+
+         002E7EC0  lqc2	vf01,(t7)
+
+         002E7EC4  mfc1	t0, f01
+
+         002E7EC8  qmtc2	t0, vf02
+
+         002E7ECC  vmulx.xyzw vf01,vf01,vf02x
+
+      -> 002E7ED0  sqc2	vf01,(t7)
+
+         002E7ED4  lwc1	f00, 0x   8(a0)
+
+         002E7ED8  li	a1, 0x24
+
+         002E7EDC  ld	ra,(sp)
+
+         002E7EE0  neg.s	f00, f00
+
+   pc 002E7EE8 ra 001DAE88 hits   1 first tick 642  mem 00000000  a0 01ADD9D0 a1 00000024 s0 0038104C s1 FFFFFFFF
+
+         002E7ED0  sqc2	vf01,(t7)
+
+         002E7ED4  lwc1	f00, 0x   8(a0)
+
+         002E7ED8  li	a1, 0x24
+
+         002E7EDC  ld	ra,(sp)
+
+         002E7EE0  neg.s	f00, f00
+
+         002E7EE4  dmove	a0, t5
+
+      -> 002E7EE8  swc1	f00, 0x  24(t5)
+
+         002E7EEC  j	->$0x0016BD60
+
+         002E7EF0  addiu	sp, 0x10
+
+         002E7EF4  nop
+
+         002E7EF8  addiu	sp, -0x20
+
+   pc 002EA550 ra 002EA498 hits   8  (known per-tick writer)
+
+##### 2. class vtables: rest 01C60030, prop2 airborne 01C60040, ball airborne 01C60340
+
+  class 01C60030 -> vtable 0034EB60: +00:0031E908 +04:0031E910 +08:0017A8F8 +0C:0017A938 +10:0031E918 +14:0031E920 +18:0017C160 +1C:0017C290 +20:0017C0A0 +24:00000000 +28:00000000 +2C:00000000 +30:0017C578 +34:0017C660 +38:0017A8F8 +3C:0017A938
+
+  class 01C60040 -> vtable 0034EB90: +00:0017C578 +04:0017C660 +08:0017A8F8 +0C:0017A938 +10:0017CBF8 +14:0017CD08 +18:0017C690 +1C:0017C8F0 +20:0017CD20 +24:00000000 +28:42140000 +2C:00000000 +30:00000000 +34:00000000 +38:0031E948 +3C:0031E9A0
+
+  class 01C60340 -> vtable 00363410: +00:002EA338 +04:0017C660 +08:0017A8F8 +0C:0017A938 +10:0017CBF8 +14:002EAA70 +18:002EAA68 +1C:002EA450 +20:0017CD20 +24:003256B0 +28:003256C0 +2C:00000000 +30:00000000 +34:00000000 +38:3EC90FDA +3C:42480000
+
+##### 3. writers of ground prop 01AC2490 velocity/push fields from vsync 34, 60fps mash
+
+   pc 0016A8DC ra 0016A654 hits  16 first tick 610  mem 00000000  a0 01AC2490 a1 00000000 s0 01AC2490 s1 01AC2490
+
+         0016A8C4  ld	s1, 0x  68(sp)
+
+         0016A8C8  ld	s2, 0x  70(sp)
+
+         0016A8CC  ld	ra, 0x  78(sp)
+
+         0016A8D0  jr	->ra
+
+         0016A8D4  addiu	sp, 0x80
+
+         0016A8D8  vsub.xyzw vf01, vf00, vf00
+
+      -> 0016A8DC  sqc2	vf01,(t7)
+
+         0016A8E0  b	->$0x0016A8C4
+
+         0016A8E4  ld	s0, 0x  60(sp)
+
+         0016A8E8  lwc1	f00, -0x61F0(t7)
+
+         0016A8EC  sub.s	f00, f01, f00
+
+   pc 001114F8 ra 001114CC hits  15 first tick 610  mem 00000000  a0 01AC24B0 a1 00000002 s0 01AC2490 s1 01AC24B0
+
+         001114E0  sq	t0,(t6)
+
+         001114E4  addiu	t7,s0, 0xC20
+
+         001114E8  addiu	a0,s0, 0x20
+
+         001114EC  beq	a0, t7, ->$0x00111500
+
+         001114F0  ld	s0,(sp)
+
+         001114F4  lq	t0,(t7)
+
+      -> 001114F8  sq	t0,(a0)
+
+         001114FC  ld	s0,(sp)
+
+         00111500  ld	ra, 0x   8(sp)
+
+         00111504  jr	->ra
+
+         00111508  addiu	sp, 0x10
+
+   pc 0017C3C0 ra 00183198 hits  15 first tick 610  mem 00000000  a0 003810E0 a1 01AC24B0 s0 003810E0 s1 003810E0
+
+         0017C3A8  qmtc2	t0, vf02
+
+         0017C3AC  vmulx.xyzw vf01,vf01,vf02x
+
+         0017C3B0  sqc2	vf01,(t7)
+
+         0017C3B4  beql	a1, t7, ->$0x0017C3C8
+
+         0017C3B8  lui	t7, 0x0037
+
+         0017C3BC  lq	t0,(t7)
+
+      -> 0017C3C0  sq	t0,(a1)
+
+         0017C3C4  lui	t7, 0x0037
+
+         0017C3C8  addiu	t7, -0x3AF8
+
+         0017C3CC  lwc1	f00,(t7)
+
+         0017C3D0  swc1	f00, 0x   C(sp)
+
+   pc 0018312C ra 001833A8 hits  15 first tick 610  mem 00000000  a0 01AC2490 a1 00000000 s0 01AC2490 s1 003810E0
+
+         00183114  lbu	t6, 0x 8DC(t7)
+
+         00183118  sw	zero, 0x 810(s0)
+
+         0018311C  sb	t6, 0x 8DC(s0)
+
+         00183120  vsub.xyzw vf01, vf00, vf00
+
+         00183124  sqc2	vf01,(s6)
+
+         00183128  vsub.xyzw vf01, vf00, vf00
+
+      -> 0018312C  sqc2	vf01,(s2)
+
+         00183130  lw	t7, 0x 7F8(s0)
+
+         00183134  li	t6, -0x1001
+
+         00183138  ld	s1, 0x  B8(sp)
+
+         0018313C  and	t7, t6

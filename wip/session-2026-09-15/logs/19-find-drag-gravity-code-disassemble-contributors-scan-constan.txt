@@ -1,0 +1,1392 @@
+# Find drag/gravity code: disassemble contributors, scan constants, watch velocity reads
+# (foreground run, transcript line 997)
+--- input (line 989) ---
+$env:PYTHONPATH = "<session scratchpad>"; python -c @"
+import struct
+import numpy as np
+import kh2lab
+roo = kh2lab.connect()
+OBJ = 0x01ADD9D0
+INTEREST = ('0x850(', '0x854(', '0x860(', '0x864(', '0x870(', '0x874(', '0x880(', '0x884(', '0x88C(', '0x560(', '0x564(')
+
+def play(fps):
+    kh2lab.start(roo, fps)
+    roo.frame_advance(6)
+    roo.input_set('LLeft', 'LDown'); roo.frame_advance(8); roo.input_release()
+    roo.input_set('Cross'); roo.frame_advance(2); roo.input_release()
+
+play(60)
+roo.frame_advance(50)
+gp = roo.reg('gp')
+a1 = roo.read(OBJ + 0xC); t6 = roo.read(a1); vt = roo.read(t6 + 0x1C)
+print(f'gp {gp:08X}  [obj+0xC] {a1:08X}  vtable {t6:08X}  vtable+0x1C -> {vt:08X}')
+
+raw = roo.read_bytes(OBJ, 0x1100)
+words = struct.unpack(f'<{len(raw) // 4}I', raw)
+print('===== object fields of interest (offset: float / hex)')
+for off in list(range(0x550, 0x570, 4)) + list(range(0x580, 0x590, 4)) + list(range(0x800, 0x8A0, 4)):
+    w = words[off // 4]
+    print(f'  +{off:03X}  {struct.unpack(\"<f\", struct.pack(\"<I\", w))[0]:12.5f}  {w:08X}')
+named = {0x3F4CCCCD: '0.8', 0x3F4CCCCC: '0.8', 0x3ED0FC00: 'g', 0x41200000: '10.0', 0xC23E5E10: 'launch'}
+for i, w in enumerate(words):
+    fv = struct.unpack('<f', struct.pack('<I', w))[0]
+    if w in named or abs(fv - 0.408173) < 1e-4 or abs(abs(fv) - 47.5919) < 1e-3:
+        print(f'  object +{4 * i:03X} = {fv:.6f} ({w:08X}) {named.get(w
+--- result ---
+<string>:36: RuntimeWarning: invalid value encountered in subtract
+
+<string>:37: RuntimeWarning: invalid value encountered in subtract
+
+gp 00000000  [obj+0xC] 01C60340  vtable 00363410  vtable+0x1C -> 002EA450
+
+===== object fields of interest (offset: float / hex)
+
+  +550       0.00000  00000000
+
+  +554       0.00000  00000000
+
+  +558       1.00000  3F800000
+
+  +55C       0.00000  00000000
+
+  +560       0.00000  00000000
+
+  +564       0.00000  00000000
+
+  +568       0.00000  00000000
+
+  +56C       0.00000  00000000
+
+  +580       0.00000  30000004
+
+  +584       0.00000  01AE4260
+
+  +588       0.00000  00000103
+
+  +58C       0.00000  00000002
+
+  +800       0.00000  00000000
+
+  +804       0.00000  00000000
+
+  +808       0.00000  00000000
+
+  +80C       0.00000  00000000
+
+  +810       0.00000  00000000
+
+  +814       0.00000  01AE3FE0
+
+  +818       0.00000  01C623C8
+
+  +81C       0.00000  01C4D9D0
+
+  +820       0.00000  00000000
+
+  +824       0.00000  00000000
+
+  +828       0.00000  01ADEA60
+
+  +82C       1.00000  3F800000
+
+  +830       0.00000  00000000
+
+  +834       1.00000  3F800000
+
+  +838       0.00000  00000000
+
+  +83C  640745958299846494103011328.00000  6C0480CF
+
+  +840     701.80737  442F73AC
+
+  +844     375.71716  43BBDBCC
+
+  +848   -2659.99194  C5263FDF
+
+  +84C       1.00000  3F800000
+
+  +850       0.00000  00000000
+
+  +854       4.37615  408C0975
+
+  +858       0.00000  00000000
+
+  +85C       2.00000  40000000
+
+  +860       0.00000  00000000
+
+  +864       4.37613  408C0940
+
+  +868       0.00000  00000000
+
+  +86C       0.00000  00000000
+
+  +870       0.00000  00000000
+
+  +874       0.00000  00000000
+
+  +878       0.00000  00000000
+
+  +87C       0.00000  00000000
+
+  +880       0.00000  00000000
+
+  +884       0.00000  00000000
+
+  +888       0.00000  00000000
+
+  +88C       0.00000  00000000
+
+  +890    1024.01794  44800093
+
+  +894     549.99939  44097FF6
+
+  +898   -1637.84802  C4CCBB23
+
+  +89C       0.00000  00000000
+
+  object +120 = 10.000000 (41200000) 10.0
+
+===== RAM search for gravity / launch words
+
+  g exact 3ED0FC00: 0 -> 
+
+  g ~0.40817: 19 -> 00363404 0036C1AC 0036C510 0036C534 0036C554 0036C8AC 0036D440 013D2DA0 013D2DE0 013D2FE0 013D31E0 0140DCA0 0140DCE0 0140DDE0 0140DEE0 0140DFE0 0140E0E0 01436E08 01436E48
+
+  launch C23E5E10: 0 -> 
+
+  launch ~47.59: 3 -> 00C57CC0 01C3EB04 01C3EB08
+
+===== loop head / real start @ 00183060
+
+  00183060  addiu	sp, 0x10
+
+  00183064  nop
+
+  00183068  addiu	sp, -0x10
+
+  0018306C  dmove	a0, zero
+
+  00183070  sd	ra,(sp)
+
+  00183074  li	a1, 0xFFFF
+
+  00183078  ld	ra,(sp)
+
+  0018307C  j	->$0x00182FA0
+
+  00183080  addiu	sp, 0x10
+
+  00183084  nop
+
+  00183088  addiu	sp, -0x100
+
+  0018308C  sd	s0, 0x  B0(sp)
+
+  00183090  sd	s3, 0x  C8(sp)
+
+  00183094  sd	s5, 0x  D8(sp)
+
+  00183098  sd	s1, 0x  B8(sp)
+
+  0018309C  addiu	s3,a0, 0x540
+
+  001830A0  sd	s2, 0x  C0(sp)
+
+  001830A4  addiu	s5,a0, 0x840
+
+  001830A8  sd	s4, 0x  D0(sp)
+
+  001830AC  sd	s6, 0x  E0(sp)
+
+  001830B0  sd	s7, 0x  E8(sp)
+
+  001830B4  sd	fp, 0x  F0(sp)
+
+  001830B8  sd	ra, 0x  F8(sp)
+
+  001830BC  beq	s5, s3, ->$0x001830CC
+
+  001830C0  dmove	s0, a0
+
+  001830C4  lq	t0,(s3)
+
+  001830C8  sq	t0,(s5)
+
+  001830CC  lw	t7, 0x 108(s0)
+
+  001830D0  lui	t6, 0xFFBF
+
+  001830D4  ori	t6, 0xFFFF
+
+  001830D8  and	t7, t6
+
+  001830DC  jal	->$0x001C0CD8
+
+  001830E0  sw	t7, 0x 108(s0)
+
+  001830E4  beqz	v0, ->$0x00183170
+
+  001830E8  addiu	t7,s0, 0x860
+
+  001830EC  vsub.xyzw vf01, vf00, vf00
+
+  001830F0  sqc2	vf01,(t7)
+
+  001830F4  lw	t6, 0x 570(s0)
+
+  001830F8  addiu	s6,s0, 0x880
+
+  001830FC  addiu	s2,s0, 0x870
+
+  00183100  lwl	t3, 0x 8BF(t6)
+
+  00183104  lwr	t3, 0x 8BC(t6)
+
+  00183108  swl	t3, 0x 8BF(s0)
+
+  0018310C  swr	t3, 0x 8BC(s0)
+
+  00183110  lw	t7, 0x 570(s0)
+
+  00183114  lbu	t6, 0x 8DC(t7)
+
+  00183118  sw	zero, 0x 810(s0)
+
+  0018311C  sb	t6, 0x 8DC(s0)
+
+  00183120  vsub.xyzw vf01, vf00, vf00
+
+  00183124  sqc2	vf01,(s6)
+
+  00183128  vsub.xyzw vf01, vf00, vf00
+
+  0018312C  sqc2	vf01,(s2)
+
+  00183130  lw	t7, 0x 7F8(s0)
+
+  00183134  li	t6, -0x1001
+
+  00183138  ld	s1, 0x  B8(sp)
+
+  0018313C  and	t7, t6
+
+  00183140  ld	s2, 0x  C0(sp)
+
+  00183144  sw	t7, 0x 7F8(s0)
+
+  00183148  ld	s3, 0x  C8(sp)
+
+  0018314C  ld	s0, 0x  B0(sp)
+
+  00183150  ld	s4, 0x  D0(sp)
+
+  00183154  ld	s5, 0x  D8(sp)
+
+  00183158  ld	s6, 0x  E0(sp)
+
+  0018315C  ld	s7, 0x  E8(sp)
+
+  00183160  ld	fp, 0x  F0(sp)
+
+  00183164  ld	ra, 0x  F8(sp)
+
+  00183168  jr	->ra
+
+  0018316C  addiu	sp, 0x100
+
+===== 001835F8 @ 001835F8
+
+  001835F8  addiu	sp, -0x80
+
+  001835FC  sd	s0, 0x  50(sp)
+
+  00183600  sd	s1, 0x  58(sp)
+
+  00183604  dmove	s0, a0
+
+  00183608  sd	s2, 0x  60(sp)
+
+  0018360C  sd	s3, 0x  68(sp)
+
+  00183610  dmove	s1, a1
+
+  00183614  sd	ra, 0x  70(sp)
+
+  00183618  swc1	f21, 0x  7C(sp)
+
+  0018361C  swc1	f20, 0x  78(sp)
+
+  00183620  jal	->$0x001C0CD8
+
+  00183624  dmove	a0, a1
+
+  00183628  beqz	v0, ->$0x00183660
+
+  0018362C  addiu	s3,s1, 0x140
+
+  00183630  vsub.xyzw vf01, vf00, vf00
+
+  00183634  sqc2	vf01,(s0)
+
+  00183638  dmove	v0, s0
+
+  0018363C  ld	s1, 0x  58(sp)
+
+  00183640  ld	s0, 0x  50(sp)
+
+  00183644  ld	s2, 0x  60(sp)
+
+  00183648  ld	s3, 0x  68(sp)
+
+  0018364C  ld	ra, 0x  70(sp)
+
+  00183650  lwc1	f21, 0x  7C(sp)
+
+  00183654  lwc1	f20, 0x  78(sp)
+
+  00183658  jr	->ra
+
+  0018365C  addiu	sp, 0x80
+
+===== vtable+0x1C @ 002EA450
+
+  002EA450  addiu	sp, -0x170
+
+  002EA454  sd	s4, 0x 130(sp)
+
+  002EA458  sd	s7, 0x 148(sp)
+
+  002EA45C  sd	s2, 0x 120(sp)
+
+  002EA460  addiu	s4,sp, 0x50
+
+  002EA464  sd	s6, 0x 140(sp)
+
+  002EA468  dmove	s7, a0
+
+  002EA46C  sd	s0, 0x 110(sp)
+
+  002EA470  dmove	s2, a2
+
+  002EA474  sd	s1, 0x 118(sp)
+
+  002EA478  dmove	a0, s4
+
+  002EA47C  sd	s3, 0x 128(sp)
+
+  002EA480  sd	s5, 0x 138(sp)
+
+  002EA484  sd	fp, 0x 150(sp)
+
+  002EA488  sd	ra, 0x 158(sp)
+
+  002EA48C  swc1	f20, 0x 160(sp)
+
+  002EA490  jal	->$0x0031B9E0
+
+  002EA494  addiu	s6,s2, 0x20
+
+  002EA498  beql	sp, s6, ->$0x002EA4AC
+
+  002EA49C  sw	zero, 0x   4(sp)
+
+  002EA4A0  lq	t0,(s6)
+
+  002EA4A4  sq	t0,(sp)
+
+  002EA4A8  sw	zero, 0x   4(sp)
+
+  002EA4AC  lqc2	vf01,(sp)
+
+  002EA4B0  vmul.xyz vf02, vf01, vf01
+
+  002EA4B4  vaddy.x vf02, vf02, vf02y
+
+  002EA4B8  vaddz.x vf02, vf02, vf02z
+
+  002EA4BC  vsqrt Q, vf02x
+
+  002EA4C0  vwaitq
+
+  002EA4C4  cfc2	t0, Q
+
+  002EA4C8  vaddq.x vf02,vf00,Q
+
+  002EA4CC  mtc1	t0, f01
+
+  002EA4D0  vnop
+
+  002EA4D4  vdiv Q, vf00w, vf02x
+
+  002EA4D8  vwaitq
+
+  002EA4DC  vmulq.xyz vf01,vf01,Q
+
+  002EA4E0  sqc2	vf01,(sp)
+
+  002EA4E4  lui	t7, 0x0037
+
+  002EA4E8  addiu	t7, 0x60C8
+
+  002EA4EC  lwc1	f02,(t7)
+
+  002EA4F0  lui	t7, 0x0035
+
+  002EA4F4  lw	t6, 0x2130(t7)
+
+  002EA4F8  lwc1	f00, 0x  18(t6)
+
+  002EA4FC  mul.s	f00, f01, f00
+
+  002EA500  c.lt.s	f02, f00
+
+  002EA504  bc1t	->$0x002EA510
+
+  002EA508  mov.s	f01, f00
+
+  002EA50C  mov.s	f01, f02
+
+  002EA510  lwc1	f02, 0x   8(sp)
+
+  002EA514  mov.s	f00, f01
+
+  002EA518  mul.s	f02, f02, f01
+
+  002EA51C  lwc1	f03, 0x  24(s2)
+
+  002EA520  lwc1	f01,(sp)
+
+  002EA524  swc1	f02, 0x  28(s2)
+
+  002EA528  mul.s	f01, f01, f00
+
+  002EA52C  mtc1	zero, f00
+
+  002EA530  c.lt.s	f03, f00
+
+  002EA534  bc1f	->$0x002EA554
+
+  002EA538  swc1	f01, 0x  20(s2)
+
+  002EA53C  lui	t7, 0x0035
+
+  002EA540  lw	t6, 0x2130(t7)
+
+  002EA544  lwc1	f00, 0x  20(t6)
+
+  002EA548  mul.s	f00, f03, f00
+
+  002EA54C  mov.s	f03, f00
+
+  002EA550  swc1	f00, 0x  24(s2)
+
+  002EA554  lui	t7, 0x0036
+
+  002EA558  lwc1	f01, 0x 120(s2)
+
+  002EA55C  lwc1	f00, 0x3404(t7)
+
+  002EA560  add.s	f00, f03, f00
+
+  002EA564  c.lt.s	f00, f01
+
+  002EA568  bc1fl	->$0x002EA570
+
+  002EA56C  mov.s	f00, f01
+
+  002EA570  swc1	f00, 0x  24(s2)
+
+  002EA574  lui	t7, 0x0035
+
+  002EA578  addiu	s1,sp, 0xE0
+
+  002EA57C  lwc1	f00, -0x61F0(t7)
+
+  002EA580  lqc2	vf01,(s6)
+
+  002EA584  mfc1	t0, f00
+
+  002EA588  qmtc2	t0, vf02
+
+  002EA58C  vmulx.xyzw vf01,vf01,vf02x
+
+  002EA590  sqc2	vf01,(s1)
+
+  002EA594  beq	s7, s1, ->$0x002EA5A8
+
+  002EA598  addiu	s0,s2, 0x590
+
+  002EA59C  lq	t0,(s1)
+
+  002EA5A0  sq	t0,(s7)
+
+  002EA5A4  addiu	s0,s2, 0x590
+
+  002EA5A8  beq	s4, s0, ->$0x002EA5BC
+
+  002EA5AC  addiu	s3,sp, 0x60
+
+  002EA5B0  lq	t0,(s0)
+
+  002EA5B4  sq	t0,(s4)
+
+  002EA5B8  addiu	s3,sp, 0x60
+
+  002EA5BC  addiu	t7,s2, 0x5A0
+
+  002EA5C0  beq	s3, t7, ->$0x002EA5D4
+
+  002EA5C4  addiu	t6,sp, 0x70
+
+  002EA5C8  lq	t0,(t7)
+
+  002EA5CC  sq	t0,(s3)
+
+  002EA5D0  addiu	t6,sp, 0x70
+
+  002EA5D4  addiu	t7,s2, 0x5B0
+
+  002EA5D8  beq	t6, t7, ->$0x002EA5EC
+
+  002EA5DC  addiu	s5,sp, 0x80
+
+  002EA5E0  lq	t0,(t7)
+
+  002EA5E4  sq	t0,(t6)
+
+  002EA5E8  addiu	s5,sp, 0x80
+
+  002EA5EC  addiu	t7,s2, 0x5C0
+
+  002EA5F0  beq	s5, t7, ->$0x002EA604
+
+  002EA5F4  addiu	t6,sp, 0x90
+
+  002EA5F8  lq	t0,(t7)
+
+  002EA5FC  sq	t0,(s5)
+
+  002EA600  addiu	t6,sp, 0x90
+
+  002EA604  addiu	t7,s2, 0x5D0
+
+  002EA608  beql	t6, t7, ->$0x002EA61C
+
+  002EA60C  addiu	t6,sp, 0xA0
+
+  002EA610  lq	t0,(t7)
+
+  002EA614  sq	t0,(t6)
+
+  002EA618  addiu	t6,sp, 0xA0
+
+  002EA61C  addiu	t7,s2, 0x5E0
+
+  002EA620  beql	t6, t7, ->$0x002EA634
+
+  002EA624  lw	t4, 0x  70(s0)
+
+  002EA628  lq	t0,(t7)
+
+  002EA62C  sq	t0,(t6)
+
+  002EA630  lw	t4, 0x  70(s0)
+
+  002EA634  dmove	a0, s2
+
+  002EA638  lw	t3, 0x  74(s0)
+
+  002EA63C  lhu	t0, 0x  60(s0)
+
+  002EA640  lhu	t7, 0x  62(s0)
+
+  002EA644  lhu	t6, 0x  64(s0)
+
+  002EA648  lhu	t5, 0x  66(s0)
+
+  002EA64C  lwc1	f00, 0x  68(s0)
+
+  002EA650  lwc1	f01, 0x  6C(s0)
+
+  002EA654  lw	t2, 0x  78(s0)
+
+  002EA658  lw	t1, 0x  7C(s0)
+
+  002EA65C  sh	t0, 0x  B0(sp)
+
+  002EA660  sh	t7, 0x  B2(sp)
+
+  002EA664  sh	t6, 0x  B4(sp)
+
+  002EA668  sh	t5, 0x  B6(sp)
+
+  002EA66C  swc1	f00, 0x  B8(sp)
+
+  002EA670  swc1	f01, 0x  BC(sp)
+
+  002EA674  sw	t4, 0x  C0(sp)
+
+  002EA678  sw	t3, 0x  C4(sp)
+
+  002EA67C  sw	t2, 0x  C8(sp)
+
+  002EA680  sw	t1, 0x  CC(sp)
+
+  002EA684  jal	->$0x0016C028
+
+  002EA688  sw	zero, 0x  D0(sp)
+
+  002EA68C  beq	s4, v0, ->$0x002EA69C
+
+  002EA690  nop
+
+  002EA694  lq	t0,(v0)
+
+  002EA698  sq	t0,(s4)
+
+  002EA69C  beq	s3, s7, ->$0x002EA6B0
+
+  002EA6A0  ld	t7, 0x  C0(sp)
+
+  002EA6A4  lq	t0,(s7)
+
+===== 00184BB0 @ 00184BB0
+
+  00184BB0  addiu	sp, -0xE0
+
+  00184BB4  sd	s4, 0x  D0(sp)
+
+  00184BB8  sd	s0, 0x  B0(sp)
+
+  00184BBC  sd	s1, 0x  B8(sp)
+
+  00184BC0  dmove	s4, a0
+
+  00184BC4  sd	s2, 0x  C0(sp)
+
+  00184BC8  addiu	s0,sp, 0x40
+
+  00184BCC  sd	s3, 0x  C8(sp)
+
+  00184BD0  dmove	s1, a1
+
+  00184BD4  sd	ra, 0x  D8(sp)
+
+  00184BD8  lhu	a0, 0x 644(a1)
+
+  00184BDC  jal	->$0x00143F50
+
+  00184BE0  dmove	a1, sp
+
+  00184BE4  li	t7, 0x3
+
+  00184BE8  li	t2, -0x1
+
+  00184BEC  blez	t7, ->$0x00184C64
+
+  00184BF0  li	t4, 0x1
+
+  00184BF4  dmove	t3, s0
+
+  00184BF8  dmove	t1, t7
+
+  00184BFC  dmove	t6, sp
+
+  00184C00  addiu	t5,sp, 0x10
+
+  00184C04  lwc1	f01, 0x   8(t6)
+
+  00184C08  lwc1	f00, 0x  18(t6)
+
+  00184C0C  c.lt.s	f00, f01
+
+  00184C10  bc1fl	->$0x00184C50
+
+  00184C14  addiu	t4, 0x1
+
+  00184C18  addiu	t2,t4, -0x1
+
+  00184C1C  beq	t3, t6, ->$0x00184C2C
+
+  00184C20  dmove	t7, t6
+
+  00184C24  lq	t0,(t6)
+
+  00184C28  sq	t0,(t3)
+
+  00184C2C  beq	t6, t5, ->$0x00184C3C
+
+  00184C30  nop
+
+  00184C34  lq	t0,(t5)
+
+  00184C38  sq	t0,(t7)
+
+  00184C3C  beql	t5, t3, ->$0x00184C50
+
+  00184C40  addiu	t4, 0x1
+
+  00184C44  lq	t0,(t3)
+
+  00184C48  sq	t0,(t5)
+
+  00184C4C  addiu	t4, 0x1
+
+  00184C50  addiu	t6, 0x10
+
+  00184C54  slt	t7,t1, t4
+
+  00184C58  beqz	t7, ->$0x00184C04
+
+  00184C5C  addiu	t5, 0x10
+
+  00184C60  dmove	s0, t3
+
+  00184C64  bgez	t2, ->$0x00184BE8
+
+  00184C68  dmove	t7, t2
+
+  00184C6C  lwc1	f01,(sp)
+
+  00184C70  lwc1	f00, 0x  10(sp)
+
+  00184C74  c.lt.s	f00, f01
+
+  00184C78  bc1f	->$0x00184E94
+
+  00184C7C  addiu	t7,sp, 0x10
+
+  00184C80  addiu	s3,sp, 0xA0
+
+  00184C84  dmove	t6, s3
+
+  00184C88  lqc2	vf01,(t7)
+
+  00184C8C  lqc2	vf02,(sp)
+
+  00184C90  vsub.xyzw vf01, vf01, vf02
+
+  00184C94  sqc2	vf01,(s3)
+
+  00184C98  beq	s0, s3, ->$0x00184CA8
+
+  00184C9C  nop
+
+  00184CA0  lq	t0,(t6)
+
+  00184CA4  sq	t0,(s0)
+
+  00184CA8  lqc2	vf01,(s0)
+
+  00184CAC  vmul.xyz vf02, vf01, vf01
+
+  00184CB0  vaddy.x vf02, vf02, vf02y
+
+  00184CB4  vaddz.x vf02, vf02, vf02z
+
+  00184CB8  vsqrt Q, vf02x
+
+  00184CBC  vwaitq
+
+  00184CC0  cfc2	t0, Q
+
+  00184CC4  vaddq.x vf02,vf00,Q
+
+  00184CC8  mtc1	t0, f00
+
+  00184CCC  vnop
+
+  00184CD0  vdiv Q, vf00w, vf02x
+
+  00184CD4  vwaitq
+
+  00184CD8  vmulq.xyz vf01,vf01,Q
+
+  00184CDC  sqc2	vf01,(s0)
+
+  00184CE0  lhu	a1, 0x 644(s1)
+
+  00184CE4  dmove	a0, s3
+
+  00184CE8  dmove	a2, zero
+
+  00184CEC  jal	->$0x00143E50
+
+  00184CF0  addiu	s1,sp, 0x50
+
+  00184CF4  beq	s1, s3, ->$0x00184D08
+
+  00184CF8  addiu	s2,sp, 0x60
+
+  00184CFC  lq	t0,(s3)
+
+  00184D00  sq	t0,(s1)
+
+  00184D04  addiu	s2,sp, 0x60
+
+  00184D08  jal	->$0x0011B6A8
+
+  00184D0C  dmove	a0, s2
+
+  00184D10  lqc2	vf01,(s0)
+
+  00184D14  lqc2	vf02,(s1)
+
+  00184D18  vsub.xyzw vf03, vf00, vf00
+
+  00184D1C  vopmula.xyz vf01xyz, vf02xyz
+
+  00184D20  vopmsub.xyz vf03, vf02, vf01
+
+  00184D24  sqc2	vf03,(s3)
+
+  00184D28  beq	s2, s3, ->$0x00184D38
+
+  00184D2C  nop
+
+  00184D30  lq	t0,(s3)
+
+  00184D34  sq	t0,(s2)
+
+  00184D38  lqc2	vf01,(s2)
+
+  00184D3C  vmul.xyz vf02, vf01, vf01
+
+  00184D40  vaddy.x vf02, vf02, vf02y
+
+  00184D44  vaddz.x vf02, vf02, vf02z
+
+  00184D48  vsqrt Q, vf02x
+
+  00184D4C  vwaitq
+
+  00184D50  cfc2	t0, Q
+
+  00184D54  vaddq.x vf02,vf00,Q
+
+  00184D58  mtc1	t0, f00
+
+  00184D5C  vnop
+
+  00184D60  vdiv Q, vf00w, vf02x
+
+  00184D64  vwaitq
+
+  00184D68  vmulq.xyz vf01,vf01,Q
+
+  00184D6C  sqc2	vf01,(s2)
+
+  00184D70  addiu	t6,sp, 0x70
+
+  00184D74  beq	t6, s1, ->$0x00184D88
+
+  00184D78  addiu	t7,sp, 0x80
+
+  00184D7C  lq	t0,(s1)
+
+  00184D80  sq	t0,(t6)
+
+  00184D84  addiu	t7,sp, 0x80
+
+  00184D88  lqc2	vf01,(s2)
+
+  00184D8C  lqc2	vf02,(t6)
+
+  00184D90  vsub.xyzw vf03, vf00, vf00
+
+  00184D94  vopmula.xyz vf01xyz, vf02xyz
+
+  00184D98  vopmsub.xyz vf03, vf02, vf01
+
+  00184D9C  sqc2	vf03,(s3)
+
+  00184DA0  beq	t7, s3, ->$0x00184DB0
+
+  00184DA4  nop
+
+  00184DA8  lq	t0,(s3)
+
+  00184DAC  sq	t0,(t7)
+
+  00184DB0  lqc2	vf01,(t7)
+
+  00184DB4  vmul.xyz vf02, vf01, vf01
+
+  00184DB8  vaddy.x vf02, vf02, vf02y
+
+  00184DBC  vaddz.x vf02, vf02, vf02z
+
+  00184DC0  vsqrt Q, vf02x
+
+  00184DC4  vwaitq
+
+  00184DC8  cfc2	t0, Q
+
+  00184DCC  vaddq.x vf02,vf00,Q
+
+  00184DD0  mtc1	t0, f00
+
+  00184DD4  vnop
+
+  00184DD8  vdiv Q, vf00w, vf02x
+
+  00184DDC  vwaitq
+
+  00184DE0  vmulq.xyz vf01,vf01,Q
+
+  00184DE4  sqc2	vf01,(t7)
+
+  00184DE8  lui	t7, 0x0035
+
+  00184DEC  sw	zero, 0x  6C(sp)
+
+  00184DF0  sw	zero, 0x  7C(sp)
+
+  00184DF4  addiu	t7, 0x990
+
+  00184DF8  beq	s0, t7, ->$0x00184E08
+
+  00184DFC  sw	zero, 0x  8C(sp)
+
+  00184E00  lq	t0,(t7)
+
+  00184E04  sq	t0,(s0)
+
+===== 00186B90 @ 00186B90
+
+  00186B90  addiu	sp, -0x30
+
+  00186B94  mtc1	zero, f02
+
+  00186B98  sd	s0, 0x  10(sp)
+
+  00186B9C  li	t7, 0x1
+
+  00186BA0  sd	s1, 0x  18(sp)
+
+  00186BA4  sd	ra, 0x  20(sp)
+
+  00186BA8  dmove	s0, a0
+
+  00186BAC  lwc1	f01, 0x ADC(a1)
+
+  00186BB0  c.lt.s	f02, f01
+
+  00186BB4  bc1t	->$0x00186BC0
+
+  00186BB8  dmove	s1, a1
+
+  00186BBC  dmove	t7, zero
+
+  00186BC0  andi	t7, 0x00FF
+
+  00186BC4  beqz	t7, ->$0x00186BE4
+
+  00186BC8  lui	t7, 0x0037
+
+  00186BCC  addiu	t7, -0x3678
+
+  00186BD0  lwc1	f00,(t7)
+
+  00186BD4  c.lt.s	f01, f00
+
+  00186BD8  bc1f	->$0x00186C04
+
+  00186BDC  lui	t6, 0x0035
+
+  00186BE0  swc1	f02, 0x ADC(s1)
+
+  00186BE4  vsub.xyzw vf01, vf00, vf00
+
+  00186BE8  sqc2	vf01,(s0)
+
+  00186BEC  dmove	v0, s0
+
+  00186BF0  ld	s1, 0x  18(sp)
+
+  00186BF4  ld	s0, 0x  10(sp)
+
+  00186BF8  ld	ra, 0x  20(sp)
+
+  00186BFC  jr	->ra
+
+  00186C00  addiu	sp, 0x30
+
+===== 001D3AC0 @ 001D3AC0
+
+  001D3AC0  addiu	sp, -0x40
+
+  001D3AC4  mtc1	zero, f00
+
+  001D3AC8  sd	s0, 0x  10(sp)
+
+  001D3ACC  sd	s1, 0x  18(sp)
+
+  001D3AD0  sd	s2, 0x  20(sp)
+
+  001D3AD4  dmove	s0, zero
+
+  001D3AD8  sd	s3, 0x  28(sp)
+
+  001D3ADC  dmove	s1, a1
+
+  001D3AE0  sd	ra, 0x  30(sp)
+
+  001D3AE4  dmove	s2, a0
+
+  001D3AE8  swc1	f00, 0x   C(sp)
+
+  001D3AEC  lui	s3, 0x01D6
+
+  001D3AF0  swc1	f00,(sp)
+
+  001D3AF4  swc1	f00, 0x   4(sp)
+
+  001D3AF8  swc1	f00, 0x   8(sp)
+
+  001D3AFC  bnezl	s0, ->$0x001D3B08
+
+  001D3B00  lw	a0, 0x  30(s0)
+
+  001D3B04  lw	a0, -0x45E0(s3)
+
+  001D3B08  bnez	a0, ->$0x001D3B4C
+
+  001D3B0C  dmove	s0, a0
+
+  001D3B10  lui	t7, 0x0035
+
+  001D3B14  lwc1	f00, -0x61F0(t7)
+
+  001D3B18  lqc2	vf01,(sp)
+
+  001D3B1C  mfc1	t0, f00
+
+  001D3B20  qmtc2	t0, vf02
+
+  001D3B24  vmulx.xyzw vf01,vf01,vf02x
+
+  001D3B28  sqc2	vf01,(s2)
+
+  001D3B2C  dmove	v0, s2
+
+  001D3B30  ld	s0, 0x  10(sp)
+
+  001D3B34  ld	s1, 0x  18(sp)
+
+  001D3B38  ld	s2, 0x  20(sp)
+
+  001D3B3C  ld	s3, 0x  28(sp)
+
+  001D3B40  ld	ra, 0x  30(sp)
+
+  001D3B44  jr	->ra
+
+  001D3B48  addiu	sp, 0x40
+
+===== 001B3428 @ 001B3428
+
+  001B3428  addiu	sp, -0xB0
+
+  001B342C  lui	t5, 0x01D5
+
+  001B3430  sd	s0, 0x  80(sp)
+
+  001B3434  sd	s2, 0x  90(sp)
+
+  001B3438  sd	s3, 0x  98(sp)
+
+  001B343C  dmove	s0, a0
+
+  001B3440  sd	s1, 0x  88(sp)
+
+  001B3444  dmove	s2, a1
+
+  001B3448  sd	s4, 0x  A0(sp)
+
+  001B344C  sd	ra, 0x  A8(sp)
+
+  001B3450  lb	t7, -0x7368(t5)
+
+  001B3454  bnez	t7, ->$0x001B3738
+
+  001B3458  dmove	s3, a2
+
+  001B345C  mtc1	zero, f01
+
+  001B3460  lui	s4, 0x01D5
+
+  001B3464  addiu	t6,s4, -0x7360
+
+  001B3468  li	t7, 0x1
+
+  001B346C  swc1	f01, 0x   C(t6)
+
+  001B3470  lui	a0, 0x001B
+
+  001B3474  swc1	f01, -0x7360(s4)
+
+  001B3478  addiu	a0, 0x3740
+
+  001B347C  sb	t7, -0x7368(t5)
+
+  001B3480  lui	t7, 0x0037
+
+  001B3484  swc1	f01, 0x   4(t6)
+
+  001B3488  addiu	t7, -0x2610
+
+  001B348C  lwc1	f00,(t7)
+
+  001B3490  jal	->$0x002FD188
+
+  001B3494  swc1	f00, 0x   8(t6)
+
+  001B3498  dmove	a0, s3
+
+  001B349C  jal	->$0x0016C028
+
+  001B34A0  addiu	s1,sp, 0x10
+
+  001B34A4  beq	sp, v0, ->$0x001B34B4
+
+  001B34A8  addiu	a3,sp, 0x20
+
+  001B34AC  lq	t0,(v0)
+
+  001B34B0  sq	t0,(sp)
+
+  001B34B4  lui	t7, 0x0037
+
+  001B34B8  addiu	t7, -0x2610
+
+  001B34BC  lwc1	f00,(t7)
+
+  001B34C0  lw	t7,(s2)
+
+  001B34C4  swc1	f00, 0x   C(sp)
+
+  001B34C8  lw	t6, 0x 808(t7)
+
+  001B34CC  lw	t5, 0x   4(s2)
+
+  001B34D0  sll	t6, t6, 0x06
+
+  001B34D4  addu	t5, t6
+
+  001B34D8  beq	a3, t5, ->$0x001B3500
+
+  001B34DC  nop
+
+  001B34E0  lq	t0,(t5)
+
+  001B34E4  lq	t1, 0x  10(t5)
+
+  001B34E8  lq	t2, 0x  20(t5)
+
+  001B34EC  lq	t3, 0x  30(t5)
+
+  001B34F0  sq	t0,(a3)
+
+  001B34F4  sq	t1, 0x  10(a3)
+
+  001B34F8  sq	t2, 0x  20(a3)
+
+  001B34FC  sq	t3, 0x  30(a3)
+
+  001B3500  lqc2	vf01,(a3)
+
+  001B3504  lqc2	vf02, 0x  10(a3)
+
+  001B3508  lqc2	vf03, 0x  20(a3)
+
+  001B350C  lqc2	vf04, 0x  30(a3)
+
+  001B3510  vopmula.xyz vf02xyz, vf03xyz
+
+  001B3514  vopmsub.xyz vf05, vf03, vf02
+
+  001B3518  vopmula.xyz vf03xyz, vf01xyz
+
+  001B351C  vopmsub.xyz vf06, vf01, vf03
+
+  001B3520  vopmula.xyz vf01xyz, vf02xyz
+
+  001B3524  vopmsub.xyz vf07, vf02, vf01
+
+  001B3528  vmul.xyz vf08, vf01, vf05
+
+  001B352C  vmul.xyz vf01, vf04, vf05
+
+  001B3530  vmul.xyz vf02, vf04, vf06
+
+  001B3534  vmul.xyz vf03, vf04, vf07
+
+  001B3538  vaddy.x vf08, vf08, vf08y
+
+  001B353C  vaddy.x vf01, vf01, vf01y
+
+  001B3540  vaddx.y vf02, vf02, vf02x
+
+  001B3544  vaddx.z vf03, vf03, vf03x
+
+  001B3548  vaddz.x vf08, vf08, vf08z
+
+  001B354C  vaddz.x vf04, vf01, vf01z
+
+  001B3550  vaddz.y vf04, vf02, vf02z
+
+  001B3554  vaddy.z vf04, vf03, vf03y
+
+  001B3558  vdiv Q, vf00w, vf08x
+
+  001B355C  qmfc2	t0, vf05
+
+  001B3560  qmfc2	t1, vf06
+
+  001B3564  qmfc2	t2, vf07
+
+  001B3568  qmfc2	t3, vf00
+
+  001B356C  pextlw	t4, t1, t0
+
+  001B3570  pextuw	t5, t1, t0
+
+  001B3574  pextlw	t6, t3, t2
+
+  001B3578  pextuw	t7, t3, t2
+
+  001B357C  pcpyld	t0, t6, t4
+
+  001B3580  pcpyud	t1, t4, t6
+
+  001B3584  pcpyld	t2, t7, t5
+
+  001B3588  qmtc2	t0, vf01
+
+  001B358C  qmtc2	t1, vf02
+
+  001B3590  qmtc2	t2, vf03
+
+  001B3594  vsub.xyz vf04, vf00, vf04
+
+  001B3598  vwaitq
+
+  001B359C  vmulq.xyzw vf01,vf01,Q
+
+  001B35A0  vmulq.xyzw vf02,vf02,Q
+
+  001B35A4  vmulq.xyzw vf03,vf03,Q
+
+  001B35A8  vmulq.xyz vf04,vf04,Q
+
+  001B35AC  sqc2	vf01,(a3)
+
+  001B35B0  sqc2	vf02, 0x  10(a3)
+
+  001B35B4  sqc2	vf03, 0x  20(a3)
+
+  001B35B8  sqc2	vf04, 0x  30(a3)
+
+  001B35BC  addiu	t4,sp, 0x60
+
+  001B35C0  lqc2	vf05,(sp)
+
+  001B35C4  lqc2	vf01,(a3)
+
+  001B35C8  lqc2	vf02, 0x  10(a3)
+
+  001B35CC  lqc2	vf03, 0x  20(a3)
+
+  001B35D0  lqc2	vf04, 0x  30(a3)
+
+  001B35D4  vmulax.xyzw ACC,vf01,vf05x
+
+  001B35D8  vmadday.xyzw ACC,vf02,vf05y
+
+  001B35DC  vmaddaz.xyzw ACC,vf03,vf05z
+
+  001B35E0  vmaddw.xyzw vf05, vf04, vf05w
+
+  001B35E4  sqc2	vf05,(t4)
+
+  001B35E8  beql	s0, t4, ->$0x001B35FC
+
+  001B35EC  swc1	f00, 0x   C(s0)
+
+  001B35F0  lq	t0,(t4)
+
+  001B35F4  sq	t0,(s0)
+
+  001B35F8  swc1	f00, 0x   C(s0)
+
+  001B35FC  addiu	t7,s4, -0x7360
+
+  001B3600  lqc2	vf05,(t7)
+
+  001B3604  lqc2	vf01,(a3)
+
+  001B3608  lqc2	vf02, 0x  10(a3)
+
+  001B360C  lqc2	vf03, 0x  20(a3)
+
+  001B3610  lqc2	vf04, 0x  30(a3)
+
+  001B3614  vmulax.xyzw ACC,vf01,vf05x
+
+  001B3618  vmadday.xyzw ACC,vf02,vf05y
+
+  001B361C  vmaddaz.xyzw ACC,vf03,vf05z
+
+  001B3620  vmaddw.xyzw vf05, vf04, vf05w
+
+  001B3624  sqc2	vf05,(t4)
+
+  001B3628  beql	s1, t4, ->$0x001B363C
+
+  001B362C  lw	t7,(s2)
+
+  001B3630  lq	t0,(t4)
+
+  001B3634  sq	t0,(s1)
+
+  001B3638  lw	t7,(s2)
+
+  001B363C  lw	t5, 0x   4(s2)
+
+  001B3640  lw	t6, 0x 808(t7)
+
+  001B3644  xori	t6, 0x0001
+
+  001B3648  sll	t6, t6, 0x06
+
+  001B364C  addu	a1, t5, t6
+
+  001B3650  beq	a3, a1, ->$0x001B367C
+
+  001B3654  addiu	t7,sp, 0x70
+
+  001B3658  lq	t0,(a1)
+
+  001B365C  lq	t1, 0x  10(a1)
+
+  001B3660  lq	t2, 0x  20(a1)
+
+  001B3664  lq	t3, 0x  30(a1)
+
+  001B3668  sq	t0,(a3)
+
+  001B366C  sq	t1, 0x  10(a3)
+
+  001B3670  sq	t2, 0x  20(a3)
+
+  001B3674  sq	t3, 0x  30(a3)
+
+  001B3678  addiu	t7,sp, 0x70
+
+  001B367C  lqc2	vf05,(s0)
+
+===== read watchpoint obj+0x850..0x870, mid-fall
+
+  no hit within 5s

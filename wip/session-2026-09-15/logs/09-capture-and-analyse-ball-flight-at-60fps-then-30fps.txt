@@ -1,0 +1,198 @@
+# Capture and analyse ball flight at 60fps then 30fps
+# (foreground run, transcript line 744)
+--- input (line 737) ---
+$d = "<session scratchpad>"; $env:PYTHONPATH = $d; $times = "16,24,28,32,36,40,48,56,64,80,100"; foreach ($fps in 60, 30) { "===== capture $fps"; python "$d\kh2_capture.py" --fps $fps --walk-button "LLeft,LDown" --walk 8 --times $times --shot-at 30; "===== arcs $fps"; python "$d\kh2_arcs.py" "$d\cap-$fps.npz" --top 25 }; python -c "import kh2lab; kh2lab.set_group(True); print('60 FPS group restored in PCSXROO pnach')"
+--- result ---
+===== capture 60
+
+arm 60fps  delta 1.0
+
+  snapshot at vsync 16
+
+  snapshot at vsync 24
+
+  snapshot at vsync 28
+
+  snapshot at vsync 32
+
+  snapshot at vsync 36
+
+  snapshot at vsync 40
+
+  snapshot at vsync 48
+
+  snapshot at vsync 56
+
+  snapshot at vsync 64
+
+  snapshot at vsync 80
+
+  snapshot at vsync 100
+
+saved <session scratchpad>\cap-60.npz  (14 snapshots)
+
+===== arcs 60
+
+<session scratchpad>\kh2_arcs.py:26: RuntimeWarning: invalid value encountered in cast
+
+  f = snaps.view(np.float32).astype(np.float64)
+
+<session scratchpad>\kh2_arcs.py:31: RuntimeWarning: invalid value encountered in subtract
+
+  idle_range = idle.max(axis=0) - idle.min(axis=0)
+
+<session scratchpad>\kh2_arcs.py:33: RuntimeWarning: invalid value encountered in subtract
+
+  excursion = np.abs(fly - ground).max(axis=0)
+
+21004 words move far more in flight than at rest
+
+r2      addr      accel/vsync^2   peak   at vsync  pts   neighbours (f32 at -8..+12)
+
+1.0000  018CDF44    -128.00000   2048.00     32    6       0.000 8589934592.000     0.000     0.000     0.000 8589934592.000
+
+1.0000  019506F4    -128.00000   2048.00     28    5       0.039   935.480  1085.270    -1.682     0.527 -474576.469
+
+1.0000  018CDF34     -15.93750    255.00     32    6       0.000 8589934592.000     0.000     0.000     0.000 8589934592.000
+
+1.0000  018CDF3C     -15.93750    255.00     32    6       0.000     0.000     0.000 8589934592.000     0.000     0.000
+
+1.0000  019506EC     -15.93750    255.00     28    5    -217.790    -0.124     0.039   935.480  1085.270    -1.682
+
+1.0000  019506E4     -15.93750    255.00     28    5      -0.849    79.681  -217.790    -0.124     0.039   935.480
+
+1.0000  018CDF38     -11.87500    190.00     32    6   8589934592.000     0.000     0.000     0.000 8589934592.000     0.000
+
+1.0000  003AC624      -1.19580     77.53     48    9       0.000     0.000     0.000     0.000     1.000     1.000
+
+1.0000  003AC2E4      +4.78320     76.53     36    6       0.000     0.000    77.531     0.000     1.000     0.909
+
+1.0000  003AC124      +4.78320     76.53     36    6       0.000     0.000    77.531     0.000     1.000     0.909
+
+1.0000  003AC364      -4.42844     70.86     32    6       0.000    12.014   -69.855    -0.606     1.000     1.000
+
+1.0000  003AC324      -4.42844     70.86     32    6       0.000   -10.467   -69.855    -5.150     1.000     0.906
+
+1.0000  01B0A8BC      +2.91791     46.69     32    6       1.000     1.000    46.687     1.000     1.000     1.000
+
+1.0000  01B0A9AC      +2.91791     46.69     32    6       1.000     1.000    46.687     1.000     1.000     1.000
+
+1.0000  01B0A9CC      +2.87403     45.98     32    6       1.000     1.000    45.985     0.000     0.000    -0.003
+
+1.0000  01B0A8DC      +2.87403     45.98     32    6       1.000     1.000    45.985     1.000     1.000     1.000
+
+1.0000  01B0A89C      +2.86923     45.91     32    6       1.000     1.000    45.908     1.000     1.000     1.000
+
+1.0000  01B0A98C      +2.86923     45.91     32    6       1.000     1.000    45.908     1.000     1.000     1.000
+
+1.0000  01B0A7CC      +2.82637     45.22     32    6       1.000     1.000    45.222     1.000     1.000     1.000
+
+1.0000  01B0A7EC      +2.82471     45.20     32    6       1.000     1.000    45.195     1.000     1.000     1.000
+
+1.0000  01B100B0      -1.71407     27.43     32    6       1.000     0.000     0.000     0.000     0.000     1.000
+
+1.0000  01AADDB0      +1.57065     25.13     32    6     -34.058    -0.312   -13.264    35.400   156.196    54.719
+
+1.0000  01AAEB3C      +1.41361     22.62     32    6       1.000     1.000    22.618     1.000     1.000     1.000
+
+1.0000  01AAEFDC      +1.41361     22.62     32    6       1.000     1.000    22.618     1.000     1.000     1.000
+
+1.0000  01B32344      +1.41144     22.58     28    5       0.000     0.022     0.986     0.165     0.000    -0.845
+
+===== capture 30
+
+arm 30fps  delta 1.0
+
+  snapshot at vsync 16
+
+  snapshot at vsync 24
+
+  snapshot at vsync 28
+
+  snapshot at vsync 32
+
+  snapshot at vsync 36
+
+  snapshot at vsync 40
+
+  snapshot at vsync 48
+
+  snapshot at vsync 56
+
+  snapshot at vsync 64
+
+  snapshot at vsync 80
+
+  snapshot at vsync 100
+
+saved <session scratchpad>\cap-30.npz  (14 snapshots)
+
+===== arcs 30
+
+<session scratchpad>\kh2_arcs.py:26: RuntimeWarning: invalid value encountered in cast
+
+  f = snaps.view(np.float32).astype(np.float64)
+
+<session scratchpad>\kh2_arcs.py:31: RuntimeWarning: invalid value encountered in subtract
+
+  idle_range = idle.max(axis=0) - idle.min(axis=0)
+
+<session scratchpad>\kh2_arcs.py:33: RuntimeWarning: invalid value encountered in subtract
+
+  excursion = np.abs(fly - ground).max(axis=0)
+
+21004 words move far more in flight than at rest
+
+r2      addr      accel/vsync^2   peak   at vsync  pts   neighbours (f32 at -8..+12)
+
+1.0000  018CDF44    -128.00000   2048.00     32    6       0.000 8589934592.000     0.000     0.000     0.000 8589934592.000
+
+1.0000  019506F4    -128.00000   2048.00     28    5       0.039   935.480  1085.270    -1.682     0.527 -474576.469
+
+1.0000  018CDF34     -15.93750    255.00     32    6       0.000 8589934592.000     0.000     0.000     0.000 8589934592.000
+
+1.0000  018CDF3C     -15.93750    255.00     32    6       0.000     0.000     0.000 8589934592.000     0.000     0.000
+
+1.0000  019506EC     -15.93750    255.00     28    5    -217.790    -0.124     0.039   935.480  1085.270    -1.682
+
+1.0000  019506E4     -15.93750    255.00     28    5      -0.849    79.681  -217.790    -0.124     0.039   935.480
+
+1.0000  018CDF38     -11.87500    190.00     32    6   8589934592.000     0.000     0.000     0.000 8589934592.000     0.000
+
+1.0000  003AC624      -1.19580     77.53     48    9       0.000     0.000     0.000     0.000     1.000     1.000
+
+1.0000  003AC2E4      +4.78320     76.53     36    6       0.000     0.000    77.531     0.000     1.000     0.909
+
+1.0000  003AC124      +4.78320     76.53     36    6       0.000     0.000    77.531     0.000     1.000     0.909
+
+1.0000  003AC364      -4.42844     70.86     32    6       0.000    12.014   -69.855    -0.606     1.000     1.000
+
+1.0000  003AC324      -4.42844     70.86     32    6       0.000   -10.467   -69.855    -5.150     1.000     0.906
+
+1.0000  01B0A8BC      +2.91791     46.69     32    6       1.000     1.000    46.687     1.000     1.000     1.000
+
+1.0000  01B0A9AC      +2.91791     46.69     32    6       1.000     1.000    46.687     1.000     1.000     1.000
+
+1.0000  01B0A9CC      +2.87403     45.98     32    6       1.000     1.000    45.985     0.000     0.000    -0.003
+
+1.0000  01B0A8DC      +2.87403     45.98     32    6       1.000     1.000    45.985     1.000     1.000     1.000
+
+1.0000  01B0A89C      +2.86923     45.91     32    6       1.000     1.000    45.908     1.000     1.000     1.000
+
+1.0000  01B0A98C      +2.86923     45.91     32    6       1.000     1.000    45.908     1.000     1.000     1.000
+
+1.0000  01B0A7CC      +2.82637     45.22     32    6       1.000     1.000    45.222     1.000     1.000     1.000
+
+1.0000  01B0A7EC      +2.82471     45.20     32    6       1.000     1.000    45.195     1.000     1.000     1.000
+
+1.0000  01B100B0      -1.71407     27.43     32    6       1.000     0.000     0.000     0.000     0.000     1.000
+
+1.0000  01AADDB0      +1.57065     25.13     32    6     -34.058    -0.312   -13.264    35.400   156.196    54.719
+
+1.0000  01AAEB3C      +1.41361     22.62     32    6       1.000     1.000    22.618     1.000     1.000     1.000
+
+1.0000  01AAEFDC      +1.41361     22.62     32    6       1.000     1.000    22.618     1.000     1.000     1.000
+
+1.0000  01B32344      +1.41144     22.58     28    5       0.000     0.022     0.986     0.165     0.000    -0.845
+
+60 FPS group restored in PCSXROO pnach

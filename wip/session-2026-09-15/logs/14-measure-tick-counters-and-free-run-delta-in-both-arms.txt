@@ -1,0 +1,42 @@
+# Measure tick counters and free-run delta in both arms
+# (foreground run, transcript line 852)
+--- input (line 850) ---
+python "<session scratchpad>\kh2_tickrate.py"
+--- result ---
+===== 60fps arm
+
+  steady counters by step per 20 vsyncs: {1: 8, 3: 1, 5: 1, 20: 11, 40: 3}
+
+  free-run delta samples: {1.0: 80}
+
+  free-run vsync-count samples: {0: 80}
+
+  words still at arm values: 00349E1C=00000000, 0036B0F8=3F800000, 0036EF20=3F800000
+
+===== 30fps arm
+
+  steady counters by step per 20 vsyncs: {1: 5, 3: 1, 4: 1, 10: 1, 20: 13}
+
+  free-run delta samples: {2.0: 40, 1.0: 40}
+
+  free-run vsync-count samples: {1: 40, 0: 40}
+
+  words still at arm values: 00349E1C=00000001, 0036B0F8=40C00000, 0036EF20=40000000
+
+===== counters stepping 20 at 60fps and 10 at 30fps: 1
+
+  0032B920
+
+===== counters stepping 20 in BOTH arms (per-vsync clocks): 10
+
+  0032DF74
+
+  0032DF84
+
+  00349DE8
+
+  00349E04
+
+  0034D4BC
+
+  0034D53C
