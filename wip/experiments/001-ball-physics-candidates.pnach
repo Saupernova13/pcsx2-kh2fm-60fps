@@ -1,0 +1,27 @@
+gametitle=Kingdom Hearts II Final Mix + (NTSC-J) SLPM-66675 - ball physics fix candidates (scratch)
+
+[BALLFIX-B constant scaling]
+patch=1,EE,002EA548,word,46000004 // sqrt.s f00, f00          (was mul.s f00, f03, f00)
+patch=1,EE,002EA54C,word,460018C2 // mul.s  f03, f03, f00     (was mov.s f03, f00)
+patch=1,EE,002EA550,word,E6430024 // swc1   f03, 0x24(s2)     (was swc1 f00, 0x24(s2))
+patch=1,EE,00363404,word,3E50FAC6 // gravity 0.408163 -> 0.204082 (single reader 002EA55C)
+
+[BALLFIX-D tick gate]
+patch=1,EE,000FE000,word,3C080035 // lui  t0, 0x35
+patch=1,EE,000FE004,word,8D089E1C // lw   t0, -0x61E4(t0)     [00349E1C] extra vsync wait: 0 = 60fps
+patch=1,EE,000FE008,word,15000007 // bnez t0, update          30fps: never gate
+patch=1,EE,000FE00C,word,3C090033 // lui  t1, 0x33
+patch=1,EE,000FE010,word,8D29B920 // lw   t1, -0x46E0(t1)     [0032B920] game tick counter
+patch=1,EE,000FE014,word,31290001 // andi t1, t1, 1
+patch=1,EE,000FE018,word,11200003 // beqz t1, update          even tick: update as normal
+patch=1,EE,000FE01C,word,00000000 // nop
+patch=1,EE,000FE020,word,080BA95D // j    002EA574            odd tick: keep last velocity
+patch=1,EE,000FE024,word,00000000 // nop
+patch=1,EE,000FE028,word,13B60003 // beq  sp, s6, L1          replay the overwritten beql
+patch=1,EE,000FE02C,word,00000000 // nop
+patch=1,EE,000FE030,word,7AC80000 // lq   t0, 0(s6)            (copied from 002EA4A0)
+patch=1,EE,000FE034,word,7FA80000 // sq   t0, 0(sp)            (copied from 002EA4A4)
+patch=1,EE,000FE038,word,080BA92B // j    002EA4AC
+patch=1,EE,000FE03C,word,AFA00004 // sw   zero, 4(sp)          (copied from 002EA4A8, both paths end with it)
+patch=1,EE,002EA498,word,0803F800 // j    000FE000          (was 53B60004 beql sp, s6)
+patch=1,EE,002EA49C,word,00000000 // nop                      (was AFA00004 sw zero, 4(sp))

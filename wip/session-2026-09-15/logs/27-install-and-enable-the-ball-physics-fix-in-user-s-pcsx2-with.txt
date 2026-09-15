@@ -1,0 +1,106 @@
+# Install and enable the ball physics fix in user's PCSX2, with backups and verification
+# (foreground run, transcript line 1318)
+--- input (line 1316) ---
+$env:PYTHONPATH = "$env:USERPROFILE\Documents\GitHub\pcsxroo\pcsxroo"; python -u -c @"
+import shutil
+from pathlib import Path
+from ps2ee.pnach import Pnach
+
+root = Path(r'%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt')
+pnach = root / 'patches' / 'SLPM-66675_FAF99301.pnach'
+ini = root / 'gamesettings' / 'SLPM-66675_FAF99301.ini'
+cand = Path(r'<session scratchpad>\kh2_ballfix_candidates.pnach')
+GROUP = '60 FPS - ball physics'
+
+for f in (pnach, ini):
+    b = f.with_name(f.name + '.bak-20260915-ballfix')
+    shutil.copy2(f, b)
+    print(f'backup {b}')
+
+# the tested words, verbatim from the candidate group
+words, inside = [], False
+for line in cand.read_text(encoding='utf-8').splitlines():
+    s = line.strip()
+    if s.startswith('['):
+        inside = s == '[BALLFIX-D tick gate]'
+        continue
+    if inside and s.startswith('patch='):
+        words.append(s)
+assert len(words) == 18, len(words)
+
+data = pnach.read_bytes()
+nl = b'\r\n' if b'\r\n' in data else b'\n'
+if f'[{GROUP}]'.encode() in data:
+    raise SystemExit('group already present - not inserting twice')
+comment = [
+    '// 60 FPS - ball physics. Derived 2026-09-15 on the Sandlot ball (save state 1),',
+    '// A/B against the unpatched game at 30fps in PCSXROO: same state, same input.',
+    '//',
+    '// The airborne motion routine for this prop class (vtable 00363410, +0x1C =',
+    '// 002EA450) update
+--- result ---
+backup %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach.bak-20260915-ballfix
+
+backup %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini.bak-20260915-ballfix
+
+inserted [60 FPS - ball physics] before [Remove Blur] in %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+enabled [60 FPS - ball physics] in %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini
+
+  [Widescreen 16:9]  14 lines
+
+  [Widescreen 19.5:9 - S24 Ultra]  15 lines
+
+  [Remove Blackbars]  4 lines
+
+  [60 FPS]  5 lines
+
+  [60 FPS - ball physics]  18 lines
+
+  [Remove Blur]  1 lines
+
+  [Subtitles off]  1 lines
+
+  [Swap X and O]  19 lines
+
+installed words identical to the tested group: True
+
+[EmuCore]
+
+EnableCheats = true
+
+ShowPatchesForAllCRCs = true
+
+
+
+
+
+[Patches]
+
+Enable = Remove Blackbars
+
+Enable = Widescreen 19.5:9 - S24 Ultra
+
+Enable = Remove Blur
+
+Enable = Swap X and O
+
+Enable = 60 FPS
+
+Enable = 60 FPS - ball physics
+
+
+
+
+
+[EmuCore/GS]
+
+LoadTextureReplacements = true
+
+
+
+
+
+[EmuCore/Speedhacks]
+
+EECycleRate = 1

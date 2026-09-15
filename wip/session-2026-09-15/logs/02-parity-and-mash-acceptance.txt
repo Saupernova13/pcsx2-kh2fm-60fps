@@ -1,0 +1,36 @@
+########## single hit, offset 1: BALLFIX-B constant scaling
+scenario: single hit, offset 1
+  30fps oracle   peak  341.8  rise  28  contact  14  air 88  fall accel/vsync^2 0.1865
+  60fps          peak  208.8  rise  14  contact   3  air 47  fall accel/vsync^2 0.3552
+  60fps + fix    peak  342.9  rise  30  contact  14  air 89  fall accel/vsync^2 0.1889
+PASS: 60fps + [BALLFIX-B constant scaling] matches 30fps within tolerance
+exit code 0
+########## single hit, offset 1: BALLFIX-D tick gate
+scenario: single hit, offset 1
+  30fps oracle   peak  341.8  rise  28  contact  14  air 88  fall accel/vsync^2 0.1865
+  60fps          peak  208.8  rise  14  contact   3  air 47  fall accel/vsync^2 0.3552
+  60fps + fix    peak  343.5  rise  30  contact  14  air 89  fall accel/vsync^2 0.1887
+PASS: 60fps + [BALLFIX-D tick gate] matches 30fps within tolerance
+exit code 0
+########## mash 6s, unpatched
+scenario: mash 6s, offset 0
+  30fps oracle   airborne 74.0%  landings  2  mean height  262.1  max  345.9  horizontal travel   190.9  end offset   78.5
+  60fps          airborne 83.2%  landings  2  mean height  158.4  max  403.9  horizontal travel   629.6  end offset  370.4
+FAIL: 60fps unpatched differs from 30fps: mean height 158.4 vs 262.1; horizontal travel 629.6 vs 190.9
+exit code 1
+########## mash 6s: BALLFIX-B constant scaling
+scenario: mash 6s, offset 0
+  30fps oracle   airborne 74.0%  landings  2  mean height  262.1  max  345.9  horizontal travel   190.9  end offset   78.5
+  60fps          airborne 82.6%  landings  2  mean height  157.5  max  362.3  horizontal travel   566.1  end offset  158.3
+  60fps + fix    airborne 100.0%  landings  0  mean height  411.2  max  639.3  horizontal travel   832.3  end offset  667.8
+FAIL: 60fps + [BALLFIX-B constant scaling] differs from 30fps: airborne 100.0% vs 74.0%; mean height 411.2 vs 262.1; horizontal travel 832.3 vs 190.9
+exit code 1
+########## mash 6s: BALLFIX-D tick gate
+scenario: mash 6s, offset 0
+  30fps oracle   airborne 74.0%  landings  2  mean height  262.1  max  345.9  horizontal travel   190.9  end offset   78.5
+  60fps          airborne 83.2%  landings  2  mean height  158.4  max  403.9  horizontal travel   629.6  end offset  370.4
+  60fps + fix    airborne 100.0%  landings  0  mean height  367.3  max  562.4  horizontal travel  1149.5  end offset  374.2
+FAIL: 60fps + [BALLFIX-D tick gate] differs from 30fps: airborne 100.0% vs 74.0%; mean height 367.3 vs 262.1; horizontal travel 1149.5 vs 190.9
+exit code 1
+
+[exited with code 1]
