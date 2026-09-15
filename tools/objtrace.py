@@ -40,11 +40,12 @@ from game.pnachtext import group_words, headers
 
 
 def fix_words(arm: str, groups: list[str]) -> list:
-    if arm == "60fix":
+    """60fix/30fix: every group in patch/; 60w/30w: the --group names from wip/working.pnach."""
+    if arm.endswith("fix"):
         path = config.PATCHES / "kh2fm-60fps.pnach"
         return [w for _, name in headers(path.read_text(encoding="utf-8").splitlines())
                 for w in group_words(path, name)]
-    if arm == "60w":
+    if arm.endswith("w"):
         return [w for name in groups for w in group_words(config.WIP / "working.pnach", name)]
     return []
 
@@ -55,7 +56,7 @@ def capture(args) -> int:
     out = {"obj": np.array([args.obj]), "size": np.array([args.size]), "arms": np.array(args.arms.split(",")),
            "script": np.array([args.script])}
     for arm in args.arms.split(","):
-        base = "60" if arm.startswith("60") else arm
+        base = "60" if arm.startswith("60") else "30"
         ratediff.start_arm(roo, base, args.slot)
         sandlot.apply_words(roo, fix_words(arm, args.group))
         blocks, ticks = [], []
