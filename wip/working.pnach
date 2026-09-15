@@ -106,6 +106,40 @@ patch=1,EE,000FE070,word,3C0F0037 // lui    t7, 0x37       (copied from 0017C7A0
 patch=1,EE,0017C798,word,0803F810 // j      000FE040       (was 46010034 c.olt.s f0, f1)
 patch=1,EE,0017C79C,word,00000000 // nop                   (was 4500001F bc1f 0017C81C)
 
+// 60 FPS - friction. Derived 2026-09-15 on Sora in Twilight Town, A/B against the
+// unpatched game at 30fps in PCSXROO: same state, same input.
+//
+// 00184540 is the shared velocity step behind 19 motion routines (Sora on the
+// ground and in the air, objects, enemies). Once per frame, with no delta, it
+// blends velocity toward the input target by k1 or decays it by k2, then moves by
+// velocity * delta. At 60fps both ran twice per real second: an air-combo lunge
+// travelled 131.4 instead of 195.0, a ground combo 286.6 instead of 244.5.
+//
+// Fix: at 60fps use sqrt(k1) and sqrt(k2) - the same decay per real second. The
+// blend settles on the target itself, so top speeds are unchanged; nothing
+// depends on tick phase. Unchanged at 30fps.
+//
+// Hook at 00184558 into a cave at 000FE080, after the short hop cave.
+[60 FPS - friction]
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+description=Friction, lunges and acceleration at real speed for every object that uses the shared velocity step. Needs 60 FPS enabled.
+patch=1,EE,000FE080,word,46006506 // mov.s  f20, f12       (copied from 00184558)
+patch=1,EE,000FE084,word,3C080035 // lui    t0, 0x35
+patch=1,EE,000FE088,word,8D089E1C // lw     t0, -0x61E4(t0) [00349E1C] vsync wait: 0 = 60fps
+patch=1,EE,000FE08C,word,15000009 // bnez   t0, back       30fps: unchanged
+patch=1,EE,000FE090,word,00000000 // nop
+patch=1,EE,000FE094,word,4600A036 // c.le.s f20, f0        f0 is zero here
+patch=1,EE,000FE098,word,45010002 // bc1t   skip           k1 <= 0: leave it
+patch=1,EE,000FE09C,word,00000000 // nop
+patch=1,EE,000FE0A0,word,46140504 // sqrt   f20 <- f20     k1 per 60 Hz frame (R5900: operand in ft)
+patch=1,EE,000FE0A4,word,4600A836 // c.le.s f21, f0        skip:
+patch=1,EE,000FE0A8,word,45010002 // bc1t   back           k2 <= 0: leave it
+patch=1,EE,000FE0AC,word,00000000 // nop
+patch=1,EE,000FE0B0,word,46150544 // sqrt   f21 <- f21     k2 per 60 Hz frame (R5900: operand in ft)
+patch=1,EE,000FE0B4,word,08061158 // j      00184560       back:
+patch=1,EE,000FE0B8,word,00000000 // nop
+patch=1,EE,00184558,word,0803F820 // j      000FE080       (was 46006506 mov.s f20, f12; delay slot keeps sd s1)
+
 // NEVER SHIP. The other candidate for the same bug (FIX-B in docs/findings.md):
 // scale the per-tick constants instead of gating the update. Rising drag becomes
 // sqrt(0.8) by rewriting the multiply in place, and gravity is halved in data

@@ -59,6 +59,9 @@ def snapshot(roo) -> np.ndarray:
 def start_arm(roo, name: str, slot: int) -> None:
     if not roo.paused():
         roo.pause()
+    # A release sent while paused only queues, so without this the previous run's
+    # last button is still down on the first frame after the load (BT3's lesson).
+    roo.flush_input()
     roo.loadstate(slot)
     if not roo.paused():
         roo.pause()
