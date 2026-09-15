@@ -7,32 +7,47 @@ bottom. Log numbers refer to `wip/session-<date>/logs/`; every address is also i
 
 ## STATE OF PLAY - read this first
 
-> **Superseded in part (later on 2026-09-15, v03).** The global audit at the bottom
-> of this log found that the "second prop" `01A94440` is **Sora** and the two
-> "ground props" are **Donald and Goofy**, so Sora *is* a physics object. It added
-> `[60 FPS - short hop]` and `[60 FPS - friction]`, both verified against 30fps and
-> verified to change nothing at 30fps. The juggle still differs with every group on.
-> Read "2026-09-15 - global audit" below and [`global-audit.md`](global-audit.md)
-> before the older sections.
+Last revised 2026-09-15, at v03. **Three physics groups of ours and the optional
+widescreen group**, all installed and enabled in the user's PCSX2, **none yet
+confirmed in play** - see [`status.md`](status.md). The plan for the rest of the
+game, the players' reported defects and the state of every system are kept in
+[`global-audit.md`](global-audit.md).
 
-Last revised 2026-09-15. Two groups of ours, both installed and enabled in the
-user's PCSX2, **neither yet confirmed in play** - see [`status.md`](status.md).
+> **Two identities in the older sections are wrong.** The ball investigation called
+> object `01A94440` "the second prop" and `01AADB90` / `01AC2490` "the ground
+> props". Walking the player away and back showed they are **Sora** and **Donald
+> and Goofy** ("2026-09-15 - global audit", at the bottom). What was measured about
+> those objects stands; the names, and the conclusion that Sora is not a physics
+> object, do not. Each place is marked where it occurs.
 
 | group | what it does |
 |---|---|
 | `Widescreen 19.5:9 - S24 Ultra` | ElHecht's 16:9 hack retargeted to 19.5:9: widen factor 12/19.5 loaded exactly with `lui`+`ori`, font x-scale to match. Built at install time from the database's 16:9 group |
 | `60 FPS - ball physics` | gates the airborne prop integrator's per-tick velocity update to every other game tick while `[60 FPS]` is active. One hit of the Sandlot ball flies as at 30fps |
+| `60 FPS - short hop` | lets the jump controller `0017C690` cut a released jump into its apex arc only on an even jump clock - the 30fps grid. A tap peaks 115.10 against 115.08 at 30fps (103.53 before) |
+| `60 FPS - friction` | takes the square root of the shared velocity step's blend and friction factors (`00184540`, 19 call sites) at 60fps. Sora's air-combo lunge travels 194.68 against 195.02 (131.43 before), a ground combo 245.03 against 244.46 (286.61) |
 
-**Known not fixed:** a long juggle. At 60fps Sora's swings reach the ball at
-different moments - extra weak hits and earlier side swipes - and two ground props
-are pushed 6-8 vsyncs sooner. That is character timing under `[60 FPS]`, not the
-ball, and nobody has looked at it. See "Mashing" below.
+Each physics group was also run at 30fps: Sora's object memory is byte-identical
+with and without them through an air combo, a tap jump and a ground combo.
 
-**Open leads, in the order worth taking them:** Sora's hit timing (the hit handler
-`002E7E48` is called from `001DAE88` - start there); the ground props' push
-vector (`obj+0xC20`, copied at `001114F8`); the second prop's airborne motion
-`0017C8F0`; the sibling integrator `0019FBC4`; whether any closed-form ballistic
-solve feeds a countdown.
+**How the engine keeps time.** Delta is the number of vsyncs a frame took, in 60 Hz
+units - 2 at 30fps, 1 under `[60 FPS]` - so code that scales by delta is already
+right. The defects are steps taken once per frame or per tick without it.
+
+**Known not fixed:**
+
+- **The Grandstander juggle** still stays up longer with every group on (30 taps:
+  airtime 214 against 125-142). Sora's swings land weak hits and a side swipe the
+  30fps game does not, after contact push-outs leave the ball 5.3 units over at its
+  launch. Collision resolution; no rate term found in it.
+- **Effects step at double speed.** `[60 FPS]` lowers the particle accumulator's
+  threshold `0036EF20` from 2.0 to 1.0, and the stock 2.0 was already right at 60fps.
+- **Enemies are unmeasured** - no save state is at a fight yet.
+
+**Open leads, in order** (the detail is in global-audit.md, "Next, in order"): play
+v03; a save state at a fight, and the 17 unidentified call sites of `00184540`; the
+juggle's push-out in the collision resolver `00183918`; the particle threshold; the
+static candidates `0017AA2C` and `001C9EE8` and the sibling integrator `0019FBC4`.
 
 ## Setup
 
@@ -403,6 +418,10 @@ eight at rest class `01C60030` (vtable `0034EB60`, motion `0017C290`), three of
 of them** - the player moves through another system. The ball at rest is class
 `01C60030` like the others; it switches to `01C60340` when hit.
 
+> **Correction (global audit, below):** Sora *is* one of them - `01A94440`, called
+> "a second prop" in this section - and `01AC2490` and `01AADB90` are Donald and
+> Goofy. The measurements in this section stand; read those three names for them.
+
 Heights through the 130-vsync mash, every 10 vsyncs:
 
 | object | 30fps | 60fps unpatched | 60 + FIX-D |
@@ -414,7 +433,8 @@ Heights through the 130-vsync mash, every 10 vsyncs:
 
 `01A94440` is a second prop, not Sora. With FIX-D its first 20 vsyncs of flight match
 30fps (144, 223) where unpatched 60fps does not (104, 143), until the two runs'
-interactions diverge around vsync 60-70.
+interactions diverge around vsync 60-70. *(Corrected below: `01A94440` is Sora, and
+this is his jump; `01AC2490` and `01AADB90` are Donald and Goofy.)*
 
 `0019FBC4` disassembled (log 04): the same horizontal factor, rising drag, gravity
 (its own copy, `0036D440`) and cap as `002EA450`, plus `obj+0xF8 += delta`. Reached
@@ -444,6 +464,8 @@ Sora's position was sought as a vec4 near the ball that rises between vsync 0 an
 110 of the 30fps mash, when screenshots show him airborne. All 35 candidates
 (`00341720..`, `00348710..`, `003A7FD0`, `01A81FE0`, `01AABB50..`) trace heights 144,
 223, 238 at 30fps - copies of the second prop. Sora is not a plain vec4 there.
+*(Wrong: the second prop is Sora, so these 35 were his copies - `00341720` is his
+cache in data. Found by walking him, in the global audit below.)*
 
 The mash at hit offsets 0-3, 4 s each:
 
@@ -478,8 +500,9 @@ either side:
 - **Two ground props, `01AC2490` and `01AADB90`, start sliding at vsync 36-37 at
   60fps**, fixed or not, against 43-45 at 30fps, at the same speed once moving.
   Whatever pushes them arrives 6-8 vsyncs sooner. The ball fix does not touch it.
+  *(They are Donald and Goofy - see the correction above.)*
 - **The second prop launches at vsync 51 in both arms**, into class `01C60040` - a
-  different airborne class from the ball's.
+  different airborne class from the ball's. *(Sora, jumping.)*
 
 ### The weak hits' writer, the prop classes, the ground props' push (log 26)
 
@@ -491,7 +514,9 @@ Class vtables:
 
 - `01C60030` -> `0034EB60`, +1C `0017C290`
 - `01C60040` -> `0034EB90`, +1C `0017C8F0` (the second prop's airborne motion; reads
-  none of the gravity copies; **not examined**)
+  none of the gravity copies; **not examined**) *(Examined in the global audit:
+  characters' airborne motion - the jump clock, the shared velocity step and the arc
+  height.)*
 - `01C60340` -> `00363410`, +1C `002EA450`
 
 From vsync 34 of the 60fps mash, the ground prop `01AC2490`'s velocity is written by

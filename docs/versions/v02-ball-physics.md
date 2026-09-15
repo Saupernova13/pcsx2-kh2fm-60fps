@@ -74,6 +74,12 @@ derivation as comments, backups `*.bak-20260915-ballfix`.
   unpatched 60fps did not (104 -> 143) - how, given it does not go through the
   gated routine, was not established.
 
+  > **Corrected in [v03](v03-movement-physics.md):** `01A94440` is **Sora**, not a
+  > prop, and the two "ground props" below are Donald and Goofy. `01C60040` is the
+  > class characters fly in, and `0017C8F0` is Sora's airborne motion - the jump
+  > arc and the shared velocity step `00184540`. The notes on this page are kept
+  > as they were written.
+
 ### Mashing - found, not fixed
 
 - Unpatched 60fps mashing averages 40% lower than 30fps and slides the ball 3.3x
@@ -95,6 +101,8 @@ derivation as comments, backups `*.bak-20260915-ballfix`.
   `001114F8`. Something pushes them sooner.
 - Sora is not one of the 11 physics objects, and a RAM search for his position
   found only copies of the second prop. His timing was not investigated.
+  **Wrong, see the correction above:** the second prop is Sora, so those copies
+  were his, and the two ground props are Donald and Goofy.
 
 ## Evidence
 
@@ -119,7 +127,7 @@ derivation as comments, backups `*.bak-20260915-ballfix`.
 
 - Mashing: Sora's hit timing and the early prop pushes under `[60 FPS]`.
 - `0017C8F0` (the second prop's airborne motion) and `0019FBC4` (the sibling
-  integrator) are unexamined.
+  integrator) are unexamined. *(v03 examined `0017C8F0`: Sora's airborne motion.)*
 - The five ballistic solves compute times and speeds in game-tick units; whether
   any of them is used as a countdown at 60fps is unchecked.
 - Nothing is confirmed in play.

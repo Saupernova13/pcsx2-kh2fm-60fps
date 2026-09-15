@@ -62,9 +62,9 @@ by source, not time. In the order they ran:
 | `04` | a breakpoint firing under resume/wait, the 11 physics objects, `0019FBC4` disassembled, and every object traced through the mash |
 | `23` | the code around the other five readers of 0.408163 - closed-form solves |
 | `24` | their neighbouring constants and how each is reached |
-| `05` | the search for Sora's position (35 copies of the second prop), then the mash as distributions over four hit timings |
+| `05` | the search for Sora's position (35 copies of "the second prop" - which is Sora, so they were his; see [the audit session](../session-2026-09-15-audit/README.md)), then the mash as distributions over four hit timings |
 | `25` | walking through the resting ball moves it 0.0 in every arm; the displacement contributor and collision resolver disassembled |
-| `26` | the weak hits' writer is the hit handler; the three prop class vtables; what pushes the ground props |
+| `26` | the weak hits' writer is the hit handler; the three prop class vtables; what pushes the ground props (Donald and Goofy) |
 | `27` | the install into the user's PCSX2, with backups, and the installed words compared with the tested ones |
 
 Not archived, because nothing kept its output: the first `mem.search` attempts,

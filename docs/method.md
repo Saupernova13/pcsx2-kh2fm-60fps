@@ -15,14 +15,22 @@ the stock frame limiter, and the thing under test is always a group layered on
 someone else's.
 
 That also sets the ownership rule. Nothing written by someone else is kept in
-this repo: not the database groups, not their lines in a log. `tools/install.py`
-edits the user's existing database patch and adds only this project's groups.
+this repo: not the database groups, not their lines in a log, not the community
+scripts whose addresses `tools/game/world.py` records. `tools/install.py` edits
+the user's existing database patch and adds only this project's groups.
+
+And KH2's engine already counts time in 60 Hz units - delta is the number of vsyncs
+a frame took, 2 at stock 30fps - so most of the game is right under `[60 FPS]`. The
+work is finding the places that step once per frame or per tick anyway, which is
+why the global audit ([`global-audit.md`](global-audit.md)) tests systems in motion
+rather than reading every timing constant.
 
 ## The oracle A/B
 
 Every candidate is scored against the unpatched 30fps game from the same save
 state, with the same input, over the same number of vsyncs - so both arms cover
-the same real time. The acceptance test is `tools/balltest.py`.
+the same real time. The acceptance tests are `tools/balltest.py` for the Sandlot
+ball and `tools/movetest.py` for anything else that moves.
 
 ### The arms
 
@@ -30,19 +38,25 @@ PCSXROO boots KH2FM with **`[60 FPS]` not enabled** in its own gamesettings ini
 (`<pcsxroo>/bin/gamesettings/SLPM-66675_FAF99301.ini`). The arm is set by writing
 the three words that group owns, after the state loads:
 
-| | `00349E1C` vsync wait | `0036B0F8` delta cap | `0036EF20` accumulator |
+| arm | `00349E1C` vsync wait | `0036B0F8` delta cap | `0036EF20` accumulator |
 |---|---|---|---|
-| 60fps | 0 | 1.0 | 1.0 |
-| 30fps | 1 | 6.0 | 2.0 |
+| `60` | 0 | 1.0 | 1.0 |
+| `30` | 1 | 6.0 | 2.0 |
+| `60t2` | 0 | 1.0 | **2.0** - `[60 FPS]` with the stock particle threshold |
+| `60c6` | 0 | **6.0** | 1.0 - `[60 FPS]` with the stock delta cap |
 
 A fix under test is a pnach group whose word writes are applied the same way.
-For code and single-reader data words that is what PCSX2 does every frame.
+For code and single-reader data words that is what PCSX2 does every frame. The
+tracing tools name the combinations: `60fix` and `30fix` apply every group in
+`patch/`, and `60w` and `30w` the groups named with `--group` from
+`wip/working.pnach`.
 
 ### Prove the arm, every time
 
 `sandlot.start()` advances 2 vsyncs, then reads the game tick counter `0032B920`
-across 4 more. It must step 4 at 60fps and 2 at 30fps, or the run stops. Never
-trust the delta word for this - see "the delta scare" below.
+across 4 more. It must step 4 at 60fps and 2 at 30fps, or the run stops. The audit
+tools' `ratediff.start_arm()` flushes the pad, loads, and does the same over 20
+vsyncs. Never trust the delta word for this - see "the delta scare" below.
 
 ### The schedule
 
@@ -50,6 +64,12 @@ From save state 1: 6 idle vsyncs, walk `LLeft+LDown` for 8, then `Cross` for 2.
 Plain `LLeft` swings past the ball. Mashing is `Cross` 2 vsyncs on, 6 off. An
 `--offset` adds idle vsyncs before the walk, which moves the hit onto the other
 game-tick phase at 60fps.
+
+Everything else is scripted in `movetest.py`'s syntax - `wait:N`,
+`hold:BTN[+BTN]:N`, `tap:BTN` - so the same script drives every arm. `Swap X and
+O` is on in PCSXROO's patch file as in the user's, so Sora jumps on Circle and
+attacks on Cross. The scripts the audit used are listed in
+[`global-audit.md`](global-audit.md), "Method".
 
 ## Getting the user's state into PCSXROO
 
@@ -92,8 +112,10 @@ into PCSXROO for this, with PCSXROO's old ones kept in `memcards\bak-20260915`.
    compares against `0x28170704` and never fires. The first hit-handler
    breakpoint logged nothing, and that was misread as "breakpoints don't stop
    during frame-advance". They do. Write `0x` everywhere.
-8. **Stops fire under `resume` + `wait`.** Watchpoint and breakpoint tools here
-   resume and wait for a stop rather than frame-advancing into one.
+8. **Stops fire under `resume` + `wait`, and under `frame_advance`.** The watchpoint
+   and breakpoint tools resume and wait for a stop. The audit's hit counters advance
+   one vsync at a time instead; a breakpoint inside that vsync returns a stop whose
+   `reason` is `breakpoint`, and the loop reads its registers and advances again.
 9. **A paused VM queues screenshots.** `screenshot()` while paused writes nothing
    until `frame_advance(1)` flushes it - one vsync per frame of film.
 10. **Shutting down a paused PCSXROO hung in "stopping"**, and an interrupted
@@ -108,7 +130,51 @@ into PCSXROO for this, with PCSXROO's old ones kept in `memcards\bak-20260915`.
     processes.** Two traces in one process were identical to 0.0000; one of three
     separate runs of the unpatched 60fps mash gave travel 566 instead of 630. So
     mash results are compared as distributions over hit timings
-    (`tools/mashdist.py`), never single runs.
+    (`tools/mashdist.py`), never single runs. Rule 13 is the likely reason.
+13. **Flush the pad before loading a state.** A button release sent while paused
+    only queues, so the last button of one arm was still down on the first frame
+    of the next, and the unpatched 60fps arm's jump peaked 146.80 in one run and
+    156.57 in another. `ratediff.start_arm()` calls `flush_input()` before every
+    load; every audit tool starts its arms through it.
+14. **Physics defects do not show at idle.** The Sandlot idle sweep in three arms
+    (`tools/ratesweep.py`) found integer effect state stepping twice as often and
+    no float moving twice as far. Every physics defect so far came from a scripted
+    motion.
+15. **Check who an object is before concluding what it is not.** The ball work
+    called `01A94440` "the second prop" because it was in the list of objects the
+    displacement builder moves, then concluded Sora was not a physics object - and a
+    search for Sora's position that turned up "only copies of the second prop" was
+    read as confirmation. Those were Sora's own copies. Walking the player away and
+    back (`tools/findplayer.py`) takes a minute and names the player; the objects
+    that follow are the party.
+16. **A walk is diagonal and ends in a slide.** The first player filter wanted every
+    word to reverse sign on the way back and hold within 2.0 after release, and
+    found nothing. Filter whole vec4s with w = 1.0 by horizontal distance, and tell
+    an object's own position from its copies by a known class word at `-0x540 +
+    0x0C`: unrelated single copies walked as far as Sora did.
+17. **Capstone has no R5900 mode; disassemble VU code through PCSXROO.** The shared
+    velocity step `00184540` is VU0 macro-mode code, which `ps2ee.disasm` will not
+    decode. PCSXROO's own disassembler (`Roo.dis`) does.
+18. **The R5900 FPU's SQRT takes its operand from ft, not fs.** Standard MIPS puts
+    the operand of `sqrt.s fd, fs` in bits 15-11; the PS2, and PCSX2, read bits
+    20-16. The first friction group was encoded the MIPS way, computed `sqrt(f0)` =
+    0, and deleted every lunge (path 0.00). A conditional breakpoint just after the
+    cave showed f20 and f21 at zero. Encode `0x46000004 | ft << 16 | fd << 6`
+    (`mkfrictionfix.sqrt`), and check any new FPU word by breaking on its result:
+    the disassembler decodes it the standard way.
+19. **Break in shared code with a condition on the object.** The hit handler
+    `002E7E48` stopped every frame. A breakpoint on its vy write `002E7EE8` with
+    `t5 == 0x01ADD9D0` gave exactly the ball's hits; the friction step's with
+    `a1 == 0x01A94440`, exactly Sora's factors.
+20. **Every group runs at 30fps too.** A group for 60fps must be a no-op at 30fps.
+    `objtrace.py` in the `30` and `30fix` arms through the same scripts must show 0
+    differing words in the object. All three physics groups do - the jump group by
+    construction (the clock is always even at 30fps), the friction group because it
+    checks the vsync wait, the ball group because it gates on it.
+21. **A fix is only as good as every test run against it.** The first friction
+    group passed the ground combo, run-and-stop and both jumps; only the air combo -
+    path 0.00 - showed it had deleted the lunge. So with every group on, the jumps,
+    both combos, run-and-stop and the ball's single hit are all run again.
 
 ## Choosing between fixes
 
@@ -120,11 +186,25 @@ exactly to the 30Hz step, and scaling does not. Both were then built by
 `tools/mkballfix.py`, which copies the displaced instructions out of the ELF and
 decodes every word back, and both went through the acceptance test.
 
-A hook's displaced words must match the game. `mkballfix.py --check` regenerates
-the group from the ELF and compares it with `patch/` and `wip/`.
+v03's groups were chosen from what the code computes:
+
+- **The jump cut is a threshold compare** on a clock that steps by delta. Letting
+  the cut happen only on even clock values is exactly the 30fps grid at 60fps, and
+  never changes 30fps, where the clock is always even.
+- **The velocity step multiplies by a factor once per frame.** The factor's square
+  root at 60fps is the same decay per real second, and the blend's resting value is
+  the target itself, so top speeds cannot change. It is also phase-free, which a
+  tick gate would not be with 19 call sites setting velocities at arbitrary moments.
+  The ball's integrator uses a gate because its update adds gravity as well.
+
+A hook's displaced words must match the game. Each generator checks the words it
+displaces against the ELF, decodes its group back, and `--check`s it against
+`patch/` and `wip/`: `mkballfix.py`, `mkjumpfix.py`, `mkfrictionfix.py`. The caves
+are packed in the zero run from `000FE000`: `000..03C`, `040..070`, `080..0B8`.
 
 ## What shipped
 
 Per-build confidence: [`status.md`](status.md).
 The full record: [`findings.md`](findings.md).
+The plan for the rest of the game: [`global-audit.md`](global-audit.md).
 Every address: [`addresses.md`](addresses.md).

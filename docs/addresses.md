@@ -49,13 +49,16 @@ The A/B arms write exactly the three words `[60 FPS]` owns - `00349E1C`,
 
 ## Prop classes
 
-A prop's class pointer is `obj+0x0C`. Hitting a prop switches its class.
+An object's class pointer is `obj+0x0C`. Hitting a prop switches its class, and a
+character switches class when it leaves the ground. The ball notes called every
+object here a prop; three of them are Sora, Donald and Goofy (see "Sandlot save
+state" below).
 
 | Class | Vtable | +0x1C motion | Used by |
 |---|---|---|---|
-| `01C60030` | `0034EB60` | `0017C290` - writes a zero vector to velocity at `0017C3F4` | every Sandlot prop at rest (8 of the 11 physics objects) |
+| `01C60030` | `0034EB60` | `0017C290` - grounded motion: calls the shared velocity step from `0017C2B8`, writes a zero vector to velocity at `0017C3F4` | 8 of the 11 objects the displacement builder moves: the resting ball and props, and Sora, Donald and Goofy on the ground |
 | `01C60340` | `00363410` | `002EA450` - the airborne integrator below | the ball, airborne. The only vtable pointing at `002EA450` |
-| `01C60040` | `0034EB90` | `0017C8F0` - **unexamined**, reads none of the gravity copies | the second prop, airborne |
+| `01C60040` | `0034EB90` | `0017C8F0` - airborne character motion: the jump clock, the shared velocity step and the arc height, through `0017C870` (see "Sora's movement") | Sora in the air - first taken for "a second prop" |
 | `01C60060` | `0034EB30` | `0017A968` | three objects at the origin |
 
 Other vtable `00363410` entries: `+00 002EA338`, `+14 002EAA70`, `+18 002EAA68`,
@@ -97,7 +100,7 @@ equal to height change per game tick x 1.0 at 60fps and x 0.5 at 30fps.
 | `00183918` | collision resolver. Copies `+0x540` to `+0x590` |
 | `0018A924` | writes the collision shape's Y (`01ADEAC4` for the ball) |
 | `002E7E48` | **hit handler**, called from `001DAE88`. Copies a direction into velocity, zeroes its y, normalises, scales by `[a0+0xC]`, then `vy = -[a0+0x8]` at `002E7EE8`, tail-jumps `0016BD60`. Sets an absolute velocity: pop-up (0, -60, 0), side swipe (~51 horizontal, -42), weak hit (vy -10) |
-| `001114F8` | copies `obj+0xC20` into velocity (`ra 001114CC`) - how the ground props get their push |
+| `001114F8` | copies `obj+0xC20` into velocity (`ra 001114CC`) - how Donald and Goofy (first called the ground props) get their push |
 | `0019FBC4` | sibling integrator, reached by fall-through (entry near `0019FBE0`): the same horizontal factor, rising drag, gravity (its own copy `0036D440`) and cap, plus `obj+0xF8 += delta`. **Not fixed, callers unknown** |
 
 ## Constants
@@ -195,8 +198,8 @@ Valid only in the user's save state 1, Twilight Town Sandlot. See
 |---|---|
 | `01ADD9D0` | the ball |
 | `01ADEAC0` | the ball's collision-shape centre x, y, z |
-| `01A94440` | the second prop |
-| `01AC2490`, `01AADB90` | the two ground props that slide early at 60fps |
+| `01A94440` | **Sora** (first called "the second prop"). Position at `+0x540`; copies of it at `+0x70`, `+0x5C0`, `+0x6E0`, `+0x730`, `+0xC40`; the previous frame's at `+0x590`, `+0x720`, `+0x840` and in data at `00341720` |
+| `01AC2490`, `01AADB90` | **Donald and Goofy**, which is which not established (first called "the ground props"; they start sliding early at 60fps in the mash) |
 | `01CE36CC` | the runtime parameter block |
 | `01A8C4F0`, `01AABC30`, `01AC12B0`, `01AD4420`, `01AD86D0`, `01AFD310`, `01B09620` | the other physics objects through the builder |
 | `0037EC30` | **not an object**: a stack AABB centre every object's collision computes. It looked exactly like the ball at 60fps |

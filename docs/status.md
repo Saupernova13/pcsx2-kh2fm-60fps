@@ -9,8 +9,8 @@ This page is only about which build to trust.
 > **\*** means verified by measurement - against the unpatched 30fps game as its
 > own oracle, same save state, same input, same number of vsyncs, or for the
 > widescreen group against the arithmetic of the group it is built from - but
-> **not yet confirmed in play by the user**. A star is provisional. **Both
-> builds are starred.**
+> **not yet confirmed in play by the user**. A star is provisional. **Every
+> build is starred.**
 
 | Build | Our groups | Confidence | Notes |
 |---|---|---|---|
@@ -18,10 +18,11 @@ This page is only about which build to trust.
 | `v02-ball-physics` | 2: `60 FPS - ball physics`, and the optional 19.5:9 widescreen | **MEASURED, NOT YET PLAYED\*** | One hit of the Sandlot ball flies as it does at 30fps, at both game-tick phases. Long juggles still differ - see below |
 | `v01-widescreen-s24` | 1: `Widescreen 19.5:9 - S24 Ultra` | **ARITHMETIC VERIFIED, NOT SEEN ON SCREEN\*** | Reproduces the 16:9 group's constants bit for bit when fed 16:9 |
 
-Neither group stands alone. `60 FPS - ball physics` compensates PeterDelta's
-`[60 FPS]` from PCSX2's own database and does nothing without it. The widescreen
-group is built from ElHecht's `[Widescreen 16:9]`, also from that database, which
-must then be switched **off**. `tools/install.py --status` shows all four.
+None of our groups stands alone. The three physics groups compensate PeterDelta's
+`[60 FPS]` from PCSX2's own database: they do nothing useful without it, and each
+was run at 30fps to show it changes nothing there. The widescreen group is built
+from ElHecht's `[Widescreen 16:9]`, also from that database, which must then be
+switched **off**. `tools/install.py --status` shows every one of them.
 
 ## v03 - movement physics: MEASURED, NOT YET PLAYED
 
@@ -42,9 +43,10 @@ jump and a ground combo was identical with and without them.
 - short hops and jump height in general;
 - how far attacks carry Sora on the ground and in the air, and how quickly he
   stops;
-- **enemies**: `[60 FPS - friction]` changes the shared velocity step many enemy
-  states use, and no enemy has been measured - knockback slides and lunges should now
-  match 30fps, but that is the least verified part of this build.
+- **enemies and everything else that slides**: `[60 FPS - friction]` changes the
+  shared velocity step for all 19 of its call sites. Two are Sora's; the other 17
+  are not identified, and enemy states may be among them. No enemy has been
+  measured, so this is the least verified part of the build.
 
 **Not fixed:** the Grandstander juggle still stays up longer than at 30fps (contact
 resolution, not a rate bug found); effects run at double speed under `[60 FPS]`.
@@ -82,8 +84,9 @@ ball, and it is uninvestigated. See [`findings.md`](findings.md), "Mashing".
 **Worth watching in play:**
 
 - whether juggling now feels easier than at 30fps (expected, per the table above);
-- the other Sandlot props - the second prop flies through a different motion
-  routine (`0017C8F0`) this group does not touch, and nobody has checked it;
+- Sora - what these notes called "the second prop" is Sora, flying through his
+  airborne motion (`0017C8F0`), which this group does not touch; v03 measured and
+  fixed his movement;
 - any other object of the same class (vtable `00363410`) elsewhere in the game;
   the group covers the whole class, and was only measured in the Sandlot.
 

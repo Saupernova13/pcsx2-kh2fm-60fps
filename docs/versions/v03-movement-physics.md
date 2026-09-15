@@ -86,8 +86,9 @@ through the 30fps values every second frame.
   60fps. That is collision resolution sampled at a finer step, and no per-frame rate
   term has been found in it yet.
 - **Effects at double speed** from `[60 FPS]`'s accumulator threshold.
-- **Enemies**: nothing reachable in the user's saves has combat yet; the friction group
-  covers the enemy states that call `00184540`, unmeasured.
+- **Enemies**: no save state is at a fight yet. The friction group changes every one
+  of `00184540`'s 19 call sites; two are Sora's, and the other 17 - enemy states may
+  be among them - are not identified or measured.
 - The sibling integrator `0019FBC4`; Quick Run and other abilities; reaction commands.
 
 ## Get this version
