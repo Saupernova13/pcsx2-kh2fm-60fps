@@ -88,6 +88,31 @@ this project's delta scale) and `00349DE8` (a per-vsync clock in both arms).
    for the ball.
 4. **No regressions**: every fix is re-checked against the earlier acceptance tests.
 
+## Static scan for per-frame integrators (`tools/integrators.py`)
+
+Every `field = field {+,-,*} constant` float update whose constant comes from data
+or through a data pointer, with the result stored back to the same field:
+
+- 89 sites add or subtract delta itself - timers kept in delta units, correct.
+- **Only one direct data constant is an integrator: the ball's gravity** `002EA560`.
+  The other four direct hits add run-time variables (the particle step's delta copy
+  `00352BE0`, and `0034A3F8`, `0035EB2C`).
+- **14 sites read constants through the global parameter table `[00352130]`**
+  (`01CE36CC` at run time), which is where the game keeps its tuning:
+  - `002EA548` and `0019FC9C`: the prop drag, `[+0x20]` - the ball's, fixed, and the
+    sibling integrator's, not fixed.
+  - `0017AA2C`: `vy *= [+0x44]`, no delta in the function - candidate.
+  - `001D039C`: `+0xB6C += [+0xD4]`, function also reads delta - probably fine.
+  - `001C31E8` (11 sites, params `+0x11C..+0x174`): **not** a per-frame update - a
+    switch over ability ids 0x186-0x21C that adds or multiplies tuning into a stats
+    struct as abilities apply. The table holds ability tuning, which makes it the
+    first place to look for Quick Run's distance.
+- `001C9EE8`: `+0x18 += [[00351F34]+4]`, a state handler (pointer table
+  `00351F58`) - candidate.
+
+The player's and enemies' gravity do not appear, so they come through object or
+move-set pointers the static scan cannot follow. They are found live.
+
 ## Systems
 
 | System | Evidence so far | Status |
