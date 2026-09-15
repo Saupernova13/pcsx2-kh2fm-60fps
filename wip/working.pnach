@@ -9,7 +9,7 @@ gametitle=Kingdom Hearts II Final Mix+ (NTSC-J, English undub) SLPM-66675 FAF993
 // other author's group in that file untouched.
 //
 // Requires, from PCSX2's own database patch (not shipped here, not ours):
-//   [60 FPS]            by PeterDelta   needed by [60 FPS - ball physics]
+//   [60 FPS]            by PeterDelta   needed by every group below
 //   [Widescreen 16:9]   by ElHecht      the base the 19.5:9 group is built from
 //
 // The 19.5:9 widescreen group is not in this file: it is ElHecht's hack with five
@@ -17,15 +17,20 @@ gametitle=Kingdom Hearts II Final Mix+ (NTSC-J, English undub) SLPM-66675 FAF993
 // patch/widescreen-19.5x9-s24.json, and the installer builds the group from the
 // 16:9 group on the user's own machine.
 //
-// Groups:
-//   60 FPS - ball physics
+// Groups (enable all of them, together with 60 FPS; each does nothing at 30fps):
+//   60 FPS - ball physics    thrown props: drag and gravity at real speed
+//   60 FPS - short hop       released jumps rise as high as at 30fps
+//   60 FPS - friction        friction, lunges and acceleration at real speed for
+//                            everything that uses the shared velocity step
 //
 // KNOWN NOT FIXED:
-//   Mashing to juggle: at 60fps Sora's swings reach the ball at different real
-//   times than at 30fps - extra weak hits (vy -10) and earlier side hits - and
-//   nearby props are pushed a few vsyncs sooner, so a long juggle stays up longer
-//   than it does at 30fps. That is combat and character timing under [60 FPS],
-//   not the ball's physics, and is uninvestigated. See docs/findings.md.
+//   Juggling the Sandlot ball by mashing: with every group on, the ball still stays
+//   up longer than at 30fps. Sora's swings land weak hits and side swipes that the
+//   30fps game does not, after contact push-outs leave the ball a few units over.
+//   Collision resolution at the finer step, not a rate bug found yet.
+//   Effects run at double speed: [60 FPS] also lowers the particle step threshold.
+//   Enemy movement is covered by the friction group where enemies use the shared
+//   velocity step, but no enemy has been measured. See docs/findings.md.
 
 // 60 FPS - ball physics. Derived 2026-09-15 on the Sandlot ball (save state 1),
 // A/B against the unpatched game at 30fps in PCSXROO: same state, same input.

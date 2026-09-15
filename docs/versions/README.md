@@ -11,6 +11,7 @@ this repo is a complete patch file. See [`releases.md`](../releases.md).
 |---|---|---|---|---|
 | [`v01`](v01-widescreen-s24.md) | 2026-09-14 | 1 | 19.5:9 widescreen for the Galaxy S24 Ultra, built from the database's 16:9 group | arithmetic verified, not seen on screen\* |
 | [`v02`](v02-ball-physics.md) | 2026-09-15 | 2 | the Sandlot ball's drag and gravity at real speed under `[60 FPS]` | single hit measured, not played\*; long juggles not fixed |
+| [`v03`](v03-movement-physics.md) | 2026-09-15 | 4 | short hops at full height; friction, lunges and acceleration at real speed for everything that uses the shared velocity step | measured, not played\*; juggle still differs |
 
 A \* marks a build verified by measurement but not yet confirmed in play. Per-build
 confidence is kept current in [`status.md`](../status.md), and the full record is
@@ -18,9 +19,9 @@ in [`findings.md`](../findings.md).
 
 ## Reading the lineage
 
-- **Both versions predate the repo.** They were built and installed straight into
+- **v01 and v02 predate the repo.** They were built and installed straight into
   the user's PCSX2 on 2026-09-14 and 2026-09-15, and the repo was assembled from
-  that work afterwards. v01 has no tag of its own: its only artifact, the
+  that work afterwards. v03 is the first version built in the repo. v01 has no tag of its own: its only artifact, the
   widescreen change set, is identical in v02.
 - **v01 is not a file.** The widescreen group is five changed words and one added
   word on ElHecht's 16:9 group, so the repo keeps the change set as JSON and the
