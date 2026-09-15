@@ -5,6 +5,7 @@
     python tools/objtrace.py fields work/ot-jump.npz                 # every float lane that moves, per arm
     python tools/objtrace.py fields work/ot-jump.npz --lo 0xC0 --hi 0x140
     python tools/objtrace.py classes work/ot-jump.npz                # class pointer (+0x0C) switches per arm
+    python tools/objtrace.py compare work/ot-noop.npz 30 30fix       # words differing between two arms; exit 0 if none
 
 The general form of tools/ballobj.py. Reads --size bytes from the object every
 vsync (0x1000 by default - velocity at +0x20, the jump/arc fields at +0xD0..+0xDC,
@@ -17,9 +18,14 @@ the ground at 60fps is running per tick; one that covers the same is correct.
 Lanes that change only at 60fps, or only at 30fps, are listed too. Offsets are
 relative to the object.
 
-Arms: 30 and 60 as in tools/ratediff.py; `60fix` is 60 plus every group in
-patch/kh2fm-60fps.pnach; `60w` is 60 plus the groups named with --group from
-wip/working.pnach.
+Arms: 30 and 60 as in tools/ratediff.py; `60fix` and `30fix` add every group in
+patch/kh2fm-60fps.pnach; `60w` and `30w` add the groups named with --group from
+wip/working.pnach instead.
+
+`compare` is the no-op check: a group meant for 60fps must change nothing at 30fps,
+so capture 30 and 30fix (or 30w) through the same script and it must report 0
+differing words. 2026-09-15, all three physics groups, Sora through an air combo, a
+tap jump and a ground combo: 0 differing words each.
 
 Script syntax as in tools/movetest.py: wait:N, hold:BTN[+BTN]:N, tap:BTN.
 """
@@ -122,6 +128,22 @@ def classes(args) -> int:
     return 0
 
 
+def compare(args) -> int:
+    """Count the words that differ between two arms - the no-op check for a group at 30fps."""
+    z = np.load(args.npz)
+    a, b = z[f"{args.a}_block"], z[f"{args.b}_block"]
+    n = min(len(a), len(b))
+    diff = a[:n] != b[:n]
+    words = int(diff.sum())
+    print(f"object {int(z['obj'][0]):08X}, {n} vsyncs x {a.shape[1]} words: "
+          f"arms {args.a} and {args.b} differ in {words} words")
+    if words:
+        first = int(np.flatnonzero(diff.any(axis=1))[0])
+        lanes = np.flatnonzero(diff.any(axis=0))
+        print(f"  first at vsync {first}; offsets " + " ".join(f"{4 * int(k):#05x}" for k in lanes[:24]))
+    return 0 if words == 0 else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -141,8 +163,12 @@ def main() -> int:
     f.add_argument("--min-tv", type=float, default=0.01)
     k = sub.add_parser("classes")
     k.add_argument("npz")
+    m = sub.add_parser("compare")
+    m.add_argument("npz")
+    m.add_argument("a", nargs="?", default="30")
+    m.add_argument("b", nargs="?", default="30fix")
     args = ap.parse_args()
-    return {"capture": capture, "fields": fields, "classes": classes}[args.cmd](args)
+    return {"capture": capture, "fields": fields, "classes": classes, "compare": compare}[args.cmd](args)
 
 
 if __name__ == "__main__":
