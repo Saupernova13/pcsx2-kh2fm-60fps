@@ -1,0 +1,76 @@
+gametitle=Kingdom Hearts II Final Mix+ (NTSC-J, English undub) SLPM-66675 FAF99301 - pcsx2-kh2fm-60fps additions
+
+// pcsx2-kh2fm-60fps - this project's groups for Kingdom Hearts II Final Mix+.
+// ---------------------------------------------------------------------------
+// This is NOT a complete patch file and does not replace PCSX2's. It holds only
+// the groups this project wrote. tools/install.py adds them to the database
+// patch PCSX2 already has for the game - patches/SLPM-66675_FAF99301.pnach if it
+// exists, otherwise the entry in PCSX2's resources/patches.zip - and leaves every
+// other author's group in that file untouched.
+//
+// Requires, from PCSX2's own database patch (not shipped here, not ours):
+//   [60 FPS]            by PeterDelta   needed by [60 FPS - ball physics]
+//   [Widescreen 16:9]   by ElHecht      the base the 19.5:9 group is built from
+//
+// The 19.5:9 widescreen group is not in this file: it is ElHecht's hack with five
+// words changed, so the repo keeps only those changes, in
+// patch/widescreen-19.5x9-s24.json, and the installer builds the group from the
+// 16:9 group on the user's own machine.
+//
+// Groups:
+//   60 FPS - ball physics
+//
+// KNOWN NOT FIXED:
+//   Mashing to juggle: at 60fps Sora's swings reach the ball at different real
+//   times than at 30fps - extra weak hits (vy -10) and earlier side hits - and
+//   nearby props are pushed a few vsyncs sooner, so a long juggle stays up longer
+//   than it does at 30fps. That is combat and character timing under [60 FPS],
+//   not the ball's physics, and is uninvestigated. See docs/findings.md.
+
+// 60 FPS - ball physics. Derived 2026-09-15 on the Sandlot ball (save state 1),
+// A/B against the unpatched game at 30fps in PCSXROO: same state, same input.
+//
+// The airborne motion routine for this prop class (vtable 00363410, +0x1C =
+// 002EA450) updates velocity once per game tick with no delta term:
+//   horizontal speed *= [[00352130]+0x18]  (0.8)
+//   if rising:  vy   *= [[00352130]+0x20]  (0.8)   002EA548
+//   vy = min(vy + [00363404] (0.408163), [obj+0x120] (10.0))
+// but moves the ball by velocity * delta (002EAA04), and the 60 FPS group sets
+// delta to 1.0. So at 60fps drag and gravity act twice per real second.
+// Measured, 60fps vs 30fps: peak 209 vs 342, fall 0.355 vs 0.187 per vsync^2,
+// airtime 47 vs 88 vsyncs - the ball barely clears Sora and drops in half the time.
+//
+// Fix: while the 60 FPS group is active ([00349E1C] == 0), run that velocity
+// block only on even game ticks ([0032B920] & 1). Two 60 Hz ticks then do exactly
+// what one 30 Hz tick did. Hook at 002EA498 into a cave at 000FE000 - zero in the
+// game and in save state 1, and clear of Swap X and O at 000FD050..000FD090.
+// Nothing else in the game branches into the skipped block. The three words at
+// 000FE030..000FE03C are the game's own instructions from 002EA4A0..002EA4A8,
+// replayed because the hook overwrote the branch in front of them.
+//
+// Verified: one hit, at both game-tick phases, matches 30fps - peak 342-344 vs
+// 341.8, arch contact 14 vs 14 vsyncs, airtime 88-89 vs 88, fall 0.189 vs 0.187.
+// Side-hit horizontal decay also matches (0.8 per 30 Hz tick).
+//
+// Needs [60 FPS] enabled. Without it the gate never fires.
+[60 FPS - ball physics]
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+description=Ball and prop juggling physics at real speed with 60 FPS. Needs 60 FPS enabled.
+patch=1,EE,000FE000,word,3C080035 // lui  t0, 0x35
+patch=1,EE,000FE004,word,8D089E1C // lw   t0, -0x61E4(t0)     [00349E1C] extra vsync wait: 0 = 60fps
+patch=1,EE,000FE008,word,15000007 // bnez t0, update          30fps: never gate
+patch=1,EE,000FE00C,word,3C090033 // lui  t1, 0x33
+patch=1,EE,000FE010,word,8D29B920 // lw   t1, -0x46E0(t1)     [0032B920] game tick counter
+patch=1,EE,000FE014,word,31290001 // andi t1, t1, 1
+patch=1,EE,000FE018,word,11200003 // beqz t1, update          even tick: update as normal
+patch=1,EE,000FE01C,word,00000000 // nop
+patch=1,EE,000FE020,word,080BA95D // j    002EA574            odd tick: keep last velocity
+patch=1,EE,000FE024,word,00000000 // nop
+patch=1,EE,000FE028,word,13B60003 // beq  sp, s6, L1          replay the overwritten beql
+patch=1,EE,000FE02C,word,00000000 // nop
+patch=1,EE,000FE030,word,7AC80000 // lq   t0, 0(s6)            (copied from 002EA4A0)
+patch=1,EE,000FE034,word,7FA80000 // sq   t0, 0(sp)            (copied from 002EA4A4)
+patch=1,EE,000FE038,word,080BA92B // j    002EA4AC
+patch=1,EE,000FE03C,word,AFA00004 // sw   zero, 4(sp)          (copied from 002EA4A8, both paths end with it)
+patch=1,EE,002EA498,word,0803F800 // j    000FE000          (was 53B60004 beql sp, s6)
+patch=1,EE,002EA49C,word,00000000 // nop                      (was AFA00004 sw zero, 4(sp))

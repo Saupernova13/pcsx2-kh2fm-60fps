@@ -1,0 +1,28 @@
+{
+  "name": "Widescreen 19.5:9 - S24 Ultra",
+  "description": "Renders the game in 19.5:9 for the S24 Ultra. Stretch output; turn Widescreen 16:9 OFF.",
+  "author": "ElHecht (16:9 hack), retargeted to 19.5:9 by pcsx2-kh2fm-60fps",
+  "gsaspectratio": "Stretch",
+  "base_group": "Widescreen 16:9",
+  "base_author": "ElHecht",
+  "base_patch_lines": 14,
+  "conflicts_with": ["Widescreen 16:9"],
+  "why": [
+    "Retargeted 2026-09-14 from ElHecht's [Widescreen 16:9] to the Galaxy S24 Ultra's 3120x1440 panel - 19.5:9, the same target as the BT3 patch.",
+    "The projection routine at 00106DE8 reads a 4:3 base of 0.8 (00106E10/28) and multiplies it by lui $k1,0x3F40 = 0.75 at 00106E54 - that is (4/3)/(16/9), the horizontal widen factor - storing the result into [cam+0x4C]. The three font-fix floats at 0036CE94..9C are the same 0.75, squeezing glyphs back.",
+    "Fed 16:9 the model returns 3F400000, bit for bit what the 16:9 patch ships.",
+    "For 19.5:9 the factor is (4/3)/(19.5/9) = 12/19.5 = 0.6153846 = 3F1D89D9. A bare lui would round it to 0.6135 (0.3% narrow), so the full word is loaded with lui+ori, and mtc1 moves into the stock nop at 00106E60 to make room.",
+    "0.8, the cutscene zoom, depth of field and subtitle height are aspect-independent and are taken unchanged from the base group.",
+    "NEVER ENABLE TOGETHER WITH [Widescreen 16:9]. Both write 00106E54/58 every frame and the mix loads a wrong float. PCSX2 has no 19.5:9 display aspect, so this uses Stretch against a 19.5:9 window or fullscreen output."
+  ],
+  "replace": [
+    {"addr": "00106E54", "base": "3C1B3F40", "value": "3C1B3F1D", "note": "lui  $k1, 0x3F1D - high half of 12/19.5"},
+    {"addr": "00106E58", "base": "449BF000", "value": "377B89D9", "note": "ori  $k1, $k1, 0x89D9 - low half, 0.6153846; the mtc1 moves to 00106E60"},
+    {"addr": "2036CE94", "base": "3F400000", "value": "3F1D89D9", "note": "font x-scale, 12/19.5"},
+    {"addr": "2036CE98", "base": "3F400000", "value": "3F1D89D9", "note": "font x-scale, 12/19.5"},
+    {"addr": "2036CE9C", "base": "3F400000", "value": "3F1D89D9", "note": "font x-scale, 12/19.5"}
+  ],
+  "insert_after": [
+    {"after": "00106E58", "addr": "00106E60", "value": "449BF000", "note": "mtc1 $k1, $f30 - into the stock nop, after the ori"}
+  ]
+}
