@@ -7,6 +7,14 @@ bottom. Log numbers refer to `wip/session-<date>/logs/`; every address is also i
 
 ## STATE OF PLAY - read this first
 
+> **Superseded in part (later on 2026-09-15, v03).** The global audit at the bottom
+> of this log found that the "second prop" `01A94440` is **Sora** and the two
+> "ground props" are **Donald and Goofy**, so Sora *is* a physics object. It added
+> `[60 FPS - short hop]` and `[60 FPS - friction]`, both verified against 30fps and
+> verified to change nothing at 30fps. The juggle still differs with every group on.
+> Read "2026-09-15 - global audit" below and [`global-audit.md`](global-audit.md)
+> before the older sections.
+
 Last revised 2026-09-15. Two groups of ours, both installed and enabled in the
 user's PCSX2, **neither yet confirmed in play** - see [`status.md`](status.md).
 
@@ -564,3 +572,125 @@ we don't own it". PCSX2's community patch repository declares no licence either.
   both groups installed with words matching this repo, and `--dry-run --widescreen`
   reports nothing to change on the player's install; the offline tools reproduce
   the numbers above from the saved traces.
+
+---
+
+## 2026-09-15 - global audit: the engine, Sora's jump, and the shared velocity step
+
+The user asked for a global fix - "60fps should behave the same as 30, just look
+better" - and for this project to find what to test on its own. The plan, the
+players' reported defects and the state of every system are kept in
+[`global-audit.md`](global-audit.md).
+
+### How the engine keeps time
+
+The frame routine `0014D060` waits until at least `[00349E1C] + 1` vsyncs have
+passed and stores that count, capped by `[0036B0F8]`, as delta. Stock: wait 1, delta
+2. `[60 FPS]`: wait 0, delta 1. So the engine counts in 60 Hz units and anything that
+scales by delta is already right; the defects are per-frame steps.
+
+`[60 FPS]`'s third word lowers `0036EF20`, the threshold of a fixed-step accumulator
+in `001E6280` - assert strings name it `partMng.c` / `pppPart.c`, the particle and
+effect system. It adds delta (`001DD43C` -> setter `001E7008`) and steps each time
+the sum reaches the threshold: 30 steps a real second at 60fps with the stock 2.0, 60
+with 1.0. A RAM sweep (`tools/ratesweep.py`, Sandlot idle) found integer state that
+is 2x under `[60 FPS]` and 1x with 2.0 restored. Effects, not physics; not changed.
+
+The same sweep found no float that moves twice as far at idle. Physics defects only
+show in motion.
+
+### Community issues and addresses
+
+A 2015 PCSX2 forum list of Kingdom Hearts 60 FPS issues and a 2017 follow-up name:
+the Grandstander ball rising half as high, "gravity slightly increased", reaction
+commands (the Saix data battle), Quick Run distance halved, timers filling twice as
+fast (lanterns, Solar Sailer), the Atlantica music game, bosses, cutscene voice cues,
+and effects at double speed. The Garden of Assemblage ROM edition's PCSX2-EX Lua
+script publishes this disc's game-state addresses; they are recorded as facts in
+`tools/game/world.py`. The user's memory card holds three saves, all in Twilight
+Town (`tools/memcard.py`).
+
+### Static scan
+
+`tools/integrators.py` lists every `field = field op constant` float update: 89 add
+or subtract delta (correct timers); one uses a direct data constant as an integrator
+(the ball's gravity); 14 read the parameter table `[00352130]`, 11 of them the ability
+tuning switch `001C31E8`, which is not per-frame. The player's and enemies' motion
+does not appear: it comes through pointers the scan cannot follow.
+
+### Sora
+
+`tools/findplayer.py`'s first filter found nothing; offline, walking Sora away and back
+from the Twilight Town state showed his position at `01A94440 + 0x540`, with copies at
+`+0x70`, `+0x590`, `+0x5C0` and `+0x840`, and cached at `00341720` in data. The
+object the ball investigation called "the second prop" was Sora all along; the
+"ground props" `01AADB90` and `01AC2490` are Donald and Goofy.
+
+### The short hop
+
+`tools/movetest.py` on Sora's position, jump on Circle (Swap X and O is on):
+
+| hold | 30fps peak | 60fps peak |
+|---|---|---|
+| tap / 6 / 10 vsyncs | 115.08 | 103.53 |
+| 15 vsyncs | 152.32 | 144.43 |
+| 17 vsyncs | 165.38 | 159.31 |
+| 40 (held) | 185.00 | 185.00 |
+
+A trace of the object (`tools/objtrace.py`) showed a closed-form arc: a rise with
+duration `+0xD4` = 30.108 and height `+0xDC` = -185 on a clock `+0xD0` that advances
+by delta, then a short apex arc (duration 5.0, height 5.102), then a fall under
+0.408163. Heights matched sample for sample - until the switch to the apex arc, which
+came at clock 8 at 30fps (y 440.003) and 7 at 60fps (451.575). A write watchpoint on
+`+0xD4` stopped in the arc setup `0017C42C`; the saved return address led to the jump
+controller `0017C690`, which cuts a released jump once `6.0 < clock`. At 30fps the
+clock is 2, 4, 6, 8.
+
+**`[60 FPS - short hop]`** re-does that compare in a cave and lets the cut happen only
+when the clock, converted to an integer, is even. Results 115.10, 152.34, 165.39,
+185.00. Nothing branches into the displaced words (`0017C798..0017C7A0`).
+
+### The shared velocity step
+
+An air combo (jump, Cross four times) matched in height and fell short in distance:
+195.02 at 30fps, 131.43 at 60fps. Sora's horizontal velocity decayed by 0.95 a frame,
+the same sequence per frame at both rates. The factor is `[0036C528]`, passed by the
+airborne motion `0017C8F0` through `0017C870` to `00184540`. PCSXROO's VU-aware listing
+of `00184540`:
+
+    with input speed +0x1C > 0:  v = v*k1 + (facing +0x10 * speed) * (1 - k1)
+    without:                     v = v*k2
+    displacement = v * delta
+
+Nineteen routines call it. A grounded combo went the other way - 286.61 at 60fps
+against 244.46 - because the blend reaches its target twice as fast.
+
+**`[60 FPS - friction]`** takes both factors' square root at 60fps. The first version
+zeroed every factor and deleted the lunge (path 0.00): a breakpoint at `00184560`
+conditional on Sora showed f20 and f21 = 0. The R5900 FPU's SQRT takes its operand
+from **ft**, not fs as standard MIPS has it, so `sqrt.s f20, f20` encoded the MIPS way
+computed `sqrt(f0)`. Corrected, the factors read 0.9487 and 0.9747, and the lunge
+velocity runs 5.235, 5.102, 4.973, 4.847 - the 30fps values every second frame.
+Results: air combo 194.68, ground combo 245.03, run-and-stop 287.62 (287.63 at 30fps),
+jumps unchanged, the ball's single hit 342.24 / 88 (341.85 / 88).
+
+**Nothing at 30fps.** The same air combo, tap jump and ground combo with and without
+all three groups at 30fps: Sora's object memory identical, 0 differing words.
+
+### Pad input between arms
+
+The unpatched 60fps arm's numbers moved between runs (peak 146.80 against 156.57). A
+pad release sent while paused only queues, so the last button of one arm was still
+down on the first frame of the next. `start_arm` now flushes the pad before loading.
+
+### The juggle, with every group
+
+Still off: 30 taps give airtime 214 at 60fps against 125-142 at 30fps, at both input
+phases, so it is systematic. A breakpoint on the ball's vy write (`002E7EE8`, `t5` =
+the ball) counts the hits: at 30fps two pop-ups; at 60fps a pop-up, weak hits (-10)
+at Sora's attack clock 16, 16, 12, 16 and a side swipe (-42) at 17. The even clocks
+rule out a sampling grid alone. Aligned per vsync, the arms first part at the ball's
+launch - it rises through Sora's swing and is pushed out of contact to a z 5.3 units
+different - and a later swing's push-outs total 39.5 units at 30fps against 33 at
+60fps. Collision resolution evaluated at a finer step; no per-frame rate term in it
+has been found.

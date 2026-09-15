@@ -160,7 +160,33 @@ live RAM and in the user's save state. `000FD050..000FD090` is taken by the
 | `0036A0BC` | cutscene zoom, stock 416.0 - aspect-independent |
 | `00166DB6`, `001AC8D8` | depth-of-field byte and subtitle height - aspect-independent |
 
+## Sora's movement (v03)
+
+| Address | What it is |
+|---|---|
+| `0017C690` | jump controller: once the jump button is released (flag 0x40000 in `+0x108`) and the jump clock `+0xD0` passes 6.0 (`0036C518`), cuts the rise into the apex arc |
+| `0017C798` | the `6.0 < clock` compare. **Hook of `[60 FPS - short hop]`** -> cave `000FE040..000FE070` |
+| `0017C42C` | arc setup: `+0xD8` base, `+0xDC` height, `+0xD0` clock, `+0xD4` duration = sqrt(2h/g) via `0017D130` |
+| `0017C8F0` | airborne motion (class `01C60040`, vtable `0034EB90` +0x1C): calls `0017C870` with 0.9 (`0036C524`) and 0.95 (`0036C528`) |
+| `0017C870` | advances the jump clock by delta, calls the shared velocity step, then the arc height `0017C930` |
+| `0017C930` | closed-form jump height: rise while `+0xD0 < +0xD4`, then a parabola with 0.5 and 0.408163 (`0036C530`, `0036C534`) |
+| `0036C51C`, `0036C520` | 5.0 and 5.102040: the apex arc's duration and height |
+| `00184540` | **shared velocity step**, 19 callers. With input: `v = v*k1 + facing*speed*(1-k1)`; without: `v = v*k2`; then `v * delta`. k1 in f12 -> f20, k2 in f13 -> f21 |
+| `00184558` | `mov.s f20, f12`. **Hook of `[60 FPS - friction]`** -> cave `000FE080..000FE0B8` |
+
+Object fields used by these: `+0x10` facing (unit vector), `+0x1C` input speed,
+`+0x20` velocity, `+0x5A0` this frame's displacement, `+0xD0..+0xDC` the jump arc,
+`+0x170` the current motion's clock (60 Hz units, reset when a motion starts).
+
+Callers of `00184540`: `0017C2B8` (grounded class motion, factors from `+0xF0`),
+`0017C8AC` (airborne), `0019FE60`, `001A0AE0`, `001B219C`, `001B2B30`, `001C9510`,
+`001D23B4`, `001D2628`, `001D2E48`, `002BEC54`, `002C1A38`, `002D6EF4`, `002E1928`,
+`002E2F28`, `002EAE44`, `002EB6B4`, `002EC830`, `002ED148`.
+
 ## Sandlot save state (heap - not constants of the game)
+
+These were first named as props; walking Sora away and back on 2026-09-15 showed
+`01A94440` is **Sora** and `01AADB90`, `01AC2490` are **Donald and Goofy**.
 
 Valid only in the user's save state 1, Twilight Town Sandlot. See
 `tools/game/sandlot.py`.

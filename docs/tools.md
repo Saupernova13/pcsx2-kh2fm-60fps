@@ -1,6 +1,6 @@
 # Tools index
 
-All 22 command-line tools in this repo. Every one has a real module docstring -
+All 31 command-line tools in this repo. Every one has a real module docstring -
 `python tools/<tool>.py --help` is the reference, and most docstrings end with what
 the tool found when it ran. Setting them up is in the README's
 [Getting started](../README.md#getting-started).
@@ -62,6 +62,20 @@ KH2FM with the Sandlot state in slot 1 and `[60 FPS]` not enabled in its own ini
 | `frame-timing.py` | offline | How the game times a frame and what `[60 FPS]` changes: stock values, every reference, the setters and their arguments, the vsync callback |
 | `elfscan.py` | offline | `refs`, `float`, `offsets`, `callers`, `into`, `range`, `dis` - every static question the findings asked |
 | `simfix.py` | offline | Simulate the ball at 30Hz and 60Hz with each candidate fix, with the arch and in free flight |
+
+## The global audit
+
+| Tool | Transport | What it does |
+|---|---|---|
+| `ratediff.py` | PCSXROO / offline | Snapshot RAM three times per frame-rate arm (30, `[60 FPS]`, `[60 FPS]` with the stock accumulator threshold or delta cap) and flag words that move twice as far in the same real time; `classify` names the lever |
+| `ratesweep.py` | PCSXROO / offline | Sample RAM every 2 vsyncs per arm and flag words whose total variation or reversals double - catches oscillators the three-snapshot diff misses |
+| `findplayer.py` | PCSXROO | Walk away and back from a state and look for the vec4 that follows - how Sora was found at `01A94440 + 0x540` |
+| `movetest.py` | PCSXROO | The movement acceptance test for any position vector: scripted input, 30fps against 60fps against 60fps + groups; peak, airtime, fall, horizontal path |
+| `objtrace.py` | PCSXROO / offline | Dump an object's memory every vsync through scripted input per arm (30, 60, 60fix/60w, 30fix/30w); `fields` ranks lanes by variation ratio, `classes` lists class switches |
+| `integrators.py` | offline | Every `field = field op constant` float update in the ELF, with the constant direct or through a data pointer |
+| `mkjumpfix.py` | offline | Generate `[60 FPS - short hop]` from the ELF, decode it, write it into `wip/`, `--check` |
+| `mkfrictionfix.py` | offline | Generate `[60 FPS - friction]` from the ELF (R5900 SQRT encoding), decode it, write it into `wip/`, `--check` |
+| `memcard.py` | offline | List and extract saves from a PS2 memory card image |
 
 ## `tools/game/` - what the tools know about the game
 

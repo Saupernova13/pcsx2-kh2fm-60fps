@@ -117,7 +117,11 @@ move-set pointers the static scan cannot follow. They are found live.
 
 | System | Evidence so far | Status |
 |---|---|---|
+| Sora's jump: short hops and released jumps (`0017C690` cuts the rise when the clock passes 6.0; 60fps cut one unit early) | tap peak 103.5 vs 115.1; odd releases 144.4 vs 152.3, 159.3 vs 165.4 | **fixed, `[60 FPS - short hop]`**: 115.10, 152.34, 165.39; held jump unchanged at 185.00 |
+| Shared velocity step `00184540` (friction k2 and input blend k1, per frame, 19 callers: Sora ground/air, objects, enemies) | air-combo lunge 131.4 vs 195.0; ground combo 286.6 vs 244.5 | **fixed, `[60 FPS - friction]`** (k^(1/2) at 60fps): 194.7, 245.0; run-and-stop unchanged |
 | Ball / prop airborne integrator `002EA450` | measured | fixed (v02) |
+| Mashing the Sandlot ball with every fix on | 30 taps: airtime 214 vs 125-142 at both input phases. Clean hits (bp `002E7EE8` on the ball): 30fps 2 pop-ups; 60fps a pop-up, weak hits at Sora clock 16, 16, 12, 16 and a side swipe at 17 | open - not a sampling grid alone (even clocks hit too); the arms part at launch by 5.3 units in z from contact push-out, and a swing's push-outs total 39.5 (30fps) vs 33 (60fps): collision resolution at a finer step, no rate term found |
+| Particle/effect step: `[60 FPS]` sets the accumulator threshold 2.0 -> 1.0 | int state 2x under `[60 FPS]`, 1x with 2.0 restored | open - effects, not physics |
 | Particle/effect fixed step `001E6280` (`[60 FPS]` threshold) | static; int sweep: 4 words 2x under `[60 FPS]`, 1x with the stock threshold | testing |
 | Sibling integrator `0019FBC4` | static | open |
 | Second prop motion `0017C8F0` | static | open |

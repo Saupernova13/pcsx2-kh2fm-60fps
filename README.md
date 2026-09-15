@@ -13,7 +13,7 @@ own groups to the copy of that patch you already have. See
 
 ## Install
 
-    python tools/install.py                  # add [60 FPS - ball physics] and enable it
+    python tools/install.py                  # add this project's 60fps groups and enable them
     python tools/install.py --widescreen     # also the 19.5:9 widescreen (turns 16:9 off)
     python tools/install.py --enable-60fps   # also switch on [60 FPS], if it is off
 
@@ -49,15 +49,30 @@ update on every other game tick while `[60 FPS]` is active.
 | Pinned under the arch (vsyncs) | 14 | 3 | 14 |
 | Airtime (vsyncs) | 88 | 47 | 88 - 89 |
 
+**`[60 FPS - short hop]`** - a jump released early is cut into its apex once the
+jump clock passes a threshold. At 30fps the clock steps by 2, at 60fps by 1, so 60fps
+cut one step early and a tap peaked 103.5 instead of 115.1. The cut now waits for an
+even clock: 115.10 at 60fps, and nothing changes at 30fps.
+
+**`[60 FPS - friction]`** - the game's shared velocity step, behind Sora on the
+ground and in the air and many object and enemy states, applies friction and
+acceleration once per frame. At 60fps an air-combo lunge travelled 131 instead of
+195 and a ground combo 287 instead of 244. The factors now take their square root at
+60fps: 194.7 and 245.0, with top speeds unchanged.
+
+All of these groups are verified to change nothing at 30fps.
+
 **`[Widescreen 19.5:9 - S24 Ultra]`** - ElHecht's 16:9 hack retargeted to 19.5:9
 (3120x1440): the widen factor `12/19.5` loaded exactly, and the font scale to
 match. Uses Stretch, so it wants a 19.5:9 output.
 
-**Known not fixed:** a long juggle still stays up longer than it does at 30fps. The
-ball's own flight matches; what differs is when Sora's swings reach it - extra weak
-hits and earlier side swipes - and nearby props being pushed sooner, which is
-character timing under `[60 FPS]` and not yet investigated. Neither group has been
-confirmed in play yet.
+**Known not fixed:** a long juggle still stays up longer than it does at 30fps, even
+with every group on. The ball's flight, Sora's jumps and his lunges all match; what
+differs is contact - Sora's swings land weak hits and side swipes the 30fps game does
+not, after collision push-outs leave the ball a few units over. Effects also run at
+double speed under `[60 FPS]`, and no enemy has been measured yet. None of the groups
+has been confirmed in play. The running list is
+[`docs/global-audit.md`](docs/global-audit.md).
 
 ## What this repo does not contain
 

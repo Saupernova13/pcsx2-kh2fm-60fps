@@ -1,7 +1,7 @@
 # Build confidence
 
 Which build to trust, and why. Set by testing **in play**, not by measurement.
-Newest at the top. `patch/` currently holds **v02**.
+Newest at the top. `patch/` currently holds **v03**.
 
 What each version changed and discovered is in [`versions/`](versions/README.md).
 This page is only about which build to trust.
@@ -14,6 +14,7 @@ This page is only about which build to trust.
 
 | Build | Our groups | Confidence | Notes |
 |---|---|---|---|
+| `v03-movement-physics` | 4: ball physics, `60 FPS - short hop`, `60 FPS - friction`, and the optional 19.5:9 widescreen | **MEASURED, NOT YET PLAYED\*** | Sora's short hops, air-combo lunges and ground combos match 30fps; every group verified to change nothing at 30fps. The juggle still differs - see v03 below |
 | `v02-ball-physics` | 2: `60 FPS - ball physics`, and the optional 19.5:9 widescreen | **MEASURED, NOT YET PLAYED\*** | One hit of the Sandlot ball flies as it does at 30fps, at both game-tick phases. Long juggles still differ - see below |
 | `v01-widescreen-s24` | 1: `Widescreen 19.5:9 - S24 Ultra` | **ARITHMETIC VERIFIED, NOT SEEN ON SCREEN\*** | Reproduces the 16:9 group's constants bit for bit when fed 16:9 |
 
@@ -21,6 +22,32 @@ Neither group stands alone. `60 FPS - ball physics` compensates PeterDelta's
 `[60 FPS]` from PCSX2's own database and does nothing without it. The widescreen
 group is built from ElHecht's `[Widescreen 16:9]`, also from that database, which
 must then be switched **off**. `tools/install.py --status` shows all four.
+
+## v03 - movement physics: MEASURED, NOT YET PLAYED
+
+Two groups on top of v02, from the global audit ([`global-audit.md`](global-audit.md)):
+
+| test (Sora, Twilight Town) | 30fps | 60fps before | 60fps + v03 |
+|---|---|---|---|
+| tap jump peak | 115.08 | 103.53 | 115.10 |
+| air combo travel | 195.02 | 131.43 | 194.68 |
+| ground combo travel | 244.46 | 286.61 | 245.03 |
+| held jump, run-and-stop | 185.00, 287.63 | 185.00, 287.62 | 185.00, 287.62 |
+
+Every group was run at 30fps too: Sora's object memory through an air combo, a tap
+jump and a ground combo was identical with and without them.
+
+**Worth watching in play:**
+
+- short hops and jump height in general;
+- how far attacks carry Sora on the ground and in the air, and how quickly he
+  stops;
+- **enemies**: `[60 FPS - friction]` changes the shared velocity step many enemy
+  states use, and no enemy has been measured - knockback slides and lunges should now
+  match 30fps, but that is the least verified part of this build.
+
+**Not fixed:** the Grandstander juggle still stays up longer than at 30fps (contact
+resolution, not a rate bug found); effects run at double speed under `[60 FPS]`.
 
 ## v02 - ball physics: MEASURED, NOT YET PLAYED
 
