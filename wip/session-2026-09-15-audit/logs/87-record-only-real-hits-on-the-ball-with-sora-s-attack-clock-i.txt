@@ -1,0 +1,60 @@
+# Record only real hits on the ball with Sora's attack clock in both arms
+# (foreground run, transcript line 3601)
+--- input (line 3600) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+import ratediff
+import movetest
+from game import config, sandlot
+from game.pnachtext import group_words
+roo = sandlot.connect()
+SORA, BALL = 0x01A94440, 0x01ADD9D0
+fix = []
+for n in ("60 FPS - ball physics", "60 FPS - short hop", "60 FPS - friction"):
+    fix += group_words(config.WIP / "working.pnach", n)
+steps = movetest.parse("wait:6,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * 30))
+def fbits(b):
+    return struct.unpack("<f", struct.pack("<I", b & 0xFFFFFFFF))[0]
+for arm, words in (("30", []), ("60w", fix)):
+    print(f"===== arm {arm}")
+    ratediff.start_arm(roo, "30" if arm == "30" else "60", 1)
+    sandlot.apply_words(roo, words)
+    roo.bp_clear()
+    roo.bp_add(0x002E7EE8, condition="t5 == 0x01ADD9D0", description="vy write on the ball")
+    v = 0
+    try:
+        for kind, buttons, n in steps:
+            if kind == "hold":
+                roo.input_set(*buttons)
+            for _ in range(n):
+                st = roo.frame_advance(1)
+                guard = 0
+                while st is not None and getattr(st, "reason", "") == "breakpoint" and guard < 6:
+                    r = roo.regs("GPR"); fp = roo.regs("FPR")
+                    sp = r["sp"]
+                    stack = struct.unpack("<32I", roo.read_bytes(sp, 128))
+                    rets = [w for w in stack if 0x00100000 <= w < 0x00340000]
+                    clk = s
+--- result ---
+===== arm 30
+
+  vsync  40 HIT vy= -60.00  sora clock  24.0  ball y  563.22  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+  vsync 196 HIT vy= -60.00  sora clock  20.0  ball y  564.15  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+===== arm 60w
+
+  vsync  39 HIT vy= -60.00  sora clock  23.0  ball y  563.22  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+  vsync  80 HIT vy= -10.00  sora clock  16.0  ball y  234.43  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+  vsync 104 HIT vy= -10.00  sora clock  16.0  ball y  226.02  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+  vsync 129 HIT vy= -42.00  sora clock  17.0  ball y  237.07  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+  vsync 212 HIT vy= -10.00  sora clock  12.0  ball y  339.72  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8
+
+  vsync 240 HIT vy= -10.00  sora clock  16.0  ball y  297.12  ret chain 001DAE88 001DAE88 001E8154 001E6CC4 001DC5A8

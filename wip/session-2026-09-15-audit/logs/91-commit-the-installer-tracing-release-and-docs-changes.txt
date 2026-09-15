@@ -1,0 +1,30 @@
+# Commit the installer, tracing, release and docs changes
+# (foreground run, transcript line 3732)
+--- input (line 3730) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+if ((git branch --show-current) -ne "feat/global-60fps-audit") { throw "wrong branch" }
+$sp = "<session scratchpad>"
+$groups = @(
+  @{ n = 1; paths = @("tools/install.py") },
+  @{ n = 2; paths = @("tools/objtrace.py") },
+  @{ n = 3; paths = @("patch/kh2fm-60fps.pnach", "wip/working.pnach", "docs/versions/v03-movement-physics.md", "docs/versions/README.md") },
+  @{ n = 4; paths = @("docs/findings.md", "docs/status.md", "docs/global-audit.md", "docs/addresses.md", "docs/tools.md", "README.md") }
+)
+foreach ($g in $groups) {
+  git add -- $g.paths
+  if (-not $?) { throw "add failed for group $($g.n)" }
+  git commit -q -F "$sp\kh2-commit-v03-$($g.n).txt"
+  if (-not $?) { throw "commit failed for group $($g.n)" }
+}
+git log --oneline -8
+git status -sb
+--- result ---
+968bb03 docs: record the global audit, Sora's movement fixes and what is still open
+bb7fd5b chore(release): cut v03-movement-physics
+381658c feat(tools): trace 30fps arms with this project's groups applied
+fa224e2 feat(install): install every group in patch/ as one block after [60 FPS]
+1b3af43 feat(physics): fix friction and velocity blending at 60fps for every mover
+57032f1 feat(physics): fix short hops at 60fps and add object and rate tracing tools
+d2d4694 feat(audit): add RAM rate diff, memory card reader and community address map
+031cb43 docs: add README, findings, method, status and version notes
+## feat/global-60fps-audit

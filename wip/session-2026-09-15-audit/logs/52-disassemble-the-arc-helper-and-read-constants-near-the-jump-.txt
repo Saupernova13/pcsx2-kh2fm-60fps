@@ -1,0 +1,131 @@
+# Disassemble the arc helper and read constants near the jump code
+# (foreground run, transcript line 3228)
+--- input (line 3226) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 0017C870"; python tools\elfscan.py dis 0017C870 32
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+from game.elf import Elf
+e = Elf()
+for a in range(0x0036C500, 0x0036C560, 4):
+    w = e.word(a)
+    print(f"  {a:08X}  {w:08X}  {struct.unpack('<f', struct.pack('<I', w))[0]:12.6f}")
+'@
+$f = "$env:TEMP\kh2_arc_consts.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+== 0017C870
+
+  0017C870  27BDFFD0  addiu $sp, $sp, -0x30
+
+  0017C874  3C0F0035  lui $t7, 0x35
+
+  0017C878  FFB00010  sd $s0, 0x10($sp)
+
+  0017C87C  FFB10018  sd $s1, 0x18($sp)
+
+  0017C880  FFB20020  sd $s2, 0x20($sp)
+
+  0017C884  00C0802D  move $s0, $a2
+
+  0017C888  FFBF0028  sd $ra, 0x28($sp)
+
+  0017C88C  0080882D  move $s1, $a0
+
+  0017C890  C5E19E10  lwc1 $f1, -0x61f0($t7)
+
+  0017C894  00A0902D  move $s2, $a1
+
+  0017C898  C4C000D0  lwc1 $f0, 0xd0($a2)
+
+  0017C89C  03A0202D  move $a0, $sp
+
+  0017C8A0  ACC00014  sw $zero, 0x14($a2)
+
+  0017C8A4  00C0282D  move $a1, $a2
+
+  0017C8A8  46010000  add.s $f0, $f0, $f1
+
+  0017C8AC  0C061150  jal 0x184540
+
+  0017C8B0  E4C000D0  swc1 $f0, 0xd0($a2)
+
+  0017C8B4  123D0004  beq $s1, $sp, 0x17c8c8
+
+  0017C8B8  0240202D  move $a0, $s2
+
+  0017C8BC  7BA80000  xori.b $w0, $w0, 0xa8
+
+  0017C8C0  7E280000  ext $t0, $s1, 0, 1
+
+  0017C8C4  0240202D  move $a0, $s2
+
+  0017C8C8  0C05F24C  jal 0x17c930
+
+  0017C8CC  0200282D  move $a1, $s0
+
+  0017C8D0  E6200004  swc1 $f0, 4($s1)
+
+  0017C8D4  0220102D  move $v0, $s1
+
+  0017C8D8  DFB00010  ld $s0, 0x10($sp)
+
+  0017C8DC  DFB10018  ld $s1, 0x18($sp)
+
+  0017C8E0  DFB20020  ld $s2, 0x20($sp)
+
+  0017C8E4  DFBF0028  ld $ra, 0x28($sp)
+
+  0017C8E8  03E00008  jr $ra
+
+  0017C8EC  27BD0030  addiu $sp, $sp, 0x30
+
+  0036C500  41000000      8.000000
+
+  0036C504  3F000000      0.500000
+
+  0036C508  3F800000      1.000000
+
+  0036C50C  C0000000     -2.000000
+
+  0036C510  3ED0FAC6      0.408163
+
+  0036C514  3F800000      1.000000
+
+  0036C518  40C00000      6.000000
+
+  0036C51C  40A00000      5.000000
+
+  0036C520  40A343E9      5.102040
+
+  0036C524  3F666666      0.900000
+
+  0036C528  3F733333      0.950000
+
+  0036C52C  40490FDB      3.141593
+
+  0036C530  3F000000      0.500000
+
+  0036C534  3ED0FAC6      0.408163
+
+  0036C538  41700000     15.000000
+
+  0036C53C  40C00000      6.000000
+
+  0036C540  41000000      8.000000
+
+  0036C544  40490FDB      3.141593
+
+  0036C548  40C90FDB      6.283185
+
+  0036C54C  3F800000      1.000000
+
+  0036C550  3F800000      1.000000
+
+  0036C554  3ED0FAC6      0.408163
+
+  0036C558  3F800000      1.000000
+
+  0036C55C  BF800000     -1.000000

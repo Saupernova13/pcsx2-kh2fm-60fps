@@ -1,0 +1,11 @@
+# Check the installer still compiles and runs
+# (foreground run, transcript line 3779)
+--- input (line 3778) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python -m py_compile tools\install.py; "compile exit $LASTEXITCODE"
+python tools\install.py --help | Select-Object -First 1
+--- result ---
+Exit code 255
+compile exit 0
+
+usage: install.py [-h] [--widescreen] [--enable-60fps] [--remove] [--status]

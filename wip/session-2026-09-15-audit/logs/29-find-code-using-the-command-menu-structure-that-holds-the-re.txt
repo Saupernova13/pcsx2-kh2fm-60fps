@@ -1,0 +1,13 @@
+# Find code using the command menu structure that holds the reaction command
+# (foreground run, transcript line 2971)
+--- input (line 2969) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\elfscan.py refs 01C5FF18 01C5FF1C 01C5FF3C 01C5FF48
+--- result ---
+== 01C5FF18: 0 refs in 0 functions
+
+== 01C5FF1C: 0 refs in 0 functions
+
+== 01C5FF3C: 0 refs in 0 functions
+
+== 01C5FF48: 0 refs in 0 functions

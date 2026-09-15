@@ -1,0 +1,185 @@
+# Wait for the sweep, report double-speed words, then find the player
+# (foreground run, transcript line 3126)
+--- input (line 3116) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$log = "<session tasks>\b61o1st5e.output"
+$t0 = Get-Date
+while (-not ((Get-Content $log -Raw) -match 'exit \d+')) { if (((Get-Date) - $t0).TotalSeconds -gt 300) { "timed out waiting"; break }; Start-Sleep -Seconds 5 }
+$o = Get-Content $log -Raw; $o.Substring([Math]::Max(0, $o.Length - 200))
+"== report"
+python tools\ratesweep.py report work\rs-sandlot-idle.npz --top 20 --save rs-sandlot-idle
+"== findplayer"
+python tools\findplayer.py --top 30
+"exit $LASTEXITCODE"
+--- result ---
+    arm 60t2 57/60  255s
+    arm 60t2 58/60  259s
+    arm 60t2 59/60  264s
+    arm 60t2 60/60  268s
+
+
+  arm 60t2: 120 vsyncs = 120 ticks
+
+saved work\rs-sandlot-idle.npz
+
+exit 0
+
+
+[exited with code 0]
+
+
+== report
+
+60 samples every 2 vsyncs; hold ''
+
+  arm 30: 60 ticks
+
+  arm 60: 120 ticks
+
+  arm 60t2: 120 ticks
+
+
+
+===== float: 24387 words move in both arms; 361 at 2x, 23348 at 1x under [60 FPS]
+
+  -- threshold-driven (1x with the stock accumulator threshold)
+
+    0 words in 0 clusters (gap <= 8 bytes), largest first:
+
+    by 64K page: 
+
+  -- still 2x with the stock threshold (other per-tick code)
+
+    361 words in 306 clusters (gap <= 8 bytes), largest first:
+
+      01AA8094 x4    tv       0.2027 ->       0.2344 (1.16)  rev   4 ->   8
+
+      01AA80D4 x4    tv       0.2027 ->       0.2344 (1.16)  rev   4 ->   8
+
+      01B04550 x4    tv       0.3013 ->       0.3082 (1.02)  rev   4 ->   7
+
+      003AA9B8 x3    tv       3.1138 ->       3.3354 (1.07)  rev   4 ->   7
+
+      003AA9F8 x3    tv       3.1138 ->       3.3354 (1.07)  rev   4 ->   7
+
+      01B06510 x3    tv       1.2506 ->       1.2792 (1.02)  rev   4 ->   8
+
+      01B06558 x3    tv       3.1049 ->       3.3354 (1.07)  rev   4 ->   7
+
+      01B06598 x3    tv       3.1049 ->       3.3354 (1.07)  rev   4 ->   7
+
+      003AA734 x2    tv       0.3053 ->       0.3085 (1.01)  rev   4 ->   8
+
+      003AA770 x2    tv       1.3657 ->       1.3921 (1.02)  rev   4 ->   8
+
+      003AA7B0 x2    tv       1.3657 ->       1.3921 (1.02)  rev   4 ->   8
+
+      003AA7F0 x2    tv       1.3657 ->       1.3921 (1.02)  rev   4 ->   8
+
+      003AA978 x2    tv       3.5341 ->       3.7756 (1.07)  rev   4 ->   7
+
+      003AAAD4 x2    tv       1.4802 ->       1.5153 (1.02)  rev   3 ->   7
+
+      003AAB14 x2    tv       2.0043 ->       2.0223 (1.01)  rev   3 ->   7
+
+      003AABD4 x2    tv       2.0039 ->       2.0234 (1.01)  rev   3 ->   7
+
+      003AAC94 x2    tv       1.5057 ->       1.5383 (1.02)  rev   3 ->   7
+
+      003AACD4 x2    tv       2.1263 ->       2.1433 (1.01)  rev   3 ->   7
+
+      01AA8054 x2    tv       0.2027 ->       0.2344 (1.16)  rev   4 ->   8
+
+      01AA8070 x2    tv       0.0022 ->       0.0025 (1.16)  rev   4 ->   8
+
+    by 64K page: 01B00000:142  003A0000:85  01AA0000:59  01B10000:50  01AD0000:18  01AC0000:3  01940000:1  019C0000:1  01A80000:1  01AB0000:1
+
+  -- unclassified (60t2 arm neither 1x nor 2x)
+
+    0 words in 0 clusters (gap <= 8 bytes), largest first:
+
+    by 64K page: 
+
+
+
+===== int32: 20897 words move in both arms; 878 at 2x, 19288 at 1x under [60 FPS]
+
+  -- threshold-driven (1x with the stock accumulator threshold)
+
+    5 words in 3 clusters (gap <= 8 bytes), largest first:
+
+      01A61708 x2    tv  245760.0000 ->  491520.0000 (2.00)  rev   0 ->   0
+
+      01A61BA8 x2    tv  245760.0000 ->  491520.0000 (2.00)  rev   0 ->   0
+
+      01A611AC x1    tv  294912.0000 ->  491520.0000 (1.67)  rev  24 ->  47
+
+    by 64K page: 01A60000:5
+
+  -- still 2x with the stock threshold (other per-tick code)
+
+    872 words in 787 clusters (gap <= 8 bytes), largest first:
+
+      01ADD108 x4    tv 5140631.0000 -> 5246298.0000 (1.02)  rev   3 ->   7
+
+      01A61C1C x3    tv     119.0000 ->     234.0000 (1.97)  rev   2 ->   4
+
+      01A61C4C x3    tv     119.0000 ->     234.0000 (1.97)  rev   2 ->   4
+
+      01ABE2B0 x3    tv      42.0000 ->      81.0000 (1.93)  rev  16 ->  40
+
+      01ABE370 x3    tv      42.0000 ->      81.0000 (1.93)  rev  16 ->  40
+
+      01ABE3B0 x3    tv      42.0000 ->      81.0000 (1.93)  rev  16 ->  40
+
+      01ABE5F0 x3    tv      40.0000 ->      77.0000 (1.93)  rev  19 ->  42
+
+      01ABE6B0 x3    tv      40.0000 ->      77.0000 (1.93)  rev  19 ->  42
+
+      01ABE6F0 x3    tv      40.0000 ->      77.0000 (1.93)  rev  19 ->  42
+
+      01AC0970 x3    tv      43.0000 ->      90.0000 (2.09)  rev  17 ->  37
+
+      01AC0A30 x3    tv      43.0000 ->      90.0000 (2.09)  rev  17 ->  37
+
+      01AC0A70 x3    tv      43.0000 ->      90.0000 (2.09)  rev  17 ->  37
+
+      01ACF5A0 x3    tv      79.0000 ->     127.0000 (1.61)  rev  20 ->  39
+
+      01ACF5E0 x3    tv      79.0000 ->     127.0000 (1.61)  rev  20 ->  39
+
+      01ACF620 x3    tv      79.0000 ->     127.0000 (1.61)  rev  20 ->  39
+
+      01ACF660 x3    tv      79.0000 ->     127.0000 (1.61)  rev  20 ->  39
+
+      01ACF6A0 x3    tv      19.0000 ->      27.0000 (1.42)  rev  14 ->  26
+
+      01ACF6E0 x3    tv      19.0000 ->      27.0000 (1.42)  rev  14 ->  26
+
+      01ACF7E0 x3    tv      16.0000 ->      33.0000 (2.06)  rev  14 ->  28
+
+      01ACF820 x3    tv      16.0000 ->      33.0000 (2.06)  rev  14 ->  28
+
+    by 64K page: 00350000:486  01AA0000:69  01B00000:67  01AC0000:56  01AD0000:45  01A60000:42  003A0000:23  01B10000:23  01AB0000:21  01A80000:16  01FF0000:6  01AE0000:5
+
+  -- unclassified (60t2 arm neither 1x nor 2x)
+
+    1 words in 1 clusters (gap <= 8 bytes), largest first:
+
+      00356494 x1    tv       2.0000 ->       4.0000 (2.00)  rev   1 ->   3
+
+    by 64K page: 00350000:1
+
+
+
+wrote %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\work\rs-sandlot-idle.txt (1239 lines)
+
+== findplayer
+
+0 words walk there and back and hold still idle; 0 sit in a vec4
+
+0 vec4s, 0 distinct positions
+
+      vec4           x          y          z                        d there                         d back  copies
+
+exit 0

@@ -1,0 +1,393 @@
+# Disassemble how the cutscene timer advances and is compared
+# (foreground run, transcript line 2902)
+--- input (line 2900) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== cutscene timer writers 00226EE4..00227000"; python tools\elfscan.py dis 00226EE4 72
+"== timer vs length 00225BE8..00225D90"; python tools\elfscan.py dis 00225BE8 110
+"== callers"; python tools\elfscan.py callers 00226EE4; python tools\elfscan.py callers 00226F48
+--- result ---
+== cutscene timer writers 00226EE4..00227000
+
+  00226EE4  00000000  nop
+
+  00226EE8  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00226EEC  FFB00000  sd $s0, ($sp)
+
+  00226EF0  FFBF0008  sd $ra, 8($sp)
+
+  00226EF4  0C089BB4  jal 0x226ed0
+
+  00226EF8  0080802D  move $s0, $a0
+
+  00226EFC  240E0001  addiu $t6, $zero, 1
+
+  00226F00  DFBF0008  ld $ra, 8($sp)
+
+  00226F04  3C0F0036  lui $t7, 0x36
+
+  00226F08  0200202D  move $a0, $s0
+
+  00226F0C  ADEEDE60  sw $t6, -0x21a0($t7)
+
+  00226F10  DFB00000  ld $s0, ($sp)
+
+  00226F14  08089BC8  j 0x226f20
+
+  00226F18  27BD0010  addiu $sp, $sp, 0x10
+
+  00226F1C  00000000  nop
+
+  00226F20  3C0F0036  lui $t7, 0x36
+
+  00226F24  14800008  bnez $a0, 0x226f48
+
+  00226F28  ADE4DE5C  sw $a0, -0x21a4($t7)
+
+  00226F2C  3C0F0036  lui $t7, 0x36
+
+  00226F30  3C0E0036  lui $t6, 0x36
+
+  00226F34  A1E0DE54  sb $zero, -0x21ac($t7)
+
+  00226F38  ADC0DE1C  sw $zero, -0x21e4($t6)
+
+  00226F3C  3C0F0036  lui $t7, 0x36
+
+  00226F40  03E00008  jr $ra
+
+  00226F44  ADE0DE20  sw $zero, -0x21e0($t7)
+
+  00226F48  240E0001  addiu $t6, $zero, 1
+
+  00226F4C  3C0F0036  lui $t7, 0x36
+
+  00226F50  A1EEDE54  sb $t6, -0x21ac($t7)
+
+  00226F54  3C0F0037  lui $t7, 0x37
+
+  00226F58  240EFFFF  addiu $t6, $zero, -1
+
+  00226F5C  25EF0E0C  addiu $t7, $t7, 0xe0c
+
+  00226F60  C5E00000  lwc1 $f0, ($t7)
+
+  00226F64  3C0F0036  lui $t7, 0x36
+
+  00226F68  E5E0DE1C  swc1 $f0, -0x21e4($t7)
+
+  00226F6C  3C0F0036  lui $t7, 0x36
+
+  00226F70  03E00008  jr $ra
+
+  00226F74  ADEEDE20  sw $t6, -0x21e0($t7)
+
+  00226F78  3C0F0036  lui $t7, 0x36
+
+  00226F7C  240E0001  addiu $t6, $zero, 1
+
+  00226F80  ADE4DE5C  sw $a0, -0x21a4($t7)
+
+  00226F84  3C0F0036  lui $t7, 0x36
+
+  00226F88  03E00008  jr $ra
+
+  00226F8C  A1EEDE54  sb $t6, -0x21ac($t7)
+
+  00226F90  3C0F0036  lui $t7, 0x36
+
+  00226F94  25EEDB50  addiu $t6, $t7, -0x24b0
+
+  00226F98  ADE0DB50  sw $zero, -0x24b0($t7)
+
+  00226F9C  ADC00008  sw $zero, 8($t6)
+
+  00226FA0  03E00008  jr $ra
+
+  00226FA4  ADC00004  sw $zero, 4($t6)
+
+  00226FA8  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00226FAC  3C0F0036  lui $t7, 0x36
+
+  00226FB0  FFBF0000  sd $ra, ($sp)
+
+  00226FB4  A1E0DE09  sb $zero, -0x21f7($t7)
+
+  00226FB8  DFBF0000  ld $ra, ($sp)
+
+  00226FBC  080894A6  j 0x225298
+
+  00226FC0  27BD0010  addiu $sp, $sp, 0x10
+
+  00226FC4  00000000  nop
+
+  00226FC8  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00226FCC  3C0F0036  lui $t7, 0x36
+
+  00226FD0  FFB00000  sd $s0, ($sp)
+
+  00226FD4  3C0E0036  lui $t6, 0x36
+
+  00226FD8  A1E0DE24  sb $zero, -0x21dc($t7)
+
+  00226FDC  2410FFFF  addiu $s0, $zero, -1
+
+  00226FE0  A1C0DE25  sb $zero, -0x21db($t6)
+
+  00226FE4  3C0F0036  lui $t7, 0x36
+
+  00226FE8  FFBF0008  sd $ra, 8($sp)
+
+  00226FEC  0C08B5F2  jal 0x22d7c8
+
+  00226FF0  ADF0DE28  sw $s0, -0x21d8($t7)
+
+  00226FF4  0C089680  jal 0x225a00
+
+  00226FF8  00000000  nop
+
+  00226FFC  0C089688  jal 0x225a20
+
+  00227000  00000000  nop
+
+== timer vs length 00225BE8..00225D90
+
+  00225BE8  240EFFFF  addiu $t6, $zero, -1
+
+  00225BEC  8DEDDE28  lw $t5, -0x21d8($t7)
+
+  00225BF0  11AE0005  beq $t5, $t6, 0x225c08
+
+  00225BF4  3C120036  lui $s2, 0x36
+
+  00225BF8  8E4FDE20  lw $t7, -0x21e0($s2)
+
+  00225BFC  01ED782A  slt $t7, $t7, $t5
+
+  00225C00  51E0FFEE  beql $t7, $zero, 0x225bbc
+
+  00225C04  DFB00000  ld $s0, ($sp)
+
+  00225C08  3C110036  lui $s1, 0x36
+
+  00225C0C  8E2FDE28  lw $t7, -0x21d8($s1)
+
+  00225C10  25F0FFD8  addiu $s0, $t7, -0x28
+
+  00225C14  0010702A  slt $t6, $zero, $s0
+
+  00225C18  0C08A0DE  jal 0x228378
+
+  00225C1C  000E800A  movz $s0, $zero, $t6
+
+  00225C20  14400011  bnez $v0, 0x225c68
+
+  00225C24  8E4FDE20  lw $t7, -0x21e0($s2)
+
+  00225C28  01F0782A  slt $t7, $t7, $s0
+
+  00225C2C  15E0000E  bnez $t7, 0x225c68
+
+  00225C30  8E4FDE20  lw $t7, -0x21e0($s2)
+
+  00225C34  8E2EDE28  lw $t6, -0x21d8($s1)
+
+  00225C38  240FFFFF  addiu $t7, $zero, -1
+
+  00225C3C  11CF000A  beq $t6, $t7, 0x225c68
+
+  00225C40  8E4FDE20  lw $t7, -0x21e0($s2)
+
+  00225C44  0C052B02  jal 0x14ac08
+
+  00225C48  00000000  nop
+
+  00225C4C  8C4F00FC  lw $t7, 0xfc($v0)
+
+  00225C50  39EF0004  xori $t7, $t7, 4
+
+  00225C54  15E00004  bnez $t7, 0x225c68
+
+  00225C58  8E4FDE20  lw $t7, -0x21e0($s2)
+
+  00225C5C  0C053398  jal 0x14ce60
+
+  00225C60  00000000  nop
+
+  00225C64  8E4FDE20  lw $t7, -0x21e0($s2)
+
+  00225C68  01F0782A  slt $t7, $t7, $s0
+
+  00225C6C  55E0FFD9  bnel $t7, $zero, 0x225bd4
+
+  00225C70  DFB00000  ld $s0, ($sp)
+
+  00225C74  3C0F0036  lui $t7, 0x36
+
+  00225C78  240EFFFF  addiu $t6, $zero, -1
+
+  00225C7C  8DEDDE28  lw $t5, -0x21d8($t7)
+
+  00225C80  11AEFFD3  beq $t5, $t6, 0x225bd0
+
+  00225C84  3C0F0036  lui $t7, 0x36
+
+  00225C88  240E0001  addiu $t6, $zero, 1
+
+  00225C8C  91EDDE56  lbu $t5, -0x21aa($t7)
+
+  00225C90  55AEFFD0  bnel $t5, $t6, 0x225bd4
+
+  00225C94  DFB00000  ld $s0, ($sp)
+
+  00225C98  3C0F0036  lui $t7, 0x36
+
+  00225C9C  8DEEDE2C  lw $t6, -0x21d4($t7)
+
+  00225CA0  55C0FFCC  bnel $t6, $zero, 0x225bd4
+
+  00225CA4  DFB00000  ld $s0, ($sp)
+
+  00225CA8  0C0AF1EA  jal 0x2bc7a8
+
+  00225CAC  24040003  addiu $a0, $zero, 3
+
+  00225CB0  1440FFC8  bnez $v0, 0x225bd4
+
+  00225CB4  DFB00000  ld $s0, ($sp)
+
+  00225CB8  0C052B02  jal 0x14ac08
+
+  00225CBC  00000000  nop
+
+  00225CC0  8C4F00FC  lw $t7, 0xfc($v0)
+
+  00225CC4  39EF0004  xori $t7, $t7, 4
+
+  00225CC8  15E0FFC2  bnez $t7, 0x225bd4
+
+  00225CCC  DFB00000  ld $s0, ($sp)
+
+  00225CD0  1000FFBB  b 0x225bc0
+
+  00225CD4  DFB10008  ld $s1, 8($sp)
+
+  00225CD8  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00225CDC  3C0F0036  lui $t7, 0x36
+
+  00225CE0  FFBF0000  sd $ra, ($sp)
+
+  00225CE4  240E0001  addiu $t6, $zero, 1
+
+  00225CE8  91EDDE08  lbu $t5, -0x21f8($t7)
+
+  00225CEC  15AE000E  bne $t5, $t6, 0x225d28
+
+  00225CF0  DFBF0000  ld $ra, ($sp)
+
+  00225CF4  0C0AE988  jal 0x2ba620
+
+  00225CF8  00000000  nop
+
+  00225CFC  0C052B02  jal 0x14ac08
+
+  00225D00  00000000  nop
+
+  00225D04  0040202D  move $a0, $v0
+
+  00225D08  0000282D  move $a1, $zero
+
+  00225D0C  0C052A96  jal 0x14aa58
+
+  00225D10  0000302D  move $a2, $zero
+
+  00225D14  0C0894AC  jal 0x2252b0
+
+  00225D18  00000000  nop
+
+  00225D1C  DFBF0000  ld $ra, ($sp)
+
+  00225D20  08089B72  j 0x226dc8
+
+  00225D24  27BD0010  addiu $sp, $sp, 0x10
+
+  00225D28  03E00008  jr $ra
+
+  00225D2C  27BD0010  addiu $sp, $sp, 0x10
+
+  00225D30  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00225D34  FFBF0008  sd $ra, 8($sp)
+
+  00225D38  FFB00000  sd $s0, ($sp)
+
+  00225D3C  0C0896E2  jal 0x225b88
+
+  00225D40  00000000  nop
+
+  00225D44  0C089736  jal 0x225cd8
+
+  00225D48  00000000  nop
+
+  00225D4C  0C0896AA  jal 0x225aa8
+
+  00225D50  00000000  nop
+
+  00225D54  1440000F  bnez $v0, 0x225d94
+
+  00225D58  3C100036  lui $s0, 0x36
+
+  00225D5C  0C0896C0  jal 0x225b00
+
+  00225D60  2404FFFF  addiu $a0, $zero, -1
+
+  00225D64  10400029  beqz $v0, 0x225e0c
+
+  00225D68  3C050036  lui $a1, 0x36
+
+  00225D6C  3C100036  lui $s0, 0x36
+
+  00225D70  2604DE20  addiu $a0, $s0, -0x21e0
+
+  00225D74  0C0898FC  jal 0x2263f0
+
+  00225D78  24A5DAF0  addiu $a1, $a1, -0x2510
+
+  00225D7C  1040001A  beqz $v0, 0x225de8
+
+  00225D80  3C0F0036  lui $t7, 0x36
+
+  00225D84  C600DE20  lwc1 $f0, -0x21e0($s0)
+
+  00225D88  46800020  cvt.s.w $f0, $f0
+
+  00225D8C  46000000  add.s $f0, $f0, $f0
+
+  00225D90  E5E0DE1C  swc1 $f0, -0x21e4($t7)
+
+  00225D94  0C0BBDEE  jal 0x2ef7b8
+
+  00225D98  00000000  nop
+
+  00225D9C  10400008  beqz $v0, 0x225dc0
+
+== callers
+
+00226EE4 is in the function starting 00226EE4
+
+  00226EE4: jumps []
+
+  00226EE4: data pointers []
+
+  00226EE4: lui/addiu loads []
+
+00226F48 is in the function starting 00226F48
+
+  00226F48: jumps []
+
+  00226F48: data pointers []
+
+  00226F48: lui/addiu loads []

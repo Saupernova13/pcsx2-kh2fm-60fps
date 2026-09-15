@@ -1,0 +1,132 @@
+# Walk the character and list the RAM floats that moved most
+# (foreground run, transcript line 3147)
+--- input (line 3146) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import numpy as np
+import _bootstrap
+import ratediff
+from game import sandlot, config
+roo = sandlot.connect()
+def fl():
+    raw = ratediff.snapshot(roo)
+    with np.errstate(all="ignore"):
+        return raw.view("<f4").astype(np.float64), raw
+LO = ratediff.LO
+ratediff.start_arm(roo, "60", 1)
+roo.frame_advance(10)
+s0, raw0 = fl()
+roo.input_set("LLeft", "LDown"); roo.frame_advance(40)
+s1, _ = fl()
+sandlot.shot(roo, "fp-after-there.png")
+roo.input_set("LRight", "LUp"); roo.frame_advance(40); roo.input_release()
+s2, _ = fl()
+roo.frame_advance(20)
+s3, _ = fl()
+sandlot.shot(roo, "fp-after-back.png")
+with np.errstate(all="ignore"):
+    ok = np.isfinite(s0) & np.isfinite(s1) & np.isfinite(s2) & (np.abs(s0) < 1e5) & (np.abs(s1) < 1e5) & (np.abs(s2) < 1e5)
+    d1 = np.where(ok, s1 - s0, 0); d2 = np.where(ok, s2 - s1, 0); d3 = np.where(ok, s3 - s2, 0)
+for name, d in (("there", d1), ("back", d2), ("settle", d3)):
+    big = np.flatnonzero(np.abs(d) > 15)
+    print(f"{name}: {big.size} floats moved > 15")
+rev = np.flatnonzero((np.abs(d1) > 15) & (np.abs(d2) > 15) & (np.sign(d1) != np.sign(d2)))
+print(f"reversed: {rev.size}")
+order = np.argsort(-np.abs(d1))
+shown = 0
+for i in order:
+    if abs(d1[i]) <= 15 or not ok[i]:
+        continue
+    a = LO + 4 * int(i)
+    ctx = " ".join(f"{v:9.2f}" for v in s1[i - 1:i + 4])
+    print(f"  {a:08X}  s0 {s0[i]:10.2f}  d_there {d1[
+--- result ---
+there: 4026 floats moved > 15
+
+back: 3301 floats moved > 15
+
+settle: 3376 floats moved > 15
+
+reversed: 2064
+
+  018D0154  s0   85134.84  d_there -85134.84  d_back     -0.00  d_settle     0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  01950154  s0   85134.84  d_there -85134.84  d_back     -0.00  d_settle     0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  01950170  s0  -82593.90  d_there  82593.90  d_back     -0.00  d_settle    -0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  018D0170  s0  -82593.90  d_there  82593.90  d_back      0.00  d_settle    -0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00 668535978246889933612515328.00
+
+  019504B0  s0       0.00  d_there -63135.68  d_back  63135.68  d_settle     0.00   ctx(-1..+3)     -1.00 -63135.68     -0.00     -0.00      0.00
+
+  018D0490  s0       0.00  d_there -62388.04  d_back  62388.04  d_settle    -0.00   ctx(-1..+3)     -1.00 -62388.04     -0.00     -0.00      0.00
+
+  018D07A4  s0   62168.32  d_there -62168.32  d_back      0.00  d_settle     0.00   ctx(-1..+3)      0.00      0.00      0.00 8589940736.00      0.00
+
+  019507A4  s0   62168.32  d_there -62168.32  d_back  -1774.48  d_settle  1774.48   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  019505E4  s0   62168.32  d_there -62168.32  d_back     -0.00  d_settle     0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  018D05E4  s0   62168.32  d_there -62168.32  d_back      0.00  d_settle    -0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  01950600  s0  -61925.68  d_there  61925.68  d_back     -0.00  d_settle    -0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  018D07C0  s0  -61925.68  d_there  61925.68  d_back    -18.16  d_settle    18.16   ctx(-1..+3)      0.00     -0.00      0.00      0.00      0.00
+
+  019507C0  s0  -61925.68  d_there  61925.68  d_back    890.53  d_settle  -890.53   ctx(-1..+3) 8589948928.00      0.00      0.00      0.00 8589940736.00
+
+  018D0600  s0  -61925.68  d_there  61925.68  d_back      0.00  d_settle    -0.00   ctx(-1..+3)      0.00      0.00      0.00      0.00 668535978246889933612515328.00
+
+  01950494  s0       0.00  d_there  60932.15  d_back -60932.15  d_settle     1.00   ctx(-1..+3)      0.00  60932.15     -0.00      0.00    -15.60
+
+  018D0474  s0       0.00  d_there  60281.47  d_back -60281.47  d_settle    -0.00   ctx(-1..+3)      0.00  60281.47     -0.00      0.00    -15.43
+
+  018CFCC4  s0   42457.34  d_there -42457.34  d_back      0.00  d_settle     0.00   ctx(-1..+3)      0.00      0.00      0.00 8589936640.00      0.00
+
+  0194FCC4  s0   42456.90  d_there -42456.90  d_back     -0.00  d_settle   255.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  01950940  s0       0.00  d_there -39444.95  d_back  39444.95  d_settle     0.00   ctx(-1..+3)     -1.00 -39444.95     -0.00     -0.00      0.00
+
+  018D0920  s0       0.00  d_there -39310.76  d_back  39310.76  d_settle    -0.00   ctx(-1..+3)     -1.00 -39310.76     -0.00     -0.00      0.00
+
+  01950020  s0       0.00  d_there -37652.66  d_back  37652.66  d_settle     0.00   ctx(-1..+3)     -1.00 -37652.66     -0.00     -0.00      0.00
+
+  01950924  s0       0.00  d_there  37394.77  d_back -37394.77  d_settle     1.00   ctx(-1..+3)      0.00  37394.77     -0.00      0.00    -10.29
+
+  018D0000  s0       0.00  d_there -37348.45  d_back  37348.45  d_settle    -0.00   ctx(-1..+3)     -1.00 -37348.45     -0.00     -0.00      0.00
+
+  018D0904  s0       0.00  d_there  37301.98  d_back -37301.98  d_settle    -0.00   ctx(-1..+3)      0.00  37301.98     -0.00      0.00    -10.24
+
+  018CFFE4  s0       0.00  d_there  32208.83  d_back -32208.83  d_settle     0.00   ctx(-1..+3)      0.00  32208.83     -0.00      0.00     -9.90
+
+  019CFF74  s0   62168.32  d_there -24773.55  d_back  12357.93  d_settle 14419.02   ctx(-1..+3)      0.00  37394.77     -0.00      0.00    -10.29
+
+  019CFE54  s0   85134.84  d_there -24202.69  d_back  12581.76  d_settle     0.00   ctx(-1..+3)      0.00  60932.15     -0.00      0.00    -15.60
+
+  019CFF90  s0  -61925.68  d_there  22480.73  d_back  -8867.07  d_settle -16178.21   ctx(-1..+3)     -1.00 -39444.95     -0.00     -0.00      0.00
+
+  019CFE70  s0  -82593.90  d_there  19458.22  d_back -10814.70  d_settle     0.00   ctx(-1..+3)     -1.00 -63135.68     -0.00     -0.00      0.00
+
+  018D0B00  s0       0.00  d_there -10446.53  d_back  10446.53  d_settle -142548.69   ctx(-1..+3)     -0.00 -10446.53    189.54      0.68     -1.00
+
+  01950B20  s0       0.00  d_there -10446.53  d_back  10446.53  d_settle     0.00   ctx(-1..+3)     -0.00 -10446.53    189.54      0.68     -1.00
+
+  018D0980  s0  -10446.53  d_there  10446.53  d_back   2048.00  d_settle -2048.00   ctx(-1..+3)      0.00      0.00      0.00      0.00      0.00
+
+  01950980  s0  -10446.53  d_there  10446.53  d_back      0.00  d_settle     0.00   ctx(-1..+3) 625015312823549936866951168.00      0.00      0.00      0.00      0.00
+
+  019CFD34  s0   42456.90  d_there -10130.23  d_back   1087.59  d_settle  3503.72   ctx(-1..+3)      0.00  32326.67     -0.00      0.00     -9.98
+
+  0194E86C  s0       0.00  d_there  -9379.86  d_back   9379.86  d_settle     0.00   ctx(-1..+3) 16799946.00  -9379.86      0.00      0.00      0.00
+
+  0194E56C  s0       0.00  d_there  -9379.86  d_back   9379.86  d_settle 625015312823549936866951168.00   ctx(-1..+3) 16799946.00  -9379.86      0.00      0.00      0.00
+
+  0194EA7C  s0      -0.53  d_there  -9379.33  d_back   9379.86  d_settle     0.00   ctx(-1..+3) 16799946.00  -9379.86      0.00      0.00      0.00
+
+  018CEA5C  s0       0.85  d_there  -9358.39  d_back   9357.54  d_settle     0.69   ctx(-1..+3) 16799876.00  -9357.54      0.00      0.00      0.00
+
+  018CE84C  s0      -1.00  d_there  -9356.54  d_back   9357.54  d_settle     0.00   ctx(-1..+3) 16799876.00  -9357.54      0.00      0.00      0.00
+
+  0194E14C  s0   -8974.55  d_there   8974.55  d_back      0.00  d_settle     0.00   ctx(-1..+3)      0.00      0.00 8589934592.00      0.00      0.00

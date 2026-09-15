@@ -1,0 +1,21 @@
+# Check which code reads the jump threshold constants
+# (foreground run, transcript line 3256)
+--- input (line 3254) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\elfscan.py refs 0036C518 0036C51C 0036C520
+--- result ---
+== 0036C518: 2 refs in 1 functions
+
+   0017C6DC  addiu (function 0017C690)
+
+   0017C790  addiu (function 0017C690)
+
+== 0036C51C: 2 refs in 2 functions
+
+   0017C7A4  addiu (function 0017C690)
+
+   0017C820  addiu (function 0017C81C)
+
+== 0036C520: 1 refs in 1 functions
+
+   0017C7DC  addiu (function 0017C690)

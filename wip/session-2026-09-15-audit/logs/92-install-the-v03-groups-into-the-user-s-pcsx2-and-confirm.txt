@@ -1,0 +1,69 @@
+# Install the v03 groups into the user's PCSX2 and confirm
+# (foreground run, transcript line 3733)
+--- input (line 3731) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== install (writes the user's PCSX2 patch file and game ini, with backups)"
+python tools\install.py --widescreen
+"exit $LASTEXITCODE"
+"== status after install"
+python tools\install.py --status
+--- result ---
+== install (writes the user's PCSX2 patch file and game ini, with backups)
+
+base          %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+writes        %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+game ini      %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini
+
+  [60 FPS - ball physics]  unchanged  (18 patch lines)
+
+  [60 FPS - short hop]  added  (15 patch lines)
+
+  [60 FPS - friction]  added  (16 patch lines)
+
+  [Widescreen 19.5:9 - S24 Ultra]  unchanged  (15 patch lines)
+
+  enable  ['60 FPS - short hop', '60 FPS - friction']
+
+  disable []
+
+  backup  %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\work\install-backups\SLPM-66675_FAF99301.pnach.20260915-141247
+
+  backup  %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\work\install-backups\SLPM-66675_FAF99301.ini.20260915-141247
+
+written.
+
+
+
+  !! PCSX2 IS RUNNING - it reads patches and the game ini at boot. Quit and relaunch it.
+
+exit 0
+
+== status after install
+
+PCSX2         %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt
+
+patch file    %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\patches\SLPM-66675_FAF99301.pnach
+
+game ini      %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini
+
+  [60 FPS]  present  enabled
+
+  [Widescreen 16:9]  present  off
+
+  [60 FPS - ball physics]  present  enabled
+
+  [60 FPS - short hop]  present  enabled
+
+  [60 FPS - friction]  present  enabled
+
+  [Widescreen 19.5:9 - S24 Ultra]  present  enabled
+
+  [60 FPS - ball physics] words match this repo: True
+
+  [60 FPS - short hop] words match this repo: True
+
+  [60 FPS - friction] words match this repo: True
+
+  [Widescreen 19.5:9 - S24 Ultra] words match this repo: True

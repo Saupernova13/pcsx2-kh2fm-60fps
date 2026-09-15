@@ -1,0 +1,162 @@
+# List KH2FM entries and 60 FPS groups in patches.zip files
+# (foreground run, transcript line 752)
+--- input (line 750) ---
+python -c @"
+import zipfile, re
+for z in (r'%USERPROFILE%\Documents\GitHub\pcsxroo\bin\resources\patches.zip', r'%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\resources\patches.zip'):
+    print('=====', z)
+    try:
+        zf = zipfile.ZipFile(z)
+    except Exception as e:
+        print('  cannot open:', e); continue
+    names = [n for n in zf.namelist() if '66675' in n]
+    print('  entries:', names)
+    for n in names:
+        text = zf.read(n).decode('utf-8', 'replace')
+        print('  ----', n)
+        cur = None
+        for line in text.splitlines():
+            s = line.strip()
+            if s.startswith('['):
+                cur = s; print('   ', s)
+            elif cur and cur.lower().find('60') >= 0 and s.startswith('patch'):
+                print('       ', s)
+"@
+--- result ---
+===== %USERPROFILE%\Documents\GitHub\pcsxroo\bin\resources\patches.zip
+
+  entries: ['SLPM-66675_E6FB8E10.pnach', 'SLPM-66675_F266B00B.pnach', 'SLPM-66675_FAF99301.pnach']
+
+  ---- SLPM-66675_E6FB8E10.pnach
+
+    [Widescreen 16:9]
+
+    [Subtitles off]
+
+    [Remove Blackbars]
+
+    [60 FPS]
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+    [Swap X and O]
+
+  ---- SLPM-66675_F266B00B.pnach
+
+    [Widescreen 16:9]
+
+    [Remove Blackbars]
+
+    [60 FPS]
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+    [Remove Blur]
+
+    [Subtitles off]
+
+    [Swap X and O]
+
+  ---- SLPM-66675_FAF99301.pnach
+
+    [Widescreen 16:9]
+
+    [Subtitles off]
+
+    [Remove Blackbars]
+
+    [60 FPS]
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+===== %USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\resources\patches.zip
+
+  entries: ['SLPM-66675_E6FB8E10.pnach', 'SLPM-66675_F266B00B.pnach', 'SLPM-66675_FAF99301.pnach']
+
+  ---- SLPM-66675_E6FB8E10.pnach
+
+    [Widescreen 16:9]
+
+    [Subtitles off]
+
+    [Remove Blackbars]
+
+    [60 FPS]
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+    [Swap X and O]
+
+  ---- SLPM-66675_F266B00B.pnach
+
+    [Widescreen 16:9]
+
+    [Remove Blackbars]
+
+    [60 FPS]
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+    [Subtitles off]
+
+    [Swap X and O]
+
+  ---- SLPM-66675_FAF99301.pnach
+
+    [Widescreen 16:9]
+
+    [Subtitles off]
+
+    [Remove Blackbars]
+
+    [60 FPS]
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)
+
+        (patch line from PCSX2's database redacted - not this project's)

@@ -1,0 +1,68 @@
+# Extract the three KH2 saves and show titles and headers
+# (foreground run, transcript line 2863)
+--- input (line 2862) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$card = "$env:APPDATA\EmuDeck\Emulators\PCSX2-Qt\memcards\Mcd002.ps2"
+New-Item -ItemType Directory -Force work\saves | Out-Null
+foreach ($n in "00", "01", "02") {
+  python tools\memcard.py $card --extract "BISLPM-66675FM-$n/BISLPM-66675FM-$n" --out "work\saves\FM-$n.bin"
+  python tools\memcard.py $card --extract "BISLPM-66675FM-$n/icon.sys" --out "work\saves\FM-$n.icon.sys"
+}
+$py = @'
+import struct, pathlib
+for n in ("00", "01", "02"):
+    icon = pathlib.Path(f"work/saves/FM-{n}.icon.sys").read_bytes()
+    title = icon[0xC0:0xC0 + 68].split(b"\0\0", 1)[0]
+    try:
+        t = title.decode("shift_jis", "replace")
+    except Exception:
+        t = repr(title)
+    data = pathlib.Path(f"work/saves/FM-{n}.bin").read_bytes()
+    print(f"== FM-{n}: icon title {t!r}  size {len(data)}")
+    for off in range(0, 0x40, 16):
+        print(f"   {off:04X}  " + " ".join(f"{b:02X}" for b in data[off:off + 16]))
+'@
+$f = "$env:TEMP\kh2_saves.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+wrote work\saves\FM-00.bin (69568 bytes)
+
+wrote work\saves\FM-00.icon.sys (964 bytes)
+
+wrote work\saves\FM-01.bin (69568 bytes)
+
+wrote work\saves\FM-01.icon.sys (964 bytes)
+
+wrote work\saves\FM-02.bin (69568 bytes)
+
+wrote work\saves\FM-02.icon.sys (964 bytes)
+
+== FM-00: icon title 'ＫＨ�s\u3000Ｆｉｎａｌ\u3000Ｍｉｘ\u3000◎\u3000［０１］ＬＶ０２／\u3000\u3000１：５７\u3000'  size 69568
+
+   0000  4B 48 32 4A 3A 00 00 00 9F 0B 1F E6 02 0B 63 00
+
+   0010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   0030  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+== FM-01: icon title 'ＫＨ�s\u3000Ｆｉｎａｌ\u3000Ｍｉｘ\u3000◎\u3000［０２］ＬＶ０５／\u3000\u3000２：５９\u3000'  size 69568
+
+   0000  4B 48 32 4A 3A 00 00 00 98 66 A2 63 02 12 63 00
+
+   0010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   0030  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+== FM-02: icon title 'ＫＨ�s\u3000Ｆｉｎａｌ\u3000Ｍｉｘ\u3000◎\u3000［０３］ＬＶ０６／\u3000\u3000３：２６\u3000'  size 69568
+
+   0000  4B 48 32 4A 3A 00 00 00 4A 94 8A F8 02 02 63 00
+
+   0010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   0030  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

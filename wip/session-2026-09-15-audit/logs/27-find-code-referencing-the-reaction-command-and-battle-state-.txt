@@ -1,0 +1,37 @@
+# Find code referencing the reaction command and battle state words
+# (foreground run, transcript line 2955)
+--- input (line 2954) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\elfscan.py refs 01C5FF4C 01C5FF4E 01C5FF50 01D48DB8 01C61958
+--- result ---
+== 01C5FF4C: 0 refs in 0 functions
+
+== 01C5FF4E: 0 refs in 0 functions
+
+== 01C5FF50: 0 refs in 0 functions
+
+== 01D48DB8: 5 refs in 5 functions
+
+   001B9248  sw    (function 001B9218)
+
+   001B9C30  addiu (function 001B9C24)
+
+   001B9C60  addiu (function 001B9C58)
+
+   001B9CB4  addiu (function 001B9C8C)
+
+   001BA0EC  sw    (function 001BA050)
+
+== 01C61958: 6 refs in 4 functions
+
+   001917B8  lw    (function 00191738)
+
+   001917C4  lw    (function 001917BC)
+
+   001917E8  lw    (function 001917D0)
+
+   00191868  lw    (function 001917D0)
+
+   00191894  lw    (function 001917D0)
+
+   00191970  sw    (function 001918FC)

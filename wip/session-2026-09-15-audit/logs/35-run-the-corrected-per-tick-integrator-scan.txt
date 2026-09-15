@@ -1,0 +1,24 @@
+# Run the corrected per-tick integrator scan
+# (foreground run, transcript line 3055)
+--- input (line 3054) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\integrators.py 2>&1 | Select-Object -First 150
+"exit $LASTEXITCODE"
+--- result ---
+(82 sites add or subtract delta itself - timers in delta units, correct at 60fps - not listed)
+
+5 field = field {+,-} data-constant sites
+
+      site   function   field   constant        value op        store delta-in-fn
+
+  0014E93C  0014E90C  +0x064  0034A3F8      0.000000 sub  0014E944  yes
+
+  001E6340  001E6280  +0x0a4  00352BE0      0.000000 sub  001E6348  no
+
+  001E6400  001E6280  +0x098  00352BE0      0.000000 add  001E6414  no
+
+  0023D048  0023D02C  -0x14d4  0035EB2C      0.000000 add  0023D04C  no
+
+  002EA560  002EA41C  +0x024  00363404      0.408163 add  002EA570  yes
+
+exit 0

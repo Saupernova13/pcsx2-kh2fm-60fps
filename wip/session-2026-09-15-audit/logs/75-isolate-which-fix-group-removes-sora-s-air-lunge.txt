@@ -1,0 +1,40 @@
+# Isolate which fix group removes Sora's air lunge
+# (foreground run, transcript line 3446)
+--- input (line 3445) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$script = "wait:6,hold:Circle:14,wait:4,tap:Cross,wait:6,tap:Cross,wait:6,tap:Cross,wait:6,tap:Cross,wait:80"
+foreach ($grp in "60 FPS - ball physics", "60 FPS - short hop", "60 FPS - friction") {
+  "==================== air combo with only [$grp]"
+  python tools\movetest.py --pos 01A94980 --script $script --what all --group $grp
+}
+--- result ---
+Exit code 1
+==================== air combo with only [60 FPS - ball physics]
+
+  30fps oracle     peak   156.57 at  35  air  50  fall   0.4003  path   195.02  net   195.02
+
+  60fps            peak   146.80 at  36  air  50  fall   0.4082  path   130.35  net   130.35
+
+  60fps + fix      peak   156.57 at  36  air  51  fall   0.4082  path   131.43  net   131.43
+
+FAIL: 60fps + fix differs from 30fps: path 131.43 vs 195.02
+
+==================== air combo with only [60 FPS - short hop]
+
+  30fps oracle     peak   156.57 at  35  air  50  fall   0.4003  path   195.02  net   195.02
+
+  60fps            peak   156.57 at  36  air  51  fall   0.4082  path   131.43  net   131.43
+
+  60fps + fix      peak   156.57 at  36  air  51  fall   0.4082  path   131.43  net   131.43
+
+FAIL: 60fps + fix differs from 30fps: path 131.43 vs 195.02
+
+==================== air combo with only [60 FPS - friction]
+
+  30fps oracle     peak   156.57 at  35  air  50  fall   0.4003  path   195.02  net   195.02
+
+  60fps            peak   156.57 at  36  air  51  fall   0.4082  path   131.43  net   131.43
+
+  60fps + fix      peak   156.57 at  36  air  51  fall   0.4082  path     0.00  net     0.00
+
+FAIL: 60fps + fix differs from 30fps: path 0.00 vs 195.02

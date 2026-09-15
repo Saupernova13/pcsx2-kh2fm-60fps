@@ -1,0 +1,95 @@
+# Disassemble the movement state call site for the jump update
+# (foreground run, transcript line 3249)
+--- input (line 3247) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 001B8E20..001B8EC8"; python tools\elfscan.py dis 001B8E20 44
+--- result ---
+== 001B8E20..001B8EC8
+
+  001B8E20  10400010  beqz $v0, 0x1b8e64
+
+  001B8E24  01CF2021  addu $a0, $t6, $t7
+
+  001B8E28  84900002  lh $s0, 2($a0)
+
+  001B8E2C  0602000A  bltzl $s0, 0x1b8e58
+
+  001B8E30  DFB00000  ld $s0, ($sp)
+
+  001B8E34  0C06E256  jal 0x1b8958
+
+  001B8E38  0200202D  move $a0, $s0
+
+  001B8E3C  14400005  bnez $v0, 0x1b8e54
+
+  001B8E40  0200202D  move $a0, $s0
+
+  001B8E44  DFB00000  ld $s0, ($sp)
+
+  001B8E48  DFBF0008  ld $ra, 8($sp)
+
+  001B8E4C  0806E20E  j 0x1b8838
+
+  001B8E50  27BD0010  addiu $sp, $sp, 0x10
+
+  001B8E54  DFB00000  ld $s0, ($sp)
+
+  001B8E58  DFBF0008  ld $ra, 8($sp)
+
+  001B8E5C  03E00008  jr $ra
+
+  001B8E60  27BD0010  addiu $sp, $sp, 0x10
+
+  001B8E64  3C0F0037  lui $t7, 0x37
+
+  001B8E68  25EFDBB0  addiu $t7, $t7, -0x2450
+
+  001B8E6C  01CF7821  addu $t7, $t6, $t7
+
+  001B8E70  1000FFEE  b 0x1b8e2c
+
+  001B8E74  85F00000  lh $s0, ($t7)
+
+  001B8E78  3C0F01D5  lui $t7, 0x1d5
+
+  001B8E7C  03E00008  jr $ra
+
+  001B8E80  ADE48D98  sw $a0, -0x7268($t7)
+
+  001B8E84  00000000  nop
+
+  001B8E88  27BDFFE0  addiu $sp, $sp, -0x20
+
+  001B8E8C  3C0F0032  lui $t7, 0x32
+
+  001B8E90  FFB00000  sd $s0, ($sp)
+
+  001B8E94  24070030  addiu $a3, $zero, 0x30
+
+  001B8E98  FFB10008  sd $s1, 8($sp)
+
+  001B8E9C  FFBF0010  sd $ra, 0x10($sp)
+
+  001B8EA0  3C1001D5  lui $s0, 0x1d5
+
+  001B8EA4  25F10458  addiu $s1, $t7, 0x458
+
+  001B8EA8  8E058D98  lw $a1, -0x7268($s0)
+
+  001B8EAC  0220402D  move $t0, $s1
+
+  001B8EB0  8CA60004  lw $a2, 4($a1)
+
+  001B8EB4  0C0BF492  jal 0x2fd248
+
+  001B8EB8  24A50008  addiu $a1, $a1, 8
+
+  001B8EBC  944E0002  lhu $t6, 2($v0)
+
+  001B8EC0  240F0002  addiu $t7, $zero, 2
+
+  001B8EC4  55CF000E  bnel $t6, $t7, 0x1b8f00
+
+  001B8EC8  DFB00000  ld $s0, ($sp)
+
+  001B8ECC  944F0000  lhu $t7, ($v0)

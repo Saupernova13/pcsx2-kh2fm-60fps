@@ -1,0 +1,490 @@
+# Record every hit on the ball during the mash with Sora's attack clock
+# (foreground run, transcript line 3587)
+--- input (line 3578) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+import ratediff
+import movetest
+from game import config, sandlot
+from game.pnachtext import group_words
+roo = sandlot.connect()
+SORA, BALL = 0x01A94440, 0x01ADD9D0
+fix = []
+for n in ("60 FPS - ball physics", "60 FPS - short hop", "60 FPS - friction"):
+    fix += group_words(config.WIP / "working.pnach", n)
+steps = movetest.parse("wait:6,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * 16))
+for arm, words in (("30", []), ("60w", fix)):
+    print(f"===== arm {arm}")
+    ratediff.start_arm(roo, "30" if arm == "30" else "60", 1)
+    sandlot.apply_words(roo, words)
+    roo.bp_clear()
+    roo.bp_add(0x002E7E48, description="hit handler")
+    v = 0
+    try:
+        for kind, buttons, n in steps:
+            if kind == "hold":
+                roo.input_set(*buttons)
+            for _ in range(n):
+                st = roo.frame_advance(1)
+                guard = 0
+                while st is not None and getattr(st, "reason", "") == "breakpoint" and guard < 8:
+                    r = roo.regs("GPR")
+                    sp = r["sp"]
+                    stack = struct.unpack("<24I", roo.read_bytes(sp, 96))
+                    rets = [w for w in stack if 0x00100000 <= w < 0x00340000]
+                    clk = struct.unpack("<f", roo.read_bytes(SORA + 0x170, 4))[0]
+                    bh = struct.unpack("<f", roo.read_bytes(BALL + 0x544, 4))[0]
+         
+--- result ---
+===== arm 30
+
+  vsync   0 hit: a0 00381170 ra 001DAE88  sora clock 150.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   2 hit: a0 00381170 ra 001DAE88  sora clock 152.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   4 hit: a0 00381170 ra 001DAE88  sora clock 154.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   6 hit: a0 00381170 ra 001DAE88  sora clock 156.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   8 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  10 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  12 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  14 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  16 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  18 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  20 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  22 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  24 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  26 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  28 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  30 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  32 hit: a0 00381170 ra 001DAE88  sora clock  16.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  34 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  36 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  563.22  stack code ptrs 
+
+  vsync  38 hit: a0 00381170 ra 001DAE88  sora clock  22.0  ball y  563.22  stack code ptrs 001DF790
+
+  vsync  40 hit: a0 00381170 ra 001DAE88  sora clock  24.0  ball y  563.22  stack code ptrs 001DF790
+
+  vsync  42 hit: a0 00381170 ra 001DAE88  sora clock  26.0  ball y  468.04  stack code ptrs 001DF790
+
+  vsync  44 hit: a0 00381170 ra 001DAE88  sora clock  28.0  ball y  392.71  stack code ptrs 001DF790
+
+  vsync  46 hit: a0 00381170 ra 001DAE88  sora clock  30.0  ball y  333.26  stack code ptrs 001DF790
+
+  vsync  46 hit: a0 00381170 ra 001DAE88  sora clock  30.0  ball y  333.26  stack code ptrs 001DF790
+
+  vsync  48 hit: a0 00381170 ra 001DAE88  sora clock  32.0  ball y  286.52  stack code ptrs 001DF790
+
+  vsync  50 hit: a0 00381170 ra 001DAE88  sora clock  34.0  ball y  249.94  stack code ptrs 001DF790
+
+  vsync  52 hit: a0 00381170 ra 001DAE88  sora clock  36.0  ball y  222.84  stack code ptrs 001DF790
+
+  vsync  54 hit: a0 00381170 ra 001DAE88  sora clock  38.0  ball y  222.42  stack code ptrs 001DF790
+
+  vsync  54 hit: a0 00381170 ra 001DAE88  sora clock  38.0  ball y  222.42  stack code ptrs 001DF790
+
+  vsync  56 hit: a0 00381170 ra 001DAE88  sora clock  40.0  ball y  222.10  stack code ptrs 001DF790
+
+  vsync  56 hit: a0 00381170 ra 001DAE88  sora clock  40.0  ball y  222.10  stack code ptrs 001DF790
+
+  vsync  58 hit: a0 00381170 ra 001DAE88  sora clock  42.0  ball y  221.85  stack code ptrs 001DF790
+
+  vsync  60 hit: a0 00381170 ra 001DAE88  sora clock  44.0  ball y  221.68  stack code ptrs 001DF790
+
+  vsync  62 hit: a0 00381170 ra 001DAE88  sora clock  46.0  ball y  221.55  stack code ptrs 001DF790
+
+  vsync  64 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  221.46  stack code ptrs 001DF790
+
+  vsync  66 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  221.41  stack code ptrs 001DF790
+
+  vsync  68 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  221.38  stack code ptrs 001DF790
+
+  vsync  70 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  221.38  stack code ptrs 001DF790
+
+  vsync  72 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  221.97  stack code ptrs 001DF790
+
+  vsync  74 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  223.37  stack code ptrs 001DF790
+
+  vsync  76 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  225.60  stack code ptrs 001DF790
+
+  vsync  76 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  225.60  stack code ptrs 001DF790
+
+  vsync  78 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  228.63  stack code ptrs 001DF790
+
+  vsync  78 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  228.63  stack code ptrs 001DF790
+
+  vsync  80 hit: a0 00381170 ra 001DAE88  sora clock  16.0  ball y  232.49  stack code ptrs 001DF790
+
+  vsync  82 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  237.16  stack code ptrs 001DF790
+
+  vsync  84 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  242.65  stack code ptrs 001DF790
+
+  vsync  86 hit: a0 00381170 ra 001DAE88  sora clock  22.0  ball y  248.95  stack code ptrs 001DF790
+
+  vsync  88 hit: a0 00381170 ra 001DAE88  sora clock  24.0  ball y  256.07  stack code ptrs 001DF790
+
+  vsync  90 hit: a0 00381170 ra 001DAE88  sora clock  26.0  ball y  264.00  stack code ptrs 001DF790
+
+  vsync  92 hit: a0 00381170 ra 001DAE88  sora clock  28.0  ball y  272.76  stack code ptrs 001DF790
+
+  vsync  94 hit: a0 00381170 ra 001DAE88  sora clock  30.0  ball y  282.33  stack code ptrs 001DF790
+
+  vsync  96 hit: a0 00381170 ra 001DAE88  sora clock  32.0  ball y  292.71  stack code ptrs 001B972C 001121E0
+
+  vsync  98 hit: a0 00381170 ra 001DAE88  sora clock  34.0  ball y  303.91  stack code ptrs 001B972C 001121E0
+
+  vsync 100 hit: a0 00381170 ra 001DAE88  sora clock  36.0  ball y  315.93  stack code ptrs 001B972C 001121E0
+
+  vsync 102 hit: a0 00381170 ra 001DAE88  sora clock  38.0  ball y  328.76  stack code ptrs 001B972C 001121E0
+
+  vsync 104 hit: a0 00381170 ra 001DAE88  sora clock  40.0  ball y  342.41  stack code ptrs 001B972C 001121E0
+
+  vsync 106 hit: a0 00381170 ra 001DAE88  sora clock  42.0  ball y  356.88  stack code ptrs 001B972C 001121E0
+
+  vsync 108 hit: a0 00381170 ra 001DAE88  sora clock  44.0  ball y  372.16  stack code ptrs 001B972C 001121E0
+
+  vsync 110 hit: a0 00381170 ra 001DAE88  sora clock  46.0  ball y  388.26  stack code ptrs 001B972C 001121E0
+
+  vsync 112 hit: a0 00381170 ra 001DAE88  sora clock  48.0  ball y  405.18  stack code ptrs 001B972C 001121E0
+
+  vsync 114 hit: a0 00381170 ra 001DAE88  sora clock  50.0  ball y  422.91  stack code ptrs 001B972C 001121E0
+
+  vsync 116 hit: a0 00381170 ra 001DAE88  sora clock  52.0  ball y  441.46  stack code ptrs 001B972C 001121E0
+
+  vsync 118 hit: a0 00381170 ra 001DAE88  sora clock  54.0  ball y  460.82  stack code ptrs 001B972C 001121E0
+
+  vsync 120 hit: a0 00381170 ra 001DAE88  sora clock  56.0  ball y  480.82  stack code ptrs 001B972C 001121E0
+
+  vsync 122 hit: a0 00381170 ra 001DAE88  sora clock  58.0  ball y  500.82  stack code ptrs 001B972C 001121E0
+
+  vsync 124 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  520.82  stack code ptrs 001B972C 001121E0
+
+  vsync 126 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  540.82  stack code ptrs 001B972C 001121E0
+
+  vsync 128 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  560.82  stack code ptrs 001B972C 001121E0
+
+  vsync 130 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  564.15  stack code ptrs 001B972C 001121E0
+
+  vsync 132 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  564.15  stack code ptrs 001B972C 001121E0
+
+  vsync 134 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  564.15  stack code ptrs 001B972C 001121E0
+
+  vsync 136 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  564.15  stack code ptrs 001B972C 001121E0
+
+  vsync 138 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  564.15  stack code ptrs 001B972C 001121E0
+
+  vsync 140 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  564.15  stack code ptrs 
+
+===== arm 60w
+
+  vsync   0 hit: a0 00381170 ra 001DAE88  sora clock 150.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   1 hit: a0 00381170 ra 001DAE88  sora clock 151.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   2 hit: a0 00381170 ra 001DAE88  sora clock 152.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   3 hit: a0 00381170 ra 001DAE88  sora clock 153.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   4 hit: a0 00381170 ra 001DAE88  sora clock 154.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   5 hit: a0 00381170 ra 001DAE88  sora clock 155.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   6 hit: a0 00381170 ra 001DAE88  sora clock 156.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   7 hit: a0 00381170 ra 001DAE88  sora clock 157.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   8 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync   9 hit: a0 00381170 ra 001DAE88  sora clock   3.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  10 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  11 hit: a0 00381170 ra 001DAE88  sora clock   5.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  12 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  13 hit: a0 00381170 ra 001DAE88  sora clock   7.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  14 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  15 hit: a0 00381170 ra 001DAE88  sora clock   1.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  16 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  17 hit: a0 00381170 ra 001DAE88  sora clock   1.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  18 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  19 hit: a0 00381170 ra 001DAE88  sora clock   3.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  20 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  21 hit: a0 00381170 ra 001DAE88  sora clock   5.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  22 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  23 hit: a0 00381170 ra 001DAE88  sora clock   7.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  24 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  25 hit: a0 00381170 ra 001DAE88  sora clock   9.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  26 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  27 hit: a0 00381170 ra 001DAE88  sora clock  11.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  28 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  29 hit: a0 00381170 ra 001DAE88  sora clock  13.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  30 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  31 hit: a0 00381170 ra 001DAE88  sora clock  15.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  32 hit: a0 00381170 ra 001DAE88  sora clock  16.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  33 hit: a0 00381170 ra 001DAE88  sora clock  17.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  34 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  35 hit: a0 00381170 ra 001DAE88  sora clock  19.0  ball y  563.22  stack code ptrs 001B972C 001121E0
+
+  vsync  36 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  563.22  stack code ptrs 
+
+  vsync  37 hit: a0 00381170 ra 001DAE88  sora clock  21.0  ball y  563.22  stack code ptrs 001DF790
+
+  vsync  38 hit: a0 00381170 ra 001DAE88  sora clock  22.0  ball y  563.22  stack code ptrs 001DF790
+
+  vsync  39 hit: a0 00381170 ra 001DAE88  sora clock  23.0  ball y  563.22  stack code ptrs 001DF790
+
+  vsync  40 hit: a0 00381170 ra 001DAE88  sora clock  24.0  ball y  515.63  stack code ptrs 001DF790
+
+  vsync  41 hit: a0 00381170 ra 001DAE88  sora clock  25.0  ball y  468.04  stack code ptrs 001DF790
+
+  vsync  42 hit: a0 00381170 ra 001DAE88  sora clock  26.0  ball y  430.38  stack code ptrs 001DF790
+
+  vsync  43 hit: a0 00381170 ra 001DAE88  sora clock  27.0  ball y  392.71  stack code ptrs 001DF790
+
+  vsync  44 hit: a0 00381170 ra 001DAE88  sora clock  28.0  ball y  362.99  stack code ptrs 001DF790
+
+  vsync  45 hit: a0 00381170 ra 001DAE88  sora clock  29.0  ball y  333.26  stack code ptrs 001DF790
+
+  vsync  46 hit: a0 00381170 ra 001DAE88  sora clock  30.0  ball y  309.89  stack code ptrs 001DF790
+
+  vsync  47 hit: a0 00381170 ra 001DAE88  sora clock  31.0  ball y  286.52  stack code ptrs 001DF790
+
+  vsync  48 hit: a0 00381170 ra 001DAE88  sora clock  32.0  ball y  268.23  stack code ptrs 001DF790
+
+  vsync  49 hit: a0 00381170 ra 001DAE88  sora clock  33.0  ball y  249.94  stack code ptrs 001DF790
+
+  vsync  50 hit: a0 00381170 ra 001DAE88  sora clock  34.0  ball y  235.72  stack code ptrs 001DF790
+
+  vsync  51 hit: a0 00381170 ra 001DAE88  sora clock  35.0  ball y  222.45  stack code ptrs 001DF790
+
+  vsync  52 hit: a0 00381170 ra 001DAE88  sora clock  36.0  ball y  222.24  stack code ptrs 001DF790
+
+  vsync  52 hit: a0 00381170 ra 001DAE88  sora clock  36.0  ball y  222.24  stack code ptrs 001DF790
+
+  vsync  53 hit: a0 00381170 ra 001DAE88  sora clock  37.0  ball y  222.02  stack code ptrs 001B972C 001121E0
+
+  vsync  53 hit: a0 00381170 ra 001DAE88  sora clock  37.0  ball y  222.02  stack code ptrs 001B972C 001121E0
+
+  vsync  54 hit: a0 00381170 ra 001DAE88  sora clock  38.0  ball y  221.86  stack code ptrs 
+
+  vsync  54 hit: a0 00381170 ra 001DAE88  sora clock  38.0  ball y  221.86  stack code ptrs 
+
+  vsync  55 hit: a0 00381170 ra 001DAE88  sora clock  39.0  ball y  221.70  stack code ptrs 001DF790
+
+  vsync  55 hit: a0 00381170 ra 001DAE88  sora clock  39.0  ball y  221.70  stack code ptrs 001DF790
+
+  vsync  56 hit: a0 00381170 ra 001DAE88  sora clock  40.0  ball y  221.58  stack code ptrs 001DF790
+
+  vsync  57 hit: a0 00381170 ra 001DAE88  sora clock  41.0  ball y  221.46  stack code ptrs 001DF790
+
+  vsync  58 hit: a0 00381170 ra 001DAE88  sora clock  42.0  ball y  221.37  stack code ptrs 001DF790
+
+  vsync  59 hit: a0 00381170 ra 001DAE88  sora clock  43.0  ball y  221.28  stack code ptrs 001DF790
+
+  vsync  60 hit: a0 00381170 ra 001DAE88  sora clock  44.0  ball y  221.22  stack code ptrs 001DF790
+
+  vsync  61 hit: a0 00381170 ra 001DAE88  sora clock  45.0  ball y  221.16  stack code ptrs 001DF790
+
+  vsync  62 hit: a0 00381170 ra 001DAE88  sora clock  46.0  ball y  221.11  stack code ptrs 001DF790
+
+  vsync  63 hit: a0 00381170 ra 001DAE88  sora clock  47.0  ball y  221.07  stack code ptrs 001DF790
+
+  vsync  64 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  221.05  stack code ptrs 001DF790
+
+  vsync  65 hit: a0 00381170 ra 001DAE88  sora clock   1.0  ball y  221.02  stack code ptrs 001DF790
+
+  vsync  66 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  221.01  stack code ptrs 001DF790
+
+  vsync  67 hit: a0 00381170 ra 001DAE88  sora clock   3.0  ball y  220.99  stack code ptrs 001DF790
+
+  vsync  68 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  220.99  stack code ptrs 001DF790
+
+  vsync  69 hit: a0 00381170 ra 001DAE88  sora clock   5.0  ball y  220.99  stack code ptrs 001DF790
+
+  vsync  70 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  221.28  stack code ptrs 001DF790
+
+  vsync  71 hit: a0 00381170 ra 001DAE88  sora clock   7.0  ball y  221.58  stack code ptrs 001DF790
+
+  vsync  72 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  222.28  stack code ptrs 001DF790
+
+  vsync  73 hit: a0 00381170 ra 001DAE88  sora clock   9.0  ball y  222.98  stack code ptrs 001DF790
+
+  vsync  74 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  224.09  stack code ptrs 001DF790
+
+  vsync  75 hit: a0 00381170 ra 001DAE88  sora clock  11.0  ball y  225.20  stack code ptrs 001DF790
+
+  vsync  76 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  226.72  stack code ptrs 001DF790
+
+  vsync  77 hit: a0 00381170 ra 001DAE88  sora clock  13.0  ball y  228.24  stack code ptrs 001DF790
+
+  vsync  78 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  230.17  stack code ptrs 001DF790
+
+  vsync  79 hit: a0 00381170 ra 001DAE88  sora clock  15.0  ball y  232.10  stack code ptrs 001DF790
+
+  vsync  80 hit: a0 00381170 ra 001DAE88  sora clock  16.0  ball y  234.43  stack code ptrs 001DF790
+
+  vsync  81 hit: a0 00381170 ra 001DAE88  sora clock  17.0  ball y  224.43  stack code ptrs 001DF790
+
+  vsync  82 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  216.84  stack code ptrs 001DF790
+
+  vsync  83 hit: a0 00381170 ra 001DAE88  sora clock  19.0  ball y  215.91  stack code ptrs 001DF790
+
+  vsync  84 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  215.97  stack code ptrs 001DF790
+
+  vsync  85 hit: a0 00381170 ra 001DAE88  sora clock  21.0  ball y  216.07  stack code ptrs 001DF790
+
+  vsync  86 hit: a0 00381170 ra 001DAE88  sora clock  22.0  ball y  216.13  stack code ptrs 001DF790
+
+  vsync  87 hit: a0 00381170 ra 001DAE88  sora clock  23.0  ball y  216.19  stack code ptrs 001DF790
+
+  vsync  88 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  216.22  stack code ptrs 001DF790
+
+  vsync  89 hit: a0 00381170 ra 001DAE88  sora clock   1.0  ball y  216.63  stack code ptrs 001DF790
+
+  vsync  90 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  217.25  stack code ptrs 001DF790
+
+  vsync  91 hit: a0 00381170 ra 001DAE88  sora clock   3.0  ball y  217.75  stack code ptrs 001B972C 001121E0
+
+  vsync  92 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  218.04  stack code ptrs 001B972C 001121E0
+
+  vsync  93 hit: a0 00381170 ra 001DAE88  sora clock   5.0  ball y  218.26  stack code ptrs 001B972C 001121E0
+
+  vsync  94 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  218.53  stack code ptrs 001B972C 001121E0
+
+  vsync  95 hit: a0 00381170 ra 001DAE88  sora clock   7.0  ball y  218.82  stack code ptrs 001B972C 001121E0
+
+  vsync  96 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  219.10  stack code ptrs 001B972C 001121E0
+
+  vsync  97 hit: a0 00381170 ra 001DAE88  sora clock   9.0  ball y  219.34  stack code ptrs 001B972C 001121E0
+
+  vsync  98 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  219.77  stack code ptrs 001B972C 001121E0
+
+  vsync  99 hit: a0 00381170 ra 001DAE88  sora clock  11.0  ball y  220.20  stack code ptrs 001B972C 001121E0
+
+  vsync 100 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  221.04  stack code ptrs 
+
+  vsync 101 hit: a0 00381170 ra 001DAE88  sora clock  13.0  ball y  221.88  stack code ptrs 001DF790
+
+  vsync 102 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  223.12  stack code ptrs 001DF790
+
+  vsync 103 hit: a0 00381170 ra 001DAE88  sora clock  15.0  ball y  224.37  stack code ptrs 001DF790
+
+  vsync 104 hit: a0 00381170 ra 001DAE88  sora clock  16.0  ball y  226.02  stack code ptrs 001DF790
+
+  vsync 105 hit: a0 00381170 ra 001DAE88  sora clock  17.0  ball y  221.01  stack code ptrs 001DF790
+
+  vsync 106 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  221.06  stack code ptrs 001DF790
+
+  vsync 106 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  221.06  stack code ptrs 001DF790
+
+  vsync 107 hit: a0 00381170 ra 001DAE88  sora clock  19.0  ball y  221.21  stack code ptrs 001DF790
+
+  vsync 107 hit: a0 00381170 ra 001DAE88  sora clock  19.0  ball y  221.21  stack code ptrs 001DF790
+
+  vsync 108 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  221.42  stack code ptrs 001DF790
+
+  vsync 109 hit: a0 00381170 ra 001DAE88  sora clock  21.0  ball y  221.60  stack code ptrs 001DF790
+
+  vsync 110 hit: a0 00381170 ra 001DAE88  sora clock  22.0  ball y  221.74  stack code ptrs 001DF790
+
+  vsync 111 hit: a0 00381170 ra 001DAE88  sora clock  23.0  ball y  221.88  stack code ptrs 001DF790
+
+  vsync 112 hit: a0 00381170 ra 001DAE88  sora clock   0.0  ball y  222.05  stack code ptrs 001DF790
+
+  vsync 113 hit: a0 00381170 ra 001DAE88  sora clock   1.0  ball y  222.82  stack code ptrs 001DF790
+
+  vsync 114 hit: a0 00381170 ra 001DAE88  sora clock   2.0  ball y  223.85  stack code ptrs 001DF790
+
+  vsync 115 hit: a0 00381170 ra 001DAE88  sora clock   3.0  ball y  224.65  stack code ptrs 001DF790
+
+  vsync 116 hit: a0 00381170 ra 001DAE88  sora clock   4.0  ball y  225.21  stack code ptrs 001B972C 001121E0
+
+  vsync 117 hit: a0 00381170 ra 001DAE88  sora clock   5.0  ball y  225.75  stack code ptrs 001B972C 001121E0
+
+  vsync 118 hit: a0 00381170 ra 001DAE88  sora clock   6.0  ball y  226.42  stack code ptrs 001B972C 001121E0
+
+  vsync 119 hit: a0 00381170 ra 001DAE88  sora clock   7.0  ball y  227.14  stack code ptrs 001B972C 001121E0
+
+  vsync 120 hit: a0 00381170 ra 001DAE88  sora clock   8.0  ball y  227.81  stack code ptrs 
+
+  vsync 121 hit: a0 00381170 ra 001DAE88  sora clock   9.0  ball y  228.42  stack code ptrs 001DF790
+
+  vsync 122 hit: a0 00381170 ra 001DAE88  sora clock  10.0  ball y  229.01  stack code ptrs 001DF790
+
+  vsync 123 hit: a0 00381170 ra 001DAE88  sora clock  11.0  ball y  229.60  stack code ptrs 001DF790
+
+  vsync 124 hit: a0 00381170 ra 001DAE88  sora clock  12.0  ball y  230.44  stack code ptrs 001DF790
+
+  vsync 125 hit: a0 00381170 ra 001DAE88  sora clock  13.0  ball y  231.27  stack code ptrs 001DF790
+
+  vsync 126 hit: a0 00381170 ra 001DAE88  sora clock  14.0  ball y  232.52  stack code ptrs 001DF790
+
+  vsync 127 hit: a0 00381170 ra 001DAE88  sora clock  15.0  ball y  233.76  stack code ptrs 001DF790
+
+  vsync 128 hit: a0 00381170 ra 001DAE88  sora clock  16.0  ball y  235.42  stack code ptrs 001DF790
+
+  vsync 129 hit: a0 00381170 ra 001DAE88  sora clock  17.0  ball y  237.07  stack code ptrs 001DF790
+
+  vsync 130 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  234.35  stack code ptrs 001DF790
+
+  vsync 130 hit: a0 00381170 ra 001DAE88  sora clock  18.0  ball y  234.35  stack code ptrs 001DF790
+
+  vsync 131 hit: a0 00381170 ra 001DAE88  sora clock  19.0  ball y  224.39  stack code ptrs 001DF790
+
+  vsync 131 hit: a0 00381170 ra 001DAE88  sora clock  19.0  ball y  224.39  stack code ptrs 001DF790
+
+  vsync 132 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  206.13  stack code ptrs 001DF790
+
+  vsync 132 hit: a0 00381170 ra 001DAE88  sora clock  20.0  ball y  206.13  stack code ptrs 001DF790
+
+  vsync 133 hit: a0 00381170 ra 001DAE88  sora clock  21.0  ball y  180.85  stack code ptrs 001DF790
+
+  vsync 133 hit: a0 00381170 ra 001DAE88  sora clock  21.0  ball y  180.85  stack code ptrs 001DF790
+
+  vsync 134 hit: a0 00381170 ra 001DAE88  sora clock  22.0  ball y  160.34  stack code ptrs 001DF790
+
+  vsync 135 hit: a0 00381170 ra 001DAE88  sora clock  23.0  ball y  139.83  stack code ptrs 001DF790
+
+  vsync 135 hit: a0 00381170 ra 001DAE88  sora clock  23.0  ball y  139.83  stack code ptrs 001DF790

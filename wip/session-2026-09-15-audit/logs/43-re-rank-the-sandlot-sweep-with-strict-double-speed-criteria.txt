@@ -1,0 +1,146 @@
+# Re-rank the Sandlot sweep with strict double-speed criteria
+# (foreground run, transcript line 3134)
+--- input (line 3133) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import numpy as np, collections
+z = np.load("work/rs-sandlot-idle.npz")
+lo = int(z["lo"][0])
+def j(kind, ref, cmp):
+    ok = z[f"{ref}_ok_{kind}"] & z[f"{cmp}_ok_{kind}"]
+    tr = z[f"{ref}_tv_{kind}"].astype(float); tc = z[f"{cmp}_tv_{kind}"].astype(float)
+    rr = z[f"{ref}_rev_{kind}"].astype(float); rc = z[f"{cmp}_rev_{kind}"].astype(float)
+    with np.errstate(all="ignore"):
+        tvr = np.where(tr > 0, tc / tr, np.nan)
+    return ok, tr, tc, rr, rc, tvr
+for kind, mintv in (("f", 1e-3), ("i", 1)):
+    ok, tr, tc, rr, rc, tvr = j(kind, "30", "60")
+    _, tr2, tc2, _, rc2, tvr2 = j(kind, "30", "60t2")
+    two = ok & (tr > mintv) & (tvr > 1.75) & (tvr < 2.3)
+    if kind == "f":
+        two |= ok & (tr > mintv) & (rr >= 8) & (rc >= 1.7 * rr) & (tvr > 1.3)
+    thr = two & (tvr2 > 0.85) & (tvr2 < 1.2)
+    other = two & (tvr2 > 1.6)
+    print(f"===== {kind}: strict 2x {int(two.sum())}  threshold-driven {int(thr.sum())}  other {int(other.sum())}")
+    for label, mask in (("threshold", thr), ("other", other)):
+        idx = np.flatnonzero(mask)
+        pages = collections.Counter((lo + 4 * int(i)) >> 16 for i in idx)
+        print(f"  {label}: pages " + "  ".join(f"{p << 16:08X}:{n}" for p, n in pages.most_common(10)))
+        for i in idx[:40]:
+            print(f"    {lo + 4 * int(i):08X}  tv {tr[i]:14.4f} -> {tc[i]:14.4f} ({tvr[i]:.2f})  t2 {tvr2[i]:.2f}  rev {int(rr[i])}->{int(rc[i])}")
+'@
+$f = "$en
+--- result ---
+===== f: strict 2x 7  threshold-driven 0  other 7
+
+  threshold: pages 
+
+  other: pages 01B10000:4  01A80000:2  01B00000:1
+
+    01A891B0  tv         0.0029 ->         0.0054 (1.83)  t2 1.83  rev 11->21
+
+    01A891F0  tv         0.0022 ->         0.0054 (2.44)  t2 2.44  rev 8->21
+
+    01B09EC0  tv         0.0011 ->         0.0021 (1.94)  t2 1.94  rev 38->32
+
+    01B145C4  tv         0.0224 ->         0.0461 (2.05)  t2 2.05  rev 1->2
+
+    01B145D0  tv         0.0224 ->         0.0461 (2.06)  t2 2.06  rev 1->2
+
+    01B145D8  tv         0.0302 ->         0.0567 (1.88)  t2 1.88  rev 1->1
+
+    01B145E4  tv         0.0301 ->         0.0568 (1.88)  t2 1.88  rev 1->1
+
+===== i: strict 2x 647  threshold-driven 4  other 643
+
+  threshold: pages 01A60000:4
+
+    01A61708  tv    245760.0000 ->    491520.0000 (2.00)  t2 1.00  rev 0->0
+
+    01A6170C  tv    245760.0000 ->    491520.0000 (2.00)  t2 1.00  rev 0->0
+
+    01A61BA8  tv    245760.0000 ->    491520.0000 (2.00)  t2 1.00  rev 0->0
+
+    01A61BAC  tv    245760.0000 ->    491520.0000 (2.00)  t2 1.00  rev 0->0
+
+  other: pages 00350000:487  01A60000:42  01AC0000:39  01AB0000:18  01A80000:16  01AD0000:10  01AE0000:5  01B00000:4  01B10000:4  00380000:3
+
+    0034872C  tv     47199.0000 ->     94036.0000 (1.99)  t2 1.99  rev 0->0
+
+    00354C24  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354C34  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354C6C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354C7C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354CB4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354CC4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354CFC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354D0C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354D44  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354D54  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354D8C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354D9C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354DD4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354DE4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354E1C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354E2C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354E64  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354E74  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354EAC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354EBC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354EF4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354F04  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354F3C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354F4C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354F84  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354F94  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354FCC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00354FDC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00355014  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00355024  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    0035505C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    0035506C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    003550A4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    003550B4  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    003550EC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    003550FC  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00355134  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    00355144  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4
+
+    0035517C  tv       119.0000 ->       234.0000 (1.97)  t2 1.97  rev 2->4

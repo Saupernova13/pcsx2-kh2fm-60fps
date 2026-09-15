@@ -1,0 +1,16 @@
+# Capture RAM rate snapshots for three frame-rate arms
+# (foreground run, transcript line 2745)
+--- input (line 2743) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\ratediff.py capture work\rd-sandlot-idle.npz --arms 30,60,60t2 --vsyncs 120 --lead 10
+"exit $LASTEXITCODE"
+--- result ---
+  arm 30: 120 vsyncs = 60 ticks
+
+  arm 60: 120 vsyncs = 120 ticks
+
+  arm 60t2: 120 vsyncs = 120 ticks
+
+saved work\rd-sandlot-idle.npz
+
+exit 0

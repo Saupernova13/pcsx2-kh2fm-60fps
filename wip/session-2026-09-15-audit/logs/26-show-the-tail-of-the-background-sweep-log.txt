@@ -1,0 +1,13 @@
+# Show the tail of the background sweep log
+# (foreground run, transcript line 2948)
+--- input (line 2947) ---
+$o = Get-Content "<session tasks>\b61o1st5e.output" -Raw
+$o.Substring([Math]::Max(0, $o.Length - 160))
+--- result ---
+   arm 60 23/60  102s
+    arm 60 24/60  106s
+    arm 60 25/60  111s
+    arm 60 26/60  115s
+    arm 60 27/60  120s
+    arm 60 28/60  124s
+    arm 60 29/60  129s

@@ -1,0 +1,65 @@
+# Find and show every call to the accumulator increment setter
+# (foreground run, transcript line 2716)
+--- input (line 2714) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== callers of the increment setter 001E7008"; python tools\elfscan.py callers 001E7008
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+from game.elf import Elf
+from ps2ee.disasm import decode
+e = Elf()
+for a in range(0x00100000, 0x00340000, 4):
+    w = e.word(a)
+    if (w >> 26) == 3 and ((w & 0x03FFFFFF) << 2) == 0x001E7008:
+        print(f"---- jal at {a:08X}")
+        for b in range(a - 40, a + 12, 4):
+            print(f"  {b:08X}  {e.word(b):08X}  {decode(e.word(b), b)}")
+'@
+$f = "$env:TEMP\kh2_setter_calls.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+== callers of the increment setter 001E7008
+
+001E7008 is in the function starting 001E6ED4
+
+  001E6ED4: jumps []
+
+  001E6ED4: data pointers []
+
+  001E6ED4: lui/addiu loads []
+
+  001E7008: jumps ['jal 001DD43C']
+
+  001E7008: data pointers []
+
+  001E7008: lui/addiu loads []
+
+---- jal at 001DD43C
+
+  001DD414  F8A80030  bbit132 $a1, 8, 0x1dd4d8
+
+  001DD418  3C0F0035  lui $t7, 0x35
+
+  001DD41C  25F02B00  addiu $s0, $t7, 0x2b00
+
+  001DD420  0C0519A0  jal 0x146680
+
+  001DD424  0200202D  move $a0, $s0
+
+  001DD428  12600003  beqz $s3, 0x1dd438
+
+  001DD42C  0200202D  move $a0, $s0
+
+  001DD430  0C050FDE  jal 0x143f78
+
+  001DD434  03A0282D  move $a1, $sp
+
+  001DD438  3C0F0035  lui $t7, 0x35
+
+  001DD43C  0C079C02  jal 0x1e7008
+
+  001DD440  C5EC9E10  lwc1 $f12, -0x61f0($t7)
+
+  001DD444  0C06E07A  jal 0x1b81e8

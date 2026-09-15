@@ -1,0 +1,272 @@
+# Disassemble accumulator and main-loop callers, create work branch
+# (foreground run, transcript line 2646)
+--- input (line 2635) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== accumulator continued"; python tools\elfscan.py dis 001E63E0 110
+"== callers of frame routine 0014D060"; python tools\elfscan.py callers 0014D060
+"== callers of object loop 001DD320"; python tools\elfscan.py callers 001DD320
+"== readers of 00352BE0 (subtracted per object in 001E6280)"; python tools\elfscan.py refs 00352BE0
+"== branch"; git switch -c feat/global-60fps-audit; git status -sb
+--- result ---
+== accumulator continued
+
+  001E63E0  15400004  bnez $t2, 0x1e63f4
+
+  001E63E4  3C0F0035  lui $t7, 0x35
+
+  001E63E8  0C079078  jal 0x1e41e0
+
+  001E63EC  0200202D  move $a0, $s0
+
+  001E63F0  3C0F0035  lui $t7, 0x35
+
+  001E63F4  C6020098  lwc1 $f2, 0x98($s0)
+
+  001E63F8  C5E02BE0  lwc1 $f0, 0x2be0($t7)
+
+  001E63FC  3C0F0037  lui $t7, 0x37
+
+  001E6400  46001080  add.s $f2, $f2, $f0
+
+  001E6404  25EFEF20  addiu $t7, $t7, -0x10e0
+
+  001E6408  C5E10000  lwc1 $f1, ($t7)
+
+  001E640C  46020836  c.ole.s $f1, $f2
+
+  001E6410  45000067  bc1f 0x1e65b0
+
+  001E6414  E6020098  swc1 $f2, 0x98($s0)
+
+  001E6418  A20000AC  sb $zero, 0xac($s0)
+
+  001E641C  8E0F0060  lw $t7, 0x60($s0)
+
+  001E6420  19E0000C  blez $t7, 0x1e6454
+
+  001E6424  0000882D  move $s1, $zero
+
+  001E6428  0C07A2EE  jal 0x1e8bb8
+
+  001E642C  0200202D  move $a0, $s0
+
+  001E6430  0200202D  move $a0, $s0
+
+  001E6434  0C07A30A  jal 0x1e8c28
+
+  001E6438  0000282D  move $a1, $zero
+
+  001E643C  14400058  bnez $v0, 0x1e65a0
+
+  001E6440  0200202D  move $a0, $s0
+
+  001E6444  8E0F0060  lw $t7, 0x60($s0)
+
+  001E6448  25EFFFFF  addiu $t7, $t7, -1
+
+  001E644C  1DE0FFF6  bgtz $t7, 0x1e6428
+
+  001E6450  AE0F0060  sw $t7, 0x60($s0)
+
+  001E6454  56200019  bnel $s1, $zero, 0x1e64bc
+
+  001E6458  8E0E0088  lw $t6, 0x88($s0)
+
+  001E645C  3C0F0037  lui $t7, 0x37
+
+  001E6460  C6000098  lwc1 $f0, 0x98($s0)
+
+  001E6464  25EFEF20  addiu $t7, $t7, -0x10e0
+
+  001E6468  C5E10000  lwc1 $f1, ($t7)
+
+  001E646C  46010001  sub.s $f0, $f0, $f1
+
+  001E6470  46000836  c.ole.s $f1, $f0
+
+  001E6474  4500000E  bc1f 0x1e64b0
+
+  001E6478  E6000098  swc1 $f0, 0x98($s0)
+
+  001E647C  46000D06  mov.s $f20, $f1
+
+  001E6480  0C07A2EE  jal 0x1e8bb8
+
+  001E6484  0200202D  move $a0, $s0
+
+  001E6488  0200202D  move $a0, $s0
+
+  001E648C  0C07A30A  jal 0x1e8c28
+
+  001E6490  0000282D  move $a1, $zero
+
+  001E6494  1440003E  bnez $v0, 0x1e6590
+
+  001E6498  0200202D  move $a0, $s0
+
+  001E649C  C6000098  lwc1 $f0, 0x98($s0)
+
+  001E64A0  46140001  sub.s $f0, $f0, $f20
+
+  001E64A4  4600A036  c.ole.s $f20, $f0
+
+  001E64A8  4501FFF5  bc1t 0x1e6480
+
+  001E64AC  E6000098  swc1 $f0, 0x98($s0)
+
+  001E64B0  12200033  beqz $s1, 0x1e6580
+
+  001E64B4  0200202D  move $a0, $s0
+
+  001E64B8  8E0E0088  lw $t6, 0x88($s0)
+
+  001E64BC  3C0F0035  lui $t7, 0x35
+
+  001E64C0  25EC4690  addiu $t4, $t7, 0x4690
+
+  001E64C4  3C0A1000  lui $t2, 0x1000
+
+  001E64C8  ADEE4690  sw $t6, 0x4690($t7)
+
+  001E64CC  260B00D0  addiu $t3, $s0, 0xd0
+
+  001E64D0  8D4E0000  lw $t6, ($t2)
+
+  001E64D4  920F0093  lbu $t7, 0x93($s0)
+
+  001E64D8  AD8F0004  sw $t7, 4($t4)
+
+  001E64DC  8E0D00D0  lw $t5, 0xd0($s0)
+
+  001E64E0  8D6C0004  lw $t4, 4($t3)
+
+  001E64E4  01CD7023  subu $t6, $t6, $t5
+
+  001E64E8  8D6F0008  lw $t7, 8($t3)
+
+  001E64EC  018E6021  addu $t4, $t4, $t6
+
+  001E64F0  01EC782A  slt $t7, $t7, $t4
+
+  001E64F4  11E00002  beqz $t7, 0x1e6500
+
+  001E64F8  AD6C0004  sw $t4, 4($t3)
+
+  001E64FC  AD6C0008  sw $t4, 8($t3)
+
+  001E6500  260B0100  addiu $t3, $s0, 0x100
+
+  001E6504  8D4E0000  lw $t6, ($t2)
+
+  001E6508  8E0D0100  lw $t5, 0x100($s0)
+
+  001E650C  8D6C0004  lw $t4, 4($t3)
+
+  001E6510  01CD7023  subu $t6, $t6, $t5
+
+  001E6514  8D6F0008  lw $t7, 8($t3)
+
+  001E6518  018E6021  addu $t4, $t4, $t6
+
+  001E651C  01EC782A  slt $t7, $t7, $t4
+
+  001E6520  11E00002  beqz $t7, 0x1e652c
+
+  001E6524  AD6C0004  sw $t4, 4($t3)
+
+  001E6528  AD6C0008  sw $t4, 8($t3)
+
+  001E652C  260C0120  addiu $t4, $s0, 0x120
+
+  001E6530  8E0D0120  lw $t5, 0x120($s0)
+
+  001E6534  8D8E0004  lw $t6, 4($t4)
+
+  001E6538  8D8F0008  lw $t7, 8($t4)
+
+  001E653C  01CD2023  subu $a0, $t6, $t5
+
+  001E6540  01E4782A  slt $t7, $t7, $a0
+
+  001E6544  11E00002  beqz $t7, 0x1e6550
+
+  001E6548  AD840004  sw $a0, 4($t4)
+
+  001E654C  AD840008  sw $a0, 8($t4)
+
+  001E6550  3C0F01DA  lui $t7, 0x1da
+
+  001E6554  ADE0E6E0  sw $zero, -0x1920($t7)
+
+  001E6558  0260102D  move $v0, $s3
+
+  001E655C  DFB00000  ld $s0, ($sp)
+
+  001E6560  DFB10008  ld $s1, 8($sp)
+
+  001E6564  DFB20010  ld $s2, 0x10($sp)
+
+  001E6568  DFB30018  ld $s3, 0x18($sp)
+
+  001E656C  DFBF0020  ld $ra, 0x20($sp)
+
+  001E6570  C7B40028  lwc1 $f20, 0x28($sp)
+
+  001E6574  03E00008  jr $ra
+
+  001E6578  27BD0030  addiu $sp, $sp, 0x30
+
+  001E657C  00000000  nop
+
+  001E6580  0C07A2EE  jal 0x1e8bb8
+
+  001E6584  00000000  nop
+
+  001E6588  1000FFCC  b 0x1e64bc
+
+  001E658C  8E0E0088  lw $t6, 0x88($s0)
+
+  001E6590  0C079F30  jal 0x1e7cc0
+
+  001E6594  24110001  addiu $s1, $zero, 1
+
+== callers of frame routine 0014D060
+
+0014D060 is in the function starting 0014D004
+
+  0014D004: jumps []
+
+  0014D004: data pointers []
+
+  0014D004: lui/addiu loads []
+
+  0014D060: jumps ['j 0014A304', 'jal 0014CFA8']
+
+  0014D060: data pointers []
+
+  0014D060: lui/addiu loads []
+
+== callers of object loop 001DD320
+
+001DD320 is in the function starting 001DD320
+
+  001DD320: jumps ['j 001DD30C', 'jal 0023E510']
+
+  001DD320: data pointers []
+
+  001DD320: lui/addiu loads []
+
+== readers of 00352BE0 (subtracted per object in 001E6280)
+
+== 00352BE0: 3 refs in 2 functions
+
+   001E633C  lwc1  (function 001E6280)
+
+   001E63F8  lwc1  (function 001E6280)
+
+   001E7010  swc1  (function 001E6ED4)
+
+== branch
+
+Switched to a new branch 'feat/global-60fps-audit'
+## feat/global-60fps-audit

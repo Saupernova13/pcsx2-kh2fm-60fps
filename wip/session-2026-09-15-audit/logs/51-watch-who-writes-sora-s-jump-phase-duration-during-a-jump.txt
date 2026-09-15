@@ -1,0 +1,118 @@
+# Watch who writes Sora's jump phase duration during a jump
+# (foreground run, transcript line 3227)
+--- input (line 3225) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys
+sys.path.insert(0, "tools")
+import _bootstrap
+import ratediff
+from game import sandlot
+roo = sandlot.connect()
+OBJ = 0x01A94440
+ratediff.start_arm(roo, "60", 1)
+roo.frame_advance(6)
+roo.input_set("Circle"); roo.frame_advance(6); roo.input_release()
+roo.frame_advance(5)   # vsync 17: two frames before the switch
+roo.mc_clear()
+roo.mc_add(OBJ + 0xD4, OBJ + 0xD8, on=("write",))
+seen = {}
+try:
+    for _ in range(12):
+        seq = roo.seq(); roo.resume(); st = roo.wait(seq, timeout_ms=4000)
+        if st is None:
+            print("no more hits"); break
+        r = roo.regs("GPR")
+        key = (st.pc, r.get("ra"))
+        if key not in seen:
+            seen[key] = r
+            print(f"hit pc {st.pc:08X} ra {r.get('ra'):08X} a0 {r.get('a0'):08X} s0 {r.get('s0'):08X} s1 {r.get('s1'):08X} val {roo.read(OBJ + 0xD4):08X}")
+finally:
+    roo.mc_clear()
+    if not roo.paused():
+        roo.pause()
+for (pc, ra) in seen:
+    print(f"==== around pc {pc:08X}")
+    for a, text in roo.dis(pc - 80, 36):
+        print(f"  {'->' if a == pc else '  '} {a:08X}  {text}")
+'@
+$f = "$env:TEMP\kh2_jump_writer.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+hit pc 0017C460 ra 0017C460 a0 01A94440 s0 01A94440 s1 01C60040 val 41F0DD78
+
+no more hits
+
+==== around pc 0017C460
+
+     0017C410  and	t5, t7
+
+     0017C414  sw	t6, 0x 100(a0)
+
+     0017C418  li	t7, 0x5
+
+     0017C41C  sw	t5, 0x 10C(a0)
+
+     0017C420  sw	t7, 0x 104(a0)
+
+     0017C424  jr	->ra
+
+     0017C428  sw	zero, 0x  CC(a0)
+
+     0017C42C  nop
+
+     0017C430  mtc1	zero, f02
+
+     0017C434  addiu	sp, -0x10
+
+     0017C438  neg.s	f00, f12
+
+     0017C43C  sd	s0,(sp)
+
+     0017C440  c.le.s	f02, f12
+
+     0017C444  sd	ra, 0x   8(sp)
+
+     0017C448  bc1f	->$0x0017C47C
+
+     0017C44C  dmove	s0, a0
+
+     0017C450  swc1	f02, 0x  D8(a0)
+
+     0017C454  swc1	f00, 0x  DC(a0)
+
+     0017C458  jal	->$0x0017D130
+
+     0017C45C  swc1	f02, 0x  D0(a0)
+
+  -> 0017C460  swc1	f00, 0x  D4(s0)
+
+     0017C464  dmove	a0, s0
+
+     0017C468  ld	ra, 0x   8(sp)
+
+     0017C46C  ld	s0,(sp)
+
+     0017C470  li	a1, 0x1
+
+     0017C474  j	->$0x0017C400
+
+     0017C478  addiu	sp, 0x10
+
+     0017C47C  lui	t7, 0x0037
+
+     0017C480  swc1	f12, 0x  D8(s0)
+
+     0017C484  addiu	t7, -0x3AF4
+
+     0017C488  swc1	f02, 0x  D4(a0)
+
+     0017C48C  lwc1	f00,(t7)
+
+     0017C490  swc1	f02, 0x  DC(a0)
+
+     0017C494  mul.s	f00, f12, f00
+
+     0017C498  lui	t7, 0x0037
+
+     0017C49C  addiu	t7, -0x3AF0

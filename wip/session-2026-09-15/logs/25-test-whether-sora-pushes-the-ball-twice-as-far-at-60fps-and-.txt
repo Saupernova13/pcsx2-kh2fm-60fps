@@ -1,0 +1,513 @@
+# Test whether Sora pushes the ball twice as far at 60fps, and disassemble the push code
+# (foreground run, transcript line 1279)
+--- input (line 1278) ---
+$d = "<session scratchpad>"; $env:PYTHONPATH = $d; python -u -c @"
+import struct
+import numpy as np
+import kh2lab
+import kh2_balltest as bt
+roo = kh2lab.connect()
+OBJ = 0x01ADD9D0
+P = r'$d\kh2_ballfix_candidates.pnach'
+FIX_B = bt.load_group(P, 'BALLFIX-B constant scaling')
+FIX_D = bt.load_group(P, 'BALLFIX-D tick gate')
+N = 90
+print('##### walk Sora through the resting ball, no attack (LLeft+LDown held)')
+res = {}
+for name, fps, fix in (('30fps', 30, None), ('60 unpatched', 60, None), ('60+FIX-B', 60, FIX_B), ('60+FIX-D', 60, FIX_D)):
+    kh2lab.start(roo, fps)
+    for a, v in fix or ():
+        roo.write(a, v)
+    roo.frame_advance(6)
+    roo.input_set('LLeft', 'LDown')
+    rows = np.zeros((N, 10))
+    for t in range(N):
+        rows[t, 0] = roo.read(kh2lab.TICKS)
+        rows[t, 1:4] = struct.unpack('<3f', roo.read_bytes(bt.BALL_X, 12))
+        rows[t, 4:7] = struct.unpack('<3f', roo.read_bytes(OBJ + 0x850, 12))
+        rows[t, 7:10] = struct.unpack('<3f', roo.read_bytes(OBJ + 0x860, 12))
+        roo.frame_advance(1)
+    roo.input_release()
+    res[name] = rows
+    step = np.hypot(np.diff(rows[:, 1]), np.diff(rows[:, 3]))
+    moved = np.cumsum(np.concatenate([[0.0], step]))
+    first = next((t for t in range(1, N) if step[t - 1] > 0.05), None)
+    req = np.hypot(rows[:, 4], rows[:, 6])
+    act = np.hypot(rows[:, 7], rows[:, 9])
+    print(f'== {name}: first ball movement a
+--- result ---
+##### walk Sora through the resting ball, no attack (LLeft+LDown held)
+
+== 30fps: first ball movement at vsync None; ball xz moved by vsync 30/60/89: 0.0 / 0.0 / 0.0; height change 0.0
+
+   sum|requested disp/delta xz| 0.0   sum|post-collision disp/delta xz| 0.0   per vsync while moving: 0.000
+
+== 60 unpatched: first ball movement at vsync None; ball xz moved by vsync 30/60/89: 0.0 / 0.0 / 0.0; height change 0.0
+
+   sum|requested disp/delta xz| 0.0   sum|post-collision disp/delta xz| 0.0   per vsync while moving: 0.000
+
+== 60+FIX-B: first ball movement at vsync None; ball xz moved by vsync 30/60/89: 0.0 / 0.0 / 0.0; height change 0.0
+
+   sum|requested disp/delta xz| 0.0   sum|post-collision disp/delta xz| 0.0   per vsync while moving: 0.000
+
+== 60+FIX-D: first ball movement at vsync None; ball xz moved by vsync 30/60/89: 0.0 / 0.0 / 0.0; height change 0.0
+
+   sum|requested disp/delta xz| 0.0   sum|post-collision disp/delta xz| 0.0   per vsync while moving: 0.000
+
+##### 001835F8 non-trivial path, from 00183660
+
+  00183660  addiu	s2,sp, 0x40
+
+  00183664  addiu	t7,s1, 0x1F0
+
+  00183668  lq	t0,(t7)
+
+  0018366C  sq	t0,(s2)
+
+  00183670  beq	s0, s2, ->$0x00183680
+
+  00183674  nop
+
+  00183678  lq	t0,(s2)
+
+  0018367C  sq	t0,(s0)
+
+  00183680  jal	->$0x0019C400
+
+  00183684  dmove	a0, s1
+
+  00183688  beqz	v0, ->$0x001836D4
+
+  0018368C  addiu	t7,s1, 0x40
+
+  00183690  sw	zero, 0x   C(s0)
+
+  00183694  lqc2	vf05,(s0)
+
+  00183698  lqc2	vf01,(t7)
+
+  0018369C  lqc2	vf02, 0x  10(t7)
+
+  001836A0  lqc2	vf03, 0x  20(t7)
+
+  001836A4  lqc2	vf04, 0x  30(t7)
+
+  001836A8  vmulax.xyzw ACC,vf01,vf05x
+
+  001836AC  vmadday.xyzw ACC,vf02,vf05y
+
+  001836B0  vmaddaz.xyzw ACC,vf03,vf05z
+
+  001836B4  vmaddw.xyzw vf05, vf04, vf05w
+
+  001836B8  sqc2	vf05,(s2)
+
+  001836BC  beql	s0, s2, ->$0x0018363C
+
+  001836C0  dmove	v0, s0
+
+  001836C4  lq	t0,(s2)
+
+  001836C8  sq	t0,(s0)
+
+  001836CC  b	->$0x0018363C
+
+  001836D0  dmove	v0, s0
+
+  001836D4  lwc1	f12, 0x   C(s0)
+
+  001836D8  mtc1	zero, f21
+
+  001836DC  c.eq.s	f12, f21
+
+  001836E0  bc1t	->$0x001836F0
+
+  001836E4  nop
+
+  001836E8  jal	->$0x001835A0
+
+  001836EC  dmove	a0, s1
+
+  001836F0  jal	->$0x0011B6A8
+
+  001836F4  dmove	a0, sp
+
+  001836F8  lui	t7, 0x0037
+
+  001836FC  lwc1	f20, 0x 55C(s1)
+
+  00183700  addiu	t7, -0x3764
+
+  00183704  dmove	a1, s3
+
+  00183708  lwc1	f00,(t7)
+
+  0018370C  dmove	a0, s2
+
+  00183710  jal	->$0x0017FF68
+
+  00183714  add.s	f20, f20, f00
+
+  00183718  lwc1	f00, 0x  4C(sp)
+
+  0018371C  sub.s	f20, f20, f00
+
+  00183720  jal	->$0x0017CE10
+
+  00183724  mov.s	f12, f20
+
+  00183728  mov.s	f12, f00
+
+  0018372C  jal	->$0x0011B720
+
+  00183730  dmove	a0, sp
+
+  00183734  swc1	f21, 0x   C(s0)
+
+  00183738  lqc2	vf05,(s0)
+
+  0018373C  lqc2	vf01,(sp)
+
+  00183740  lqc2	vf02, 0x  10(sp)
+
+  00183744  lqc2	vf03, 0x  20(sp)
+
+  00183748  lqc2	vf04, 0x  30(sp)
+
+  0018374C  vmulax.xyzw ACC,vf01,vf05x
+
+  00183750  vmadday.xyzw ACC,vf02,vf05y
+
+  00183754  vmaddaz.xyzw ACC,vf03,vf05z
+
+  00183758  vmaddw.xyzw vf05, vf04, vf05w
+
+  0018375C  sqc2	vf05,(s2)
+
+  00183760  b	->$0x001836BC
+
+  00183764  nop
+
+  00183768  addiu	t7,a0, 0x10
+
+  0018376C  beq	t7, a1, ->$0x0018377C
+
+  00183770  nop
+
+  00183774  lq	t0,(a1)
+
+  00183778  sq	t0,(t7)
+
+  0018377C  lqc2	vf01,(t7)
+
+  00183780  vmul.xyz vf02, vf01, vf01
+
+  00183784  vaddy.x vf02, vf02, vf02y
+
+  00183788  vaddz.x vf02, vf02, vf02z
+
+  0018378C  vsqrt Q, vf02x
+
+  00183790  vwaitq
+
+  00183794  cfc2	t0, Q
+
+  00183798  vaddq.x vf02,vf00,Q
+
+  0018379C  mtc1	t0, f00
+
+  001837A0  vnop
+
+  001837A4  vdiv Q, vf00w, vf02x
+
+  001837A8  vwaitq
+
+  001837AC  vmulq.xyz vf01,vf01,Q
+
+  001837B0  sqc2	vf01,(t7)
+
+  001837B4  jr	->ra
+
+  001837B8  swc1	f12, 0x  1C(a0)
+
+##### collision resolver 00183918, head
+
+  00183918  addiu	sp, -0xB0
+
+  0018391C  sd	s1, 0x  58(sp)
+
+  00183920  sd	s2, 0x  60(sp)
+
+  00183924  sd	s3, 0x  68(sp)
+
+  00183928  dmove	s1, a0
+
+  0018392C  sd	s4, 0x  70(sp)
+
+  00183930  dmove	s2, a2
+
+  00183934  sd	s0, 0x  50(sp)
+
+  00183938  dmove	s3, a3
+
+  0018393C  sd	s5, 0x  78(sp)
+
+  00183940  sd	s6, 0x  80(sp)
+
+  00183944  sd	s7, 0x  88(sp)
+
+  00183948  sd	fp, 0x  90(sp)
+
+  0018394C  sd	ra, 0x  98(sp)
+
+  00183950  swc1	f20, 0x  A0(sp)
+
+  00183954  jal	->$0x0019BB18
+
+  00183958  dmove	s4, a1
+
+  0018395C  beqz	v0, ->$0x0018396C
+
+  00183960  dmove	a0, s1
+
+  00183964  jal	->$0x00183848
+
+  00183968  dmove	a1, s2
+
+  0018396C  jal	->$0x002CEBB0
+
+  00183970  nop
+
+  00183974  beqz	v0, ->$0x00183988
+
+  00183978  dmove	a0, s1
+
+  0018397C  dmove	a1, s4
+
+  00183980  jal	->$0x002CF170
+
+  00183984  dmove	a2, s2
+
+  00183988  jal	->$0x0019BAD8
+
+  0018398C  dmove	a0, s1
+
+  00183990  beqz	v0, ->$0x00184018
+
+  00183994  dmove	a0, s1
+
+  00183998  jal	->$0x00185118
+
+  0018399C  dmove	s0, zero
+
+  001839A0  jal	->$0x0019C090
+
+  001839A4  dmove	a0, s1
+
+  001839A8  bnezl	v0, ->$0x001839E8
+
+  001839AC  li	s0, 0x1
+
+  001839B0  lw	t6, 0x   C(s1)
+
+  001839B4  lw	t7, 0x   8(t6)
+
+  001839B8  andi	t7, 0x0002
+
+  001839BC  bnez	t7, ->$0x001839D4
+
+  001839C0  dmove	t5, zero
+
+  001839C4  lw	t7, 0x 160(s1)
+
+  001839C8  andi	t7, 0x0040
+
+  001839CC  beqz	t7, ->$0x001839DC
+
+  001839D0  andi	t7,t5, 0x00FF
+
+  001839D4  li	t5, 0x1
+
+  001839D8  andi	t7,t5, 0x00FF
+
+  001839DC  beqz	t7, ->$0x001839EC
+
+  001839E0  andi	t7,s0, 0x00FF
+
+  001839E4  li	s0, 0x1
+
+  001839E8  andi	t7,s0, 0x00FF
+
+  001839EC  beqz	t7, ->$0x00183E04
+
+  001839F0  addiu	s6,sp, 0x30
+
+  001839F4  addiu	t6,s1, 0x5A0
+
+  001839F8  lqc2	vf01,(s4)
+
+  001839FC  lqc2	vf02,(s2)
+
+  00183A00  vadd.xyzw vf01, vf01, vf02
+
+  00183A04  sqc2	vf01,(s6)
+
+  00183A08  addiu	s5,sp, 0x20
+
+  00183A0C  lqc2	vf01,(s6)
+
+  00183A10  lqc2	vf02,(s3)
+
+  00183A14  vadd.xyzw vf01, vf01, vf02
+
+  00183A18  sqc2	vf01,(s5)
+
+  00183A1C  beql	t6, s5, ->$0x00183A30
+
+  00183A20  ld	t7, 0x 600(s1)
+
+  00183A24  lq	t0,(s5)
+
+  00183A28  sq	t0,(t6)
+
+  00183A2C  ld	t7, 0x 600(s1)
+
+  00183A30  addiu	s0,s1, 0x540
+
+  00183A34  ori	t7, 0x1
+
+  00183A38  sd	t7, 0x 600(s1)
+
+  00183A3C  addiu	s3,s1, 0x590
+
+  00183A40  beq	s3, s0, ->$0x00183A50
+
+  00183A44  nop
+
+  00183A48  lq	t0,(s0)
+
+  00183A4C  sq	t0,(s3)
+
+  00183A50  beq	sp, t6, ->$0x00183A60
+
+  00183A54  nop
+
+  00183A58  lq	t0,(t6)
+
+  00183A5C  sq	t0,(sp)
+
+  00183A60  jal	->$0x00143928
+
+  00183A64  dmove	a0, s3
+
+  00183A68  addiu	t7,sp, 0x40
+
+  00183A6C  addiu	t5,s1, 0x5C0
+
+  00183A70  addiu	t4,s1, 0x8A0
+
+  00183A74  lqc2	vf01,(t5)
+
+  00183A78  lqc2	vf02,(s0)
+
+  00183A7C  vsub.xyzw vf01, vf01, vf02
+
+  00183A80  sqc2	vf01,(t7)
+
+  00183A84  lqc2	vf01,(t7)
+
+  00183A88  lqc2	vf02,(sp)
+
+  00183A8C  vsub.xyzw vf01, vf01, vf02
+
+  00183A90  sqc2	vf01,(s6)
+
+  00183A94  lui	t6, 0x0035
+
+  00183A98  lwc1	f00, -0x61E8(t6)
+
+  00183A9C  lqc2	vf01,(s6)
+
+  00183AA0  mfc1	t0, f00
+
+  00183AA4  qmtc2	t0, vf02
+
+  00183AA8  vmulx.xyzw vf01,vf01,vf02x
+
+  00183AAC  sqc2	vf01,(s5)
+
+  00183AB0  beq	t4, s5, ->$0x00183AC0
+
+  00183AB4  nop
+
+  00183AB8  lq	t0,(s5)
+
+  00183ABC  sq	t0,(t4)
+
+  00183AC0  beq	s0, t5, ->$0x00183AD4
+
+  00183AC4  lui	t3, 0x0037
+
+  00183AC8  lq	t0,(t5)
+
+  00183ACC  sq	t0,(s0)
+
+  00183AD0  lui	t3, 0x0037
+
+  00183AD4  lw	t6, 0x   C(s1)
+
+  00183AD8  addiu	t3, -0x3760
+
+  00183ADC  lwc1	f00,(t3)
+
+  00183AE0  swc1	f00, 0x 54C(s1)
+
+  00183AE4  lw	t7, 0x   8(t6)
+
+  00183AE8  andi	t7, 0x0001
+
+  00183AEC  andi	t7, 0x00FF
+
+  00183AF0  bnez	t7, ->$0x00183B54
+
+  00183AF4  lwc1	f01, 0x   4(sp)
+
+  00183AF8  lw	t5, 0x 160(s1)
+
+  00183AFC  andi	t7,t5, 0x0020
+
+  00183B00  bnez	t7, ->$0x00183B18
+
+  00183B04  dmove	t4, zero
+
+  00183B08  lui	t7, 0x0100
+
+  00183B0C  and	t7,t5, t7
+
+  00183B10  beqz	t7, ->$0x00183B20
+
+  00183B14  andi	t7,t4, 0x00FF
+
+  00183B18  li	t4, 0x1
+
+  00183B1C  andi	t7,t4, 0x00FF
+
+  00183B20  bnez	t7, ->$0x00183B54
+
+  00183B24  lwc1	f01, 0x   4(sp)
+
+  00183B28  lw	t7, 0x   8(t6)
+
+  00183B2C  andi	t7, 0x0002
+
+  00183B30  bnez	t7, ->$0x00183B44
+
+  00183B34  dmove	t6, zero
+
+  00183B38  andi	t7,t5, 0x0040
+
+  00183B3C  beqz	t7, ->$0x00183B4C
+
+  00183B40  andi	t7,t6, 0x00FF
+
+  00183B44  li	t6, 0x1

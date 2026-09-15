@@ -1,0 +1,14 @@
+# Compute float hex and verify instruction encodings
+# (foreground run, transcript line 209)
+--- input (line 208) ---
+python "<session scratchpad>\kh2_ws_values.py"
+--- result ---
+factor 0.615384615 -> 3F1D89D9 -> 0.615384638
+
+16:9 check 3F400000  0.8 = 0.8000000
+
+00106E54  3C1B3F1D  lui $k1, 0x3f1d
+
+00106E58  377B89D9  ori $k1, $k1, 0x89d9
+
+00106E60  449BF000  mtc1 $k1, $f30

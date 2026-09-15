@@ -1,0 +1,53 @@
+# Test the mash juggle at two input phases with all fixes
+# (foreground run, transcript line 3570)
+--- input (line 3561) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$g = @("--group", "60 FPS - ball physics", "--group", "60 FPS - short hop", "--group", "60 FPS - friction")
+foreach ($lead in 6, 7) {
+  foreach ($taps in 30, 45) {
+    "==================== lead $lead, $taps taps"
+    $mash = "wait:$lead,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * $taps)
+    python tools\movetest.py --pos 01ADEAC0 --script $mash --what all --air 5 @g
+  }
+}
+--- result ---
+Exit code 1
+==================== lead 6, 30 taps
+
+  30fps oracle     peak   345.90 at 227  air 142  fall        -  path   127.85  net    37.52
+
+  60fps            peak   231.38 at 187  air 159  fall        -  path   381.15  net   191.57
+
+  60fps + fix      peak   547.25 at 154  air 214  fall        -  path   697.24  net   170.41
+
+FAIL: 60fps + fix differs from 30fps: peak 547.25 vs 345.90; airtime 214 vs 142; path 697.24 vs 127.85
+
+==================== lead 6, 45 taps
+
+  30fps oracle     peak   345.90 at 227  air 246  fall   0.1953  path   190.90  net    78.51
+
+  60fps            peak   403.92 at 269  air 278  fall   0.1724  path   629.57  net   370.42
+
+  60fps + fix      peak   601.23 at 290  air 334  fall        -  path  1190.54  net   173.82
+
+FAIL: 60fps + fix differs from 30fps: peak 601.23 vs 345.90; airtime 334 vs 246; path 1190.54 vs 190.90
+
+==================== lead 7, 30 taps
+
+  30fps oracle     peak   345.93 at 245  air 125  fall        -  path   127.51  net    37.70
+
+  60fps            peak   231.38 at 188  air 159  fall        -  path   381.15  net   191.57
+
+  60fps + fix      peak   608.82 at 158  air 214  fall        -  path   728.57  net   194.64
+
+FAIL: 60fps + fix differs from 30fps: peak 608.82 vs 345.93; airtime 214 vs 125; path 728.57 vs 127.51
+
+==================== lead 7, 45 taps
+
+  30fps oracle     peak   345.90 at 229  air 245  fall   0.1953  path   190.90  net    78.51
+
+  60fps            peak   403.92 at 270  air 278  fall   0.1724  path   629.57  net   370.42
+
+  60fps + fix      peak   693.46 at 292  air 334  fall        -  path  1244.36  net   198.00
+
+FAIL: 60fps + fix differs from 30fps: peak 693.46 vs 345.90; airtime 334 vs 245; path 1244.36 vs 190.90

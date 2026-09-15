@@ -1,0 +1,95 @@
+# Disassemble where the accumulator increment is stored
+# (foreground run, transcript line 2699)
+--- input (line 2697) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 001E6FE8..001E7060"; python tools\elfscan.py dis 001E6FE8 30
+"== readers/writers of 0036EF3C"; python tools\elfscan.py refs 0036EF3C 01D9E830
+"== who calls 001E6ED8 (real start)"; python tools\elfscan.py callers 001E6ED8
+--- result ---
+== 001E6FE8..001E7060
+
+  001E6FE8  DFB20010  ld $s2, 0x10($sp)
+
+  001E6FEC  DFB30018  ld $s3, 0x18($sp)
+
+  001E6FF0  2484EA00  addiu $a0, $a0, -0x1600
+
+  001E6FF4  DFB40020  ld $s4, 0x20($sp)
+
+  001E6FF8  DFB50028  ld $s5, 0x28($sp)
+
+  001E6FFC  DFBF0030  ld $ra, 0x30($sp)
+
+  001E7000  080BCF42  j 0x2f3d08
+
+  001E7004  27BD0040  addiu $sp, $sp, 0x40
+
+  001E7008  3C0F0035  lui $t7, 0x35
+
+  001E700C  03E00008  jr $ra
+
+  001E7010  E5EC2BE0  swc1 $f12, 0x2be0($t7)
+
+  001E7014  00000000  nop
+
+  001E7018  27BDFFF0  addiu $sp, $sp, -0x10
+
+  001E701C  FFBF0000  sd $ra, ($sp)
+
+  001E7020  DFBF0000  ld $ra, ($sp)
+
+  001E7024  08083A7E  j 0x20e9f8
+
+  001E7028  27BD0010  addiu $sp, $sp, 0x10
+
+  001E702C  00000000  nop
+
+  001E7030  27BDFFF0  addiu $sp, $sp, -0x10
+
+  001E7034  308400FF  andi $a0, $a0, 0xff
+
+  001E7038  FFBF0000  sd $ra, ($sp)
+
+  001E703C  30A500FF  andi $a1, $a1, 0xff
+
+  001E7040  30C600FF  andi $a2, $a2, 0xff
+
+  001E7044  DFBF0000  ld $ra, ($sp)
+
+  001E7048  08083A92  j 0x20ea48
+
+  001E704C  27BD0010  addiu $sp, $sp, 0x10
+
+  001E7050  27BDFFF0  addiu $sp, $sp, -0x10
+
+  001E7054  308400FF  andi $a0, $a0, 0xff
+
+  001E7058  FFBF0000  sd $ra, ($sp)
+
+  001E705C  30A500FF  andi $a1, $a1, 0xff
+
+== readers/writers of 0036EF3C
+
+== 0036EF3C: 1 refs in 1 functions
+
+   001E6FBC  addiu (function 001E6ED4)
+
+== 01D9E830: 1 refs in 1 functions
+
+   001E6FD0  swc1  (function 001E6ED4)
+
+== who calls 001E6ED8 (real start)
+
+001E6ED8 is in the function starting 001E6ED4
+
+  001E6ED4: jumps []
+
+  001E6ED4: data pointers []
+
+  001E6ED4: lui/addiu loads []
+
+  001E6ED8: jumps ['jal 001DD370']
+
+  001E6ED8: data pointers []
+
+  001E6ED8: lui/addiu loads []

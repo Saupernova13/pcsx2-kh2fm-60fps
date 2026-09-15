@@ -1,0 +1,290 @@
+# Disassemble the cutscene timer advance and its gate functions
+# (foreground run, transcript line 2911)
+--- input (line 2909) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 002263F0 cutscene timer advance"; python tools\elfscan.py dis 002263F0 80
+"== 00225AA8 / 00225B00 / 00225B88"; python tools\elfscan.py dis 00225AA8 60
+--- result ---
+== 002263F0 cutscene timer advance
+
+  002263F0  3C0C0036  lui $t4, 0x36
+
+  002263F4  3C0F0036  lui $t7, 0x36
+
+  002263F8  8D8EDE60  lw $t6, -0x21a0($t4)
+
+  002263FC  25EBDD08  addiu $t3, $t7, -0x22f8
+
+  00226400  000E7080  sll $t6, $t6, 2
+
+  00226404  01CB7021  addu $t6, $t6, $t3
+
+  00226408  8DCE0000  lw $t6, ($t6)
+
+  0022640C  11C00013  beqz $t6, 0x22645c
+
+  00226410  3C0F0036  lui $t7, 0x36
+
+  00226414  85CD0008  lh $t5, 8($t6)
+
+  00226418  8DEFDE5C  lw $t7, -0x21a4($t7)
+
+  0022641C  01ED702A  slt $t6, $t7, $t5
+
+  00226420  55C0000E  bnel $t6, $zero, 0x22645c
+
+  00226424  AC8F0000  sw $t7, ($a0)
+
+  00226428  AC8D0000  sw $t5, ($a0)
+
+  0022642C  24020001  addiu $v0, $zero, 1
+
+  00226430  8D8FDE60  lw $t7, -0x21a0($t4)
+
+  00226434  000F7880  sll $t7, $t7, 2
+
+  00226438  01EB7821  addu $t7, $t7, $t3
+
+  0022643C  8DED0000  lw $t5, ($t7)
+
+  00226440  85AE0008  lh $t6, 8($t5)
+
+  00226444  25CEFFFF  addiu $t6, $t6, -1
+
+  00226448  ACAE0000  sw $t6, ($a1)
+
+  0022644C  8D8FDE60  lw $t7, -0x21a0($t4)
+
+  00226450  25EF0001  addiu $t7, $t7, 1
+
+  00226454  03E00008  jr $ra
+
+  00226458  AD8FDE60  sw $t7, -0x21a0($t4)
+
+  0022645C  03E00008  jr $ra
+
+  00226460  0000102D  move $v0, $zero
+
+  00226464  00000000  nop
+
+  00226468  3C020036  lui $v0, 0x36
+
+  0022646C  03E00008  jr $ra
+
+  00226470  2442DB00  addiu $v0, $v0, -0x2500
+
+  00226474  00000000  nop
+
+  00226478  27BDFFD0  addiu $sp, $sp, -0x30
+
+  0022647C  FFB40020  sd $s4, 0x20($sp)
+
+  00226480  FFB00000  sd $s0, ($sp)
+
+  00226484  FFB10008  sd $s1, 8($sp)
+
+  00226488  FFB20010  sd $s2, 0x10($sp)
+
+  0022648C  FFB30018  sd $s3, 0x18($sp)
+
+  00226490  FFBF0028  sd $ra, 0x28($sp)
+
+  00226494  0C041432  jal 0x1050c8
+
+  00226498  00000000  nop
+
+  0022649C  3C0F0036  lui $t7, 0x36
+
+  002264A0  0040A02D  move $s4, $v0
+
+  002264A4  8DEEDCE0  lw $t6, -0x2320($t7)
+
+  002264A8  15C00010  bnez $t6, 0x2264ec
+
+  002264AC  25EFDCE0  addiu $t7, $t7, -0x2320
+
+  002264B0  01E0802D  move $s0, $t7
+
+  002264B4  24040200  addiu $a0, $zero, 0x200
+
+  002264B8  0C0418FC  jal 0x1063f0
+
+  002264BC  0040282D  move $a1, $v0
+
+  002264C0  0040782D  move $t7, $v0
+
+  002264C4  240E007F  addiu $t6, $zero, 0x7f
+
+  002264C8  240DFFFF  addiu $t5, $zero, -1
+
+  002264CC  ADE00000  sw $zero, ($t7)
+
+  002264D0  25CEFFFF  addiu $t6, $t6, -1
+
+  002264D4  00000000  nop
+
+  002264D8  00000000  nop
+
+  002264DC  00000000  nop
+
+  002264E0  15CDFFFA  bne $t6, $t5, 0x2264cc
+
+  002264E4  25EF0004  addiu $t7, $t7, 4
+
+  002264E8  AE020000  sw $v0, ($s0)
+
+  002264EC  3C0F0036  lui $t7, 0x36
+
+  002264F0  8DEEDCE4  lw $t6, -0x231c($t7)
+
+  002264F4  15C00010  bnez $t6, 0x226538
+
+  002264F8  25EFDCE4  addiu $t7, $t7, -0x231c
+
+  002264FC  01E0802D  move $s0, $t7
+
+  00226500  24040400  addiu $a0, $zero, 0x400
+
+  00226504  0C0418FC  jal 0x1063f0
+
+  00226508  0280282D  move $a1, $s4
+
+  0022650C  0040782D  move $t7, $v0
+
+  00226510  240E007F  addiu $t6, $zero, 0x7f
+
+  00226514  240DFFFF  addiu $t5, $zero, -1
+
+  00226518  ADED0000  sw $t5, ($t7)
+
+  0022651C  25CEFFFF  addiu $t6, $t6, -1
+
+  00226520  00000000  nop
+
+  00226524  00000000  nop
+
+  00226528  00000000  nop
+
+  0022652C  15CDFFFA  bne $t6, $t5, 0x226518
+
+== 00225AA8 / 00225B00 / 00225B88
+
+  00225AA8  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00225AAC  3C0F0036  lui $t7, 0x36
+
+  00225AB0  FFB00000  sd $s0, ($sp)
+
+  00225AB4  FFBF0008  sd $ra, 8($sp)
+
+  00225AB8  91EEDAEC  lbu $t6, -0x2514($t7)
+
+  00225ABC  15C00009  bnez $t6, 0x225ae4
+
+  00225AC0  0000802D  move $s0, $zero
+
+  00225AC4  3C0F0036  lui $t7, 0x36
+
+  00225AC8  91EEDAED  lbu $t6, -0x2513($t7)
+
+  00225ACC  55C00006  bnel $t6, $zero, 0x225ae8
+
+  00225AD0  24100001  addiu $s0, $zero, 1
+
+  00225AD4  0C08969A  jal 0x225a68
+
+  00225AD8  00000000  nop
+
+  00225ADC  10400003  beqz $v0, 0x225aec
+
+  00225AE0  0200102D  move $v0, $s0
+
+  00225AE4  24100001  addiu $s0, $zero, 1
+
+  00225AE8  0200102D  move $v0, $s0
+
+  00225AEC  DFBF0008  ld $ra, 8($sp)
+
+  00225AF0  DFB00000  ld $s0, ($sp)
+
+  00225AF4  03E00008  jr $ra
+
+  00225AF8  27BD0010  addiu $sp, $sp, 0x10
+
+  00225AFC  00000000  nop
+
+  00225B00  240FFFFF  addiu $t7, $zero, -1
+
+  00225B04  148F0003  bne $a0, $t7, 0x225b14
+
+  00225B08  3C0F0036  lui $t7, 0x36
+
+  00225B0C  03E00008  jr $ra
+
+  00225B10  91E2DE54  lbu $v0, -0x21ac($t7)
+
+  00225B14  91EEDE54  lbu $t6, -0x21ac($t7)
+
+  00225B18  15C00009  bnez $t6, 0x225b40
+
+  00225B1C  0000102D  move $v0, $zero
+
+  00225B20  3C0F0036  lui $t7, 0x36
+
+  00225B24  8DEDDE20  lw $t5, -0x21e0($t7)
+
+  00225B28  008D702A  slt $t6, $a0, $t5
+
+  00225B2C  11C00005  beqz $t6, 0x225b44
+
+  00225B30  3C0F0036  lui $t7, 0x36
+
+  00225B34  8DEEDE5C  lw $t6, -0x21a4($t7)
+
+  00225B38  15AE0002  bne $t5, $t6, 0x225b44
+
+  00225B3C  00000000  nop
+
+  00225B40  24020001  addiu $v0, $zero, 1
+
+  00225B44  03E00008  jr $ra
+
+  00225B48  00000000  nop
+
+  00225B4C  00000000  nop
+
+  00225B50  27BDFFF0  addiu $sp, $sp, -0x10
+
+  00225B54  FFBF0000  sd $ra, ($sp)
+
+  00225B58  0C0896C0  jal 0x225b00
+
+  00225B5C  00000000  nop
+
+  00225B60  10400004  beqz $v0, 0x225b74
+
+  00225B64  0000782D  move $t7, $zero
+
+  00225B68  0C0893A4  jal 0x224e90
+
+  00225B6C  00000000  nop
+
+  00225B70  0002782B  sltu $t7, $zero, $v0
+
+  00225B74  DFBF0000  ld $ra, ($sp)
+
+  00225B78  01E0102D  move $v0, $t7
+
+  00225B7C  03E00008  jr $ra
+
+  00225B80  27BD0010  addiu $sp, $sp, 0x10
+
+  00225B84  00000000  nop
+
+  00225B88  27BDFFE0  addiu $sp, $sp, -0x20
+
+  00225B8C  FFB00000  sd $s0, ($sp)
+
+  00225B90  FFB10008  sd $s1, 8($sp)
+
+  00225B94  FFB20010  sd $s2, 0x10($sp)

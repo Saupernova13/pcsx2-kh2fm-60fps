@@ -1,0 +1,18 @@
+# Compile new tools and check the pnach header helper
+# (foreground run, transcript line 3011)
+--- input (line 3010) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python -m py_compile tools\movetest.py tools\findplayer.py tools\ratesweep.py; "compile exit $LASTEXITCODE"
+python -c "import sys; sys.path.insert(0,'tools'); import _bootstrap; from game.pnachtext import headers; import inspect; print(inspect.signature(headers))"
+python tools\movetest.py --help | Select-Object -First 3
+--- result ---
+Exit code 255
+compile exit 0
+
+(lines: 'list[str]') -> 'list[tuple[int, str]]'
+
+usage: movetest.py [-h] --pos POS --script SCRIPT [--slot SLOT]
+
+                   [--what {jump,walk,all}] [--air AIR] [--fix]
+
+                   [--pnach PNACH] [--group GROUP] [--save SAVE] [--port PORT]

@@ -1,0 +1,8 @@
+# Densely sweep RAM in three frame-rate arms at Sandlot idle
+# (foreground run, transcript line 2795)
+--- input (line 2786) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python -u tools\ratesweep.py capture work\rs-sandlot-idle.npz --arms 30,60,60t2 --samples 60 --stride 2 --lead 10
+"exit $LASTEXITCODE"
+--- result ---
+Command running in background with ID: b61o1st5e. Output is being written to: <session tasks>\b61o1st5e.output. You will be notified when it completes. To check interim output, use Read on that file path.

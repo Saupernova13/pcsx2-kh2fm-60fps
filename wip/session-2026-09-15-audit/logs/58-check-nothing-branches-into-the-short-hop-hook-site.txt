@@ -1,0 +1,14 @@
+# Check nothing branches into the short-hop hook site
+# (foreground run, transcript line 3271)
+--- input (line 3270) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\elfscan.py into 0017C798 0017C7A4
+python tools\elfscan.py range 0017C798 0017C7A4
+--- result ---
+branches from outside into 0017C798..0017C7A4: 0
+
+branches inside leaving it: 1
+
+   0017C79C -> 0017C81C
+
+0 references into 0017C798..0017C7A4

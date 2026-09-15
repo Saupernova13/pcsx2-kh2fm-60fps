@@ -1,0 +1,14 @@
+# Commit the validated audit tools and plan on the work branch
+# (foreground run, transcript line 2970)
+--- input (line 2968) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+if ((git branch --show-current) -ne "feat/global-60fps-audit") { throw "wrong branch" }
+git add -- tools/ratediff.py tools/memcard.py tools/game/world.py docs/global-audit.md
+git commit -q -F "<session scratchpad>\kh2-commit-audit-1.txt"
+if (-not $?) { throw "commit failed" }
+git log --oneline -1; git status -sb
+--- result ---
+d2d4694 feat(audit): add RAM rate diff, memory card reader and community address map
+## feat/global-60fps-audit
+?? tools/findplayer.py
+?? tools/ratesweep.py

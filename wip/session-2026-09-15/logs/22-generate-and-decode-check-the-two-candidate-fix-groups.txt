@@ -1,0 +1,105 @@
+# Generate and decode-check the two candidate fix groups
+# (foreground run, transcript line 1045)
+--- input (line 1044) ---
+$env:PYTHONPATH = "$env:USERPROFILE\Documents\GitHub\pcsxroo\pcsxroo"; python -c @"
+import struct
+from ps2ee.disasm import decode
+d = r'<session scratchpad>'
+elf = open(d + r'\SLPM_666.75', 'rb').read()
+BASE, OFF = 0x00100000, 0x1000
+def orig(a): return struct.unpack_from('<I', elf, OFF + a - BASE)[0]
+def fhex(x): return struct.unpack('<I', struct.pack('<f', x))[0]
+
+ZERO, T0, T1, S2, S6, SP = 0, 8, 9, 18, 22, 29
+def j(pc, target): return 0x08000000 | ((target >> 2) & 0x03FFFFFF)
+def beq(pc, rs, rt, target): return 0x10000000 | rs << 21 | rt << 16 | (((target - pc - 4) >> 2) & 0xFFFF)
+def bne(pc, rs, rt, target): return 0x14000000 | rs << 21 | rt << 16 | (((target - pc - 4) >> 2) & 0xFFFF)
+def lui(rt, imm): return 0x3C000000 | rt << 16 | (imm & 0xFFFF)
+def lw(rt, imm, rs): return 0x8C000000 | rs << 21 | rt << 16 | (imm & 0xFFFF)
+def andi(rt, rs, imm): return 0x30000000 | rs << 21 | rt << 16 | (imm & 0xFFFF)
+def sw(rt, imm, rs): return 0xAC000000 | rs << 21 | rt << 16 | (imm & 0xFFFF)
+NOP = 0
+
+# sanity: the ELF words the fixes assume
+expect = {0x002EA498: 'beql', 0x002EA49C: 'sw', 0x002EA4A0: None, 0x002EA4A4: None, 0x002EA4A8: 'sw',
+          0x002EA544: 'lwc1', 0x002EA548: None, 0x002EA54C: None, 0x002EA550: 'swc1', 0x002EA55C: 'lwc1'}
+print('ELF words at the hook sites:')
+for a in sorted(expect):
+    print(f'  {a:08X}  {orig(a):08X}  {decode(orig(a), a)}')
+G = struct.unpac
+--- result ---
+ELF words at the hook sites:
+
+  002EA498  53B60004  beql $sp, $s6, 0x2ea4ac
+
+  002EA49C  AFA00004  sw $zero, 4($sp)
+
+  002EA4A0  7AC80000  nori.b $w0, $w0, 0xc8
+
+  002EA4A4  7FA80000  ext $t0, $sp, 0, 1
+
+  002EA4A8  AFA00004  sw $zero, 4($sp)
+
+  002EA544  C5C00020  lwc1 $f0, 0x20($t6)
+
+  002EA548  46001802  mul.s $f0, $f3, $f0
+
+  002EA54C  460000C6  mov.s $f3, $f0
+
+  002EA550  E6400024  swc1 $f0, 0x24($s2)
+
+  002EA55C  C5E03404  lwc1 $f0, 0x3404($t7)
+
+gravity in ELF 0.4081632 (3ED0FAC6); half 0.2040816 (3E50FAC6)
+
+wrote <session scratchpad>\kh2_ballfix_candidates.pnach
+
+decoded back:
+
+== BALLFIX-B constant scaling
+
+  002EA548  46000004  sqrt.s $f0, $f0                   // sqrt.s f00, f00          (was mul.s f00, f03, f00)
+
+  002EA54C  460018C2  mul.s $f3, $f3, $f0               // mul.s  f03, f03, f00     (was mov.s f03, f00)
+
+  002EA550  E6430024  swc1 $f3, 0x24($s2)               // swc1   f03, 0x24(s2)     (was swc1 f00, 0x24(s2))
+
+  00363404  3E50FAC6  .word                             // gravity 0.408163 -> 0.204082 (single reader 002EA55C)
+
+== BALLFIX-D tick gate
+
+  000FE000  3C080035  lui $t0, 0x35                     // lui  t0, 0x35
+
+  000FE004  8D089E1C  lw $t0, -0x61e4($t0)              // lw   t0, -0x61E4(t0)     [00349E1C] extra vsync wait: 0 = 60fps
+
+  000FE008  15000007  bnez $t0, 0xfe028                 // bnez t0, update          30fps: never gate
+
+  000FE00C  3C090033  lui $t1, 0x33                     // lui  t1, 0x33
+
+  000FE010  8D29B920  lw $t1, -0x46e0($t1)              // lw   t1, -0x46E0(t1)     [0032B920] game tick counter
+
+  000FE014  31290001  andi $t1, $t1, 1                  // andi t1, t1, 1
+
+  000FE018  11200003  beqz $t1, 0xfe028                 // beqz t1, update          even tick: update as normal
+
+  000FE01C  00000000  nop                               // nop
+
+  000FE020  080BA95D  j 0x2ea574                        // j    002EA574            odd tick: keep last velocity
+
+  000FE024  00000000  nop                               // nop
+
+  000FE028  13B60003  beq $sp, $s6, 0xfe038             // beq  sp, s6, L1          replay the overwritten beql
+
+  000FE02C  00000000  nop                               // nop
+
+  000FE030  7AC80000  nori.b $w0, $w0, 0xc8             // lq   t0, 0(s6)            (copied from 002EA4A0)
+
+  000FE034  7FA80000  ext $t0, $sp, 0, 1                // sq   t0, 0(sp)            (copied from 002EA4A4)
+
+  000FE038  080BA92B  j 0x2ea4ac                        // j    002EA4AC
+
+  000FE03C  AFA00004  sw $zero, 4($sp)                  // sw   zero, 4(sp)          (copied from 002EA4A8, both paths end with it)
+
+  002EA498  0803F800  j 0xfe000                         // j    000FE000          (was 53B60004 beql sp, s6)
+
+  002EA49C  00000000  nop                               // nop                      (was AFA00004 sw zero, 4(sp))

@@ -1,0 +1,42 @@
+# Show final KH2FM game settings
+# (foreground run, transcript line 234)
+--- input (line 232) ---
+Get-Content "%USERPROFILE%\AppData\Roaming\EmuDeck\Emulators\PCSX2-Qt\gamesettings\SLPM-66675_FAF99301.ini"
+--- result ---
+[EmuCore]
+
+EnableCheats = true
+
+ShowPatchesForAllCRCs = true
+
+
+
+
+
+[Patches]
+
+Enable = Remove Blackbars
+
+Enable = Widescreen 19.5:9 - S24 Ultra
+
+Enable = Remove Blur
+
+Enable = Swap X and O
+
+Enable = 60 FPS
+
+
+
+
+
+[EmuCore/GS]
+
+LoadTextureReplacements = true
+
+
+
+
+
+[EmuCore/Speedhacks]
+
+EECycleRate = 1

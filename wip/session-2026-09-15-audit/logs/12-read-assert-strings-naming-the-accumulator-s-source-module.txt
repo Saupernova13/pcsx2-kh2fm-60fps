@@ -1,0 +1,39 @@
+# Read assert strings naming the accumulator's source module
+# (foreground run, transcript line 2726)
+--- input (line 2725) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys
+sys.path.insert(0, "tools")
+import _bootstrap
+from game.elf import Elf
+e = Elf()
+def cstr(a, n=120):
+    out = bytearray()
+    for i in range(n):
+        b = e.word(a + i - ((a + i) % 4)) >> (8 * ((a + i) % 4)) & 0xFF
+        if b == 0:
+            break
+        out.append(b)
+    return out.decode("latin-1")
+for a in (0x0036E978, 0x0036E998, 0x0036E9C0, 0x0036E9D0, 0x0036EF58, 0x0036EF88, 0x0036EF98, 0x0036EFC8):
+    print(f"{a:08X}  {cstr(a)!r}")
+'@
+$f = "$env:TEMP\kh2_strings.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+0036E978  'RyjAssertion failed: %s\n'
+
+0036E998  '   File %s, Line %u\n'
+
+0036E9C0  'pMng != NULL'
+
+0036E9D0  'partMng.c'
+
+0036EF58  'Assertion failed: %s\n'
+
+0036EF88  'pppPart.c'
+
+0036EF98  '   File %s, Line %u\n'
+
+0036EFC8  'mng != NULL'

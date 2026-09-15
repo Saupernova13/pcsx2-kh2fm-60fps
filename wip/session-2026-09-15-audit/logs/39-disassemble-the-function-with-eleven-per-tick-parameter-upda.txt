@@ -1,0 +1,418 @@
+# Disassemble the function with eleven per-tick parameter updates
+# (foreground run, transcript line 3095)
+--- input (line 3093) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== 001C31E8 function"; python tools\elfscan.py dis 001C31E8 200
+"== callers"; python tools\elfscan.py callers 001C31E8
+--- result ---
+== 001C31E8 function
+
+  001C31E8  25EF0001  addiu $t7, $t7, 1
+
+  001C31EC  1000FFEE  b 0x1c31a8
+
+  001C31F0  A20F002C  sb $t7, 0x2c($s0)
+
+  001C31F4  10AF0012  beq $a1, $t7, 0x1c3240
+
+  001C31F8  28AF0188  slti $t7, $a1, 0x188
+
+  001C31FC  11E00009  beqz $t7, 0x1c3224
+
+  001C3200  240F0186  addiu $t7, $zero, 0x186
+
+  001C3204  14AFFFE8  bne $a1, $t7, 0x1c31a8
+
+  001C3208  3C0F0035  lui $t7, 0x35
+
+  001C320C  960C004A  lhu $t4, 0x4a($s0)
+
+  001C3210  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3214  95CD0130  lhu $t5, 0x130($t6)
+
+  001C3218  018D6021  addu $t4, $t4, $t5
+
+  001C321C  1000FFE2  b 0x1c31a8
+
+  001C3220  A60C004A  sh $t4, 0x4a($s0)
+
+  001C3224  3C0F0035  lui $t7, 0x35
+
+  001C3228  960C004E  lhu $t4, 0x4e($s0)
+
+  001C322C  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3230  95CD0134  lhu $t5, 0x134($t6)
+
+  001C3234  018D6021  addu $t4, $t4, $t5
+
+  001C3238  1000FFDB  b 0x1c31a8
+
+  001C323C  A60C004E  sh $t4, 0x4e($s0)
+
+  001C3240  3C0F0035  lui $t7, 0x35
+
+  001C3244  960C004C  lhu $t4, 0x4c($s0)
+
+  001C3248  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C324C  95CD0130  lhu $t5, 0x130($t6)
+
+  001C3250  018D6021  addu $t4, $t4, $t5
+
+  001C3254  1000FFD4  b 0x1c31a8
+
+  001C3258  A60C004C  sh $t4, 0x4c($s0)
+
+  001C325C  920F002D  lbu $t7, 0x2d($s0)
+
+  001C3260  25EF0001  addiu $t7, $t7, 1
+
+  001C3264  1000FFD0  b 0x1c31a8
+
+  001C3268  A20F002D  sb $t7, 0x2d($s0)
+
+  001C326C  240F018D  addiu $t7, $zero, 0x18d
+
+  001C3270  10AF0033  beq $a1, $t7, 0x1c3340
+
+  001C3274  28AF018E  slti $t7, $a1, 0x18e
+
+  001C3278  11E00019  beqz $t7, 0x1c32e0
+
+  001C327C  240F018B  addiu $t7, $zero, 0x18b
+
+  001C3280  10AF0010  beq $a1, $t7, 0x1c32c4
+
+  001C3284  28AF018C  slti $t7, $a1, 0x18c
+
+  001C3288  11E00008  beqz $t7, 0x1c32ac
+
+  001C328C  3C0F0035  lui $t7, 0x35
+
+  001C3290  920F002C  lbu $t7, 0x2c($s0)
+
+  001C3294  920E002D  lbu $t6, 0x2d($s0)
+
+  001C3298  25EFFFFF  addiu $t7, $t7, -1
+
+  001C329C  25CEFFFF  addiu $t6, $t6, -1
+
+  001C32A0  A20F002C  sb $t7, 0x2c($s0)
+
+  001C32A4  1000FFC0  b 0x1c31a8
+
+  001C32A8  A20E002D  sb $t6, 0x2d($s0)
+
+  001C32AC  C6010054  lwc1 $f1, 0x54($s0)
+
+  001C32B0  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C32B4  C5C00138  lwc1 $f0, 0x138($t6)
+
+  001C32B8  46000840  add.s $f1, $f1, $f0
+
+  001C32BC  1000FFBA  b 0x1c31a8
+
+  001C32C0  E6010054  swc1 $f1, 0x54($s0)
+
+  001C32C4  3C0F0035  lui $t7, 0x35
+
+  001C32C8  960C0052  lhu $t4, 0x52($s0)
+
+  001C32CC  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C32D0  95CD011C  lhu $t5, 0x11c($t6)
+
+  001C32D4  018D6021  addu $t4, $t4, $t5
+
+  001C32D8  1000FFB3  b 0x1c31a8
+
+  001C32DC  A60C0052  sh $t4, 0x52($s0)
+
+  001C32E0  240F018F  addiu $t7, $zero, 0x18f
+
+  001C32E4  10AF000F  beq $a1, $t7, 0x1c3324
+
+  001C32E8  28AF0190  slti $t7, $a1, 0x190
+
+  001C32EC  11E00007  beqz $t7, 0x1c330c
+
+  001C32F0  3C0F0035  lui $t7, 0x35
+
+  001C32F4  C6010040  lwc1 $f1, 0x40($s0)
+
+  001C32F8  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C32FC  C5C00140  lwc1 $f0, 0x140($t6)
+
+  001C3300  46000842  mul.s $f1, $f1, $f0
+
+  001C3304  1000FFA8  b 0x1c31a8
+
+  001C3308  E6010040  swc1 $f1, 0x40($s0)
+
+  001C330C  C6010060  lwc1 $f1, 0x60($s0)
+
+  001C3310  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3314  C5C00158  lwc1 $f0, 0x158($t6)
+
+  001C3318  46000842  mul.s $f1, $f1, $f0
+
+  001C331C  1000FFA2  b 0x1c31a8
+
+  001C3320  E6010060  swc1 $f1, 0x60($s0)
+
+  001C3324  3C0F0035  lui $t7, 0x35
+
+  001C3328  C601006C  lwc1 $f1, 0x6c($s0)
+
+  001C332C  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3330  C5C0016C  lwc1 $f0, 0x16c($t6)
+
+  001C3334  46000842  mul.s $f1, $f1, $f0
+
+  001C3338  1000FF9B  b 0x1c31a8
+
+  001C333C  E601006C  swc1 $f1, 0x6c($s0)
+
+  001C3340  3C0F0035  lui $t7, 0x35
+
+  001C3344  C601003C  lwc1 $f1, 0x3c($s0)
+
+  001C3348  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C334C  C5C0013C  lwc1 $f0, 0x13c($t6)
+
+  001C3350  46000840  add.s $f1, $f1, $f0
+
+  001C3354  1000FF94  b 0x1c31a8
+
+  001C3358  E601003C  swc1 $f1, 0x3c($s0)
+
+  001C335C  920F002E  lbu $t7, 0x2e($s0)
+
+  001C3360  25EF0001  addiu $t7, $t7, 1
+
+  001C3364  1000FF90  b 0x1c31a8
+
+  001C3368  A20F002E  sb $t7, 0x2e($s0)
+
+  001C336C  240F019C  addiu $t7, $zero, 0x19c
+
+  001C3370  10AF007F  beq $a1, $t7, 0x1c3570
+
+  001C3374  28AF019D  slti $t7, $a1, 0x19d
+
+  001C3378  11E0003E  beqz $t7, 0x1c3474
+
+  001C337C  240F0198  addiu $t7, $zero, 0x198
+
+  001C3380  10AF0035  beq $a1, $t7, 0x1c3458
+
+  001C3384  28AF0199  slti $t7, $a1, 0x199
+
+  001C3388  11E0001B  beqz $t7, 0x1c33f8
+
+  001C338C  240F0196  addiu $t7, $zero, 0x196
+
+  001C3390  10AF0012  beq $a1, $t7, 0x1c33dc
+
+  001C3394  28AF0197  slti $t7, $a1, 0x197
+
+  001C3398  11E00009  beqz $t7, 0x1c33c0
+
+  001C339C  240F0195  addiu $t7, $zero, 0x195
+
+  001C33A0  14AFFF81  bne $a1, $t7, 0x1c31a8
+
+  001C33A4  3C0F0035  lui $t7, 0x35
+
+  001C33A8  C6010034  lwc1 $f1, 0x34($s0)
+
+  001C33AC  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C33B0  C5C0012C  lwc1 $f0, 0x12c($t6)
+
+  001C33B4  46000840  add.s $f1, $f1, $f0
+
+  001C33B8  1000FF7B  b 0x1c31a8
+
+  001C33BC  E6010034  swc1 $f1, 0x34($s0)
+
+  001C33C0  3C0F0035  lui $t7, 0x35
+
+  001C33C4  C6010068  lwc1 $f1, 0x68($s0)
+
+  001C33C8  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C33CC  C5C00160  lwc1 $f0, 0x160($t6)
+
+  001C33D0  46000840  add.s $f1, $f1, $f0
+
+  001C33D4  1000FF74  b 0x1c31a8
+
+  001C33D8  E6010068  swc1 $f1, 0x68($s0)
+
+  001C33DC  3C0F0035  lui $t7, 0x35
+
+  001C33E0  C6010064  lwc1 $f1, 0x64($s0)
+
+  001C33E4  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C33E8  C5C0015C  lwc1 $f0, 0x15c($t6)
+
+  001C33EC  46000840  add.s $f1, $f1, $f0
+
+  001C33F0  1000FF6D  b 0x1c31a8
+
+  001C33F4  E6010064  swc1 $f1, 0x64($s0)
+
+  001C33F8  240F019A  addiu $t7, $zero, 0x19a
+
+  001C33FC  10AF000F  beq $a1, $t7, 0x1c343c
+
+  001C3400  28AF019B  slti $t7, $a1, 0x19b
+
+  001C3404  11E00007  beqz $t7, 0x1c3424
+
+  001C3408  3C0F0035  lui $t7, 0x35
+
+  001C340C  960C0046  lhu $t4, 0x46($s0)
+
+  001C3410  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3414  95CD014C  lhu $t5, 0x14c($t6)
+
+  001C3418  018D6021  addu $t4, $t4, $t5
+
+  001C341C  1000FF62  b 0x1c31a8
+
+  001C3420  A60C0046  sh $t4, 0x46($s0)
+
+  001C3424  960C0050  lhu $t4, 0x50($s0)
+
+  001C3428  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C342C  95CD0164  lhu $t5, 0x164($t6)
+
+  001C3430  018D6021  addu $t4, $t4, $t5
+
+  001C3434  1000FF5C  b 0x1c31a8
+
+  001C3438  A60C0050  sh $t4, 0x50($s0)
+
+  001C343C  3C0F0035  lui $t7, 0x35
+
+  001C3440  960C0048  lhu $t4, 0x48($s0)
+
+  001C3444  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3448  95CD014C  lhu $t5, 0x14c($t6)
+
+  001C344C  018D6021  addu $t4, $t4, $t5
+
+  001C3450  1000FF55  b 0x1c31a8
+
+  001C3454  A60C0048  sh $t4, 0x48($s0)
+
+  001C3458  3C0F0035  lui $t7, 0x35
+
+  001C345C  960C0044  lhu $t4, 0x44($s0)
+
+  001C3460  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C3464  95CD014C  lhu $t5, 0x14c($t6)
+
+  001C3468  018D6021  addu $t4, $t4, $t5
+
+  001C346C  1000FF4E  b 0x1c31a8
+
+  001C3470  A60C0044  sh $t4, 0x44($s0)
+
+  001C3474  240F01A5  addiu $t7, $zero, 0x1a5
+
+  001C3478  10AF0038  beq $a1, $t7, 0x1c355c
+
+  001C347C  28AF01A6  slti $t7, $a1, 0x1a6
+
+  001C3480  11E0001B  beqz $t7, 0x1c34f0
+
+  001C3484  240F019E  addiu $t7, $zero, 0x19e
+
+  001C3488  10AF0012  beq $a1, $t7, 0x1c34d4
+
+  001C348C  28AF019E  slti $t7, $a1, 0x19e
+
+  001C3490  15E0000A  bnez $t7, 0x1c34bc
+
+  001C3494  3C0F0035  lui $t7, 0x35
+
+  001C3498  240F01A3  addiu $t7, $zero, 0x1a3
+
+  001C349C  14AFFF42  bne $a1, $t7, 0x1c31a8
+
+  001C34A0  3C0F0035  lui $t7, 0x35
+
+  001C34A4  C601005C  lwc1 $f1, 0x5c($s0)
+
+  001C34A8  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C34AC  C5C00154  lwc1 $f0, 0x154($t6)
+
+  001C34B0  46000842  mul.s $f1, $f1, $f0
+
+  001C34B4  1000FF3C  b 0x1c31a8
+
+  001C34B8  E601005C  swc1 $f1, 0x5c($s0)
+
+  001C34BC  C6010038  lwc1 $f1, 0x38($s0)
+
+  001C34C0  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C34C4  C5C00120  lwc1 $f0, 0x120($t6)
+
+  001C34C8  46000840  add.s $f1, $f1, $f0
+
+  001C34CC  1000FF36  b 0x1c31a8
+
+  001C34D0  E6010038  swc1 $f1, 0x38($s0)
+
+  001C34D4  3C0F0035  lui $t7, 0x35
+
+  001C34D8  920C0030  lbu $t4, 0x30($s0)
+
+  001C34DC  8DEE2130  lw $t6, 0x2130($t7)
+
+  001C34E0  91CD0148  lbu $t5, 0x148($t6)
+
+  001C34E4  018D6021  addu $t4, $t4, $t5
+
+  001C34E8  1000FF2F  b 0x1c31a8
+
+  001C34EC  A20C0030  sb $t4, 0x30($s0)
+
+  001C34F0  240F021C  addiu $t7, $zero, 0x21c
+
+  001C34F4  10AF0012  beq $a1, $t7, 0x1c3540
+
+  001C34F8  28AF021D  slti $t7, $a1, 0x21d
+
+  001C34FC  11E00007  beqz $t7, 0x1c351c
+
+  001C3500  240F01A6  addiu $t7, $zero, 0x1a6
+
+  001C3504  14AFFF28  bne $a1, $t7, 0x1c31a8
+
+== callers
+
+001C31E8 is in the function starting 001C31E8
+
+  001C31E8: jumps []
+
+  001C31E8: data pointers []
+
+  001C31E8: lui/addiu loads []

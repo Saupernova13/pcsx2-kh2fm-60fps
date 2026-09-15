@@ -1,0 +1,14 @@
+# Commit the friction fix and input flush
+# (foreground run, transcript line 3513)
+--- input (line 3512) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+if ((git branch --show-current) -ne "feat/global-60fps-audit") { throw "wrong branch" }
+git add -- tools/mkfrictionfix.py tools/ratediff.py wip/working.pnach
+git commit -q -F "<session scratchpad>\kh2-commit-audit-3.txt"
+if (-not $?) { throw "commit failed" }
+git log --oneline -3; git status -sb
+--- result ---
+1b3af43 feat(physics): fix friction and velocity blending at 60fps for every mover
+57032f1 feat(physics): fix short hops at 60fps and add object and rate tracing tools
+d2d4694 feat(audit): add RAM rate diff, memory card reader and community address map
+## feat/global-60fps-audit

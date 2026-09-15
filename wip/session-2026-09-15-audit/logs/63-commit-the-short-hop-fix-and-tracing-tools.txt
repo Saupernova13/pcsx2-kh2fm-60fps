@@ -1,0 +1,13 @@
+# Commit the short-hop fix and tracing tools
+# (foreground run, transcript line 3338)
+--- input (line 3337) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+if ((git branch --show-current) -ne "feat/global-60fps-audit") { throw "wrong branch" }
+git add -- tools/objtrace.py tools/movetest.py tools/ratesweep.py tools/integrators.py tools/findplayer.py tools/mkjumpfix.py wip/working.pnach docs/global-audit.md
+git commit -q -F "<session scratchpad>\kh2-commit-audit-2.txt"
+if (-not $?) { throw "commit failed" }
+git log --oneline -2; git status -sb
+--- result ---
+57032f1 feat(physics): fix short hops at 60fps and add object and rate tracing tools
+d2d4694 feat(audit): add RAM rate diff, memory card reader and community address map
+## feat/global-60fps-audit

@@ -1,0 +1,14 @@
+# Launch PCSXROO with Kingdom Hearts II Final Mix
+# (foreground run, transcript line 2700)
+--- input (line 2698) ---
+$chd = "G:\Emulation\roms\ps2\Kingdom Hearts II - Final Mix+ (English Undub Patched).chd"
+if (-not (Test-Path $chd)) { Get-ChildItem "G:\Emulation\roms\ps2" -Filter "*Kingdom Hearts II*" | Select-Object FullName; throw "disc not at expected path" }
+& "%USERPROFILE%\Documents\GitHub\pcsxroo\bin\pcsxroo.exe" launch $chd --ready-timeout 60000
+"exit $LASTEXITCODE"
+& "%USERPROFILE%\Documents\GitHub\pcsxroo\bin\pcsxroo.exe" status
+--- result ---
+emulator ready on port 28110 (pid 21252)
+
+exit 0
+
+state    initializing

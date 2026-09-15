@@ -1,0 +1,41 @@
+# Verify the fix groups change nothing at 30fps
+# (foreground run, transcript line 3637)
+--- input (line 3636) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$grp = @("--group", "60 FPS - ball physics", "--group", "60 FPS - short hop", "--group", "60 FPS - friction")
+$scripts = @{
+  "aircombo" = "wait:6,hold:Circle:14,wait:4,tap:Cross,wait:6,tap:Cross,wait:6,tap:Cross,wait:6,tap:Cross,wait:60";
+  "tapjump" = "wait:6,hold:Circle:2,wait:60";
+  "groundcombo" = "wait:6,tap:Cross,wait:6,tap:Cross,wait:6,tap:Cross,wait:6,tap:Cross,wait:40"
+}
+foreach ($k in $scripts.Keys) {
+  python tools\objtrace.py capture "work\ot-noop-$k.npz" --obj 01A94440 --arms "30,30w" --script $scripts[$k] @grp | Select-Object -Last 1
+}
+$py = @'
+import numpy as np
+for k in ("aircombo", "tapjump", "groundcombo"):
+    z = np.load(f"work/ot-noop-{k}.npz")
+    a, b = z["30_block"], z["30w_block"]
+    with np.errstate(all="ignore"):
+        fa, fb = a.view("<f4").astype(np.float64), b.view("<f4").astype(np.float64)
+    pos = slice(0x540 // 4, 0x54C // 4)
+    dpos = np.nanmax(np.abs(fa[:, pos] - fb[:, pos]))
+    vel = slice(0x20 // 4, 0x2C // 4)
+    dvel = np.nanmax(np.abs(fa[:, vel] - fb[:, vel]))
+    words = int(np.sum(a != b))
+    print(f"{k:12s} 30fps vs 30fps+groups: max |position diff| {dpos:.6f}  max |velocity diff| {dvel:.6f}  differing words {words}")
+'@
+$f = "$env:TEMP\kh2_noop_check.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+saved work\ot-noop-tapjump.npz
+
+saved work\ot-noop-aircombo.npz
+
+saved work\ot-noop-groundcombo.npz
+
+aircombo     30fps vs 30fps+groups: max |position diff| 0.000000  max |velocity diff| 0.000000  differing words 0
+
+tapjump      30fps vs 30fps+groups: max |position diff| 0.000000  max |velocity diff| 0.000000  differing words 0
+
+groundcombo  30fps vs 30fps+groups: max |position diff| 0.000000  max |velocity diff| 0.000000  differing words 0

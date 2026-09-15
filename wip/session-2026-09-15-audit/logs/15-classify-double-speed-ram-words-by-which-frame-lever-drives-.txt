@@ -1,0 +1,78 @@
+# Classify double-speed RAM words by which frame lever drives them
+# (foreground run, transcript line 2760)
+--- input (line 2751) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+python tools\ratediff.py classify work\rd-sandlot-idle.npz --top 30 --save rd-sandlot-idle
+"exit $LASTEXITCODE"
+--- result ---
+%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\tools\ratediff.py:115: RuntimeWarning: invalid value encountered in subtract
+
+  h1, h2 = m - a, b - m
+
+%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\tools\ratediff.py:117: RuntimeWarning: invalid value encountered in subtract
+
+  moved = np.abs(b - a) > 1e-4
+
+%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\tools\ratediff.py:118: RuntimeWarning: invalid value encountered in subtract
+
+  return b - a, ok & steady & moved, a
+
+
+
+===== float: 0 words at 2x under [60 FPS]
+
+  0 back to 1x with the stock accumulator threshold (threshold-driven)
+
+  0 contiguous runs, largest first:
+
+  by 64K page: 
+
+  0 still 2x with the stock threshold (other per-tick code)
+
+  0 contiguous runs, largest first:
+
+  by 64K page: 
+
+  wrote %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\work\rd-sandlot-idle-float.txt
+
+
+
+===== int32: 13 words at 2x under [60 FPS]
+
+  4 back to 1x with the stock accumulator threshold (threshold-driven)
+
+  2 contiguous runs, largest first:
+
+    01A61708 x2   start=    34705408  d30=      245760  dcmp=      491520
+
+    01A61BA8 x2   start=    34680832  d30=      245760  dcmp=      491520
+
+  by 64K page: 01A60000:4
+
+  9 still 2x with the stock threshold (other per-tick code)
+
+  9 contiguous runs, largest first:
+
+    01AE6348 x1   start=     -196240  d30=      -75840  dcmp=     -151680
+
+    01AE6358 x1   start=     -195440  d30=      -75840  dcmp=     -151680
+
+    01AE6368 x1   start=     -196240  d30=      -75840  dcmp=     -151680
+
+    01AE6378 x1   start=     -195440  d30=      -75840  dcmp=     -151680
+
+    01E2D9FC x1   start=       40807  d30=         120  dcmp=         240
+
+    01E2DA24 x1   start=       40806  d30=         120  dcmp=         240
+
+    01E37200 x1   start=       40807  d30=         120  dcmp=         240
+
+    01FFF8A8 x1   start=     -194176  d30=      -75840  dcmp=     -151680
+
+    01FFFAB8 x1   start=     -195440  d30=      -75840  dcmp=     -151680
+
+  by 64K page: 01AE0000:4  01E20000:2  01FF0000:2  01E30000:1
+
+  wrote %USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps\work\rd-sandlot-idle-int32.txt
+
+exit 0

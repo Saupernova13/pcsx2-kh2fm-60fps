@@ -1,0 +1,196 @@
+# Find where the vsync counter callback is registered in the ELF
+# (foreground run, transcript line 859)
+--- input (line 851) ---
+$env:PYTHONPATH = "$env:USERPROFILE\Documents\GitHub\pcsxroo\pcsxroo"; python -c @"
+import struct
+from ps2ee.disasm import decode
+p = r'<session scratchpad>\SLPM_666.75'
+elf = open(p, 'rb').read()
+BASE, OFF, SIZE = 0x00100000, 0x1000, 0x0027A800
+def w(a): return struct.unpack_from('<I', elf, OFF + a - BASE)[0]
+def dump(lo, hi):
+    print(f'---- {lo:08X}..{hi:08X}')
+    for a in range(lo, hi, 4):
+        print(f'{a:08X}  {w(a):08X}  {decode(w(a), a)}')
+targets = {0x0014CF18, 0x0014CF88}
+print('---- lui/addiu pairs building 0014CF18 or 0014CF88, and jal to them')
+for a in range(BASE, BASE + SIZE, 4):
+    x = w(a)
+    if (x >> 26) == 0x03 and ((x & 0x03FFFFFF) << 2) in targets:
+        print(f'   jal at {a:08X} -> {(x & 0x03FFFFFF) << 2:08X}')
+    if (x >> 26) != 0x0F:
+        continue
+    rt = (x >> 16) & 0x1F
+    hi = x & 0xFFFF
+    for k in range(1, 8):
+        b = a + 4 * k
+        v = w(b)
+        if (v >> 26) == 0x09 and ((v >> 21) & 0x1F) == rt:
+            imm = v & 0xFFFF
+            imm = imm - 0x10000 if imm & 0x8000 else imm
+            ea = ((hi << 16) + imm) & 0xFFFFFFFF
+            if ea in targets:
+                print(f'   {b:08X}  {decode(v, b)}  -> {ea:08X}')
+                dump(a - 24, b + 24)
+            break
+dump(0x0014CF40, 0x0014CFA8)
+dump(0x00102788, 0x001027D0)
+"@
+--- result ---
+---- lui/addiu pairs building 0014CF18 or 0014CF88, and jal to them
+
+   0014D028  addiu $a0, $a0, -0x30e8  -> 0014CF18
+
+---- 0014D008..0014D040
+
+0014D008  27BDFFF0  addiu $sp, $sp, -0x10
+
+0014D00C  FFBF0000  sd $ra, ($sp)
+
+0014D010  0C0533F2  jal 0x14cfc8
+
+0014D014  00000000  nop
+
+0014D018  0C053242  jal 0x14c908
+
+0014D01C  00000000  nop
+
+0014D020  3C040015  lui $a0, 0x15
+
+0014D024  0C0BCCFC  jal 0x2f33f0
+
+0014D028  2484CF18  addiu $a0, $a0, -0x30e8
+
+0014D02C  0C0534C2  jal 0x14d308
+
+0014D030  00000000  nop
+
+0014D034  3C0F0033  lui $t7, 0x33
+
+0014D038  DFBF0000  ld $ra, ($sp)
+
+0014D03C  8DE4B91C  lw $a0, -0x46e4($t7)
+
+   0014D04C  addiu $a3, $a3, -0x3078  -> 0014CF88
+
+---- 0014D02C..0014D064
+
+0014D02C  0C0534C2  jal 0x14d308
+
+0014D030  00000000  nop
+
+0014D034  3C0F0033  lui $t7, 0x33
+
+0014D038  DFBF0000  ld $ra, ($sp)
+
+0014D03C  8DE4B91C  lw $a0, -0x46e4($t7)
+
+0014D040  3C06000C  lui $a2, 0xc
+
+0014D044  3C070015  lui $a3, 0x15
+
+0014D048  0000282D  move $a1, $zero
+
+0014D04C  24E7CF88  addiu $a3, $a3, -0x3078
+
+0014D050  34C63500  ori $a2, $a2, 0x3500
+
+0014D054  080409E2  j 0x102788
+
+0014D058  27BD0010  addiu $sp, $sp, 0x10
+
+0014D05C  00000000  nop
+
+0014D060  27BDFFC0  addiu $sp, $sp, -0x40
+
+---- 0014CF40..0014CFA8
+
+0014CF40  ADAF9E04  sw $t7, -0x61fc($t5)
+
+0014CF44  8D8E9E08  lw $t6, -0x61f8($t4)
+
+0014CF48  25CE0001  addiu $t6, $t6, 1
+
+0014CF4C  AD8E9E08  sw $t6, -0x61f8($t4)
+
+0014CF50  0C05353A  jal 0x14d4e8
+
+0014CF54  00000000  nop
+
+0014CF58  0C0C1634  jal 0x3058d0
+
+0014CF5C  0000202D  move $a0, $zero
+
+0014CF60  0C0C1634  jal 0x3058d0
+
+0014CF64  24040002  addiu $a0, $zero, 2
+
+0014CF68  0000000F  sync
+
+0014CF6C  42000038  .word
+
+0014CF70  DFBF0000  ld $ra, ($sp)
+
+0014CF74  0000102D  move $v0, $zero
+
+0014CF78  03E00008  jr $ra
+
+0014CF7C  27BD0010  addiu $sp, $sp, 0x10
+
+0014CF80  03E00008  jr $ra
+
+0014CF84  00000000  nop
+
+0014CF88  27BDFFF0  addiu $sp, $sp, -0x10
+
+0014CF8C  FFBF0000  sd $ra, ($sp)
+
+0014CF90  0C0533E0  jal 0x14cf80
+
+0014CF94  00000000  nop
+
+0014CF98  0C06DFE2  jal 0x1b7f88
+
+0014CF9C  00000000  nop
+
+0014CFA0  0C0BBDF2  jal 0x2ef7c8
+
+0014CFA4  00000000  nop
+
+---- 00102788..001027D0
+
+00102788  27BDFFD0  addiu $sp, $sp, -0x30
+
+0010278C  FFBF0028  sd $ra, 0x28($sp)
+
+00102790  FFB00000  sd $s0, ($sp)
+
+00102794  FFB10008  sd $s1, 8($sp)
+
+00102798  FFB20010  sd $s2, 0x10($sp)
+
+0010279C  FFB30018  sd $s3, 0x18($sp)
+
+001027A0  0080882D  move $s1, $a0
+
+001027A4  FFB40020  sd $s4, 0x20($sp)
+
+001027A8  00E0902D  move $s2, $a3
+
+001027AC  00C0982D  move $s3, $a2
+
+001027B0  8C8F0000  lw $t7, ($a0)
+
+001027B4  00A0A02D  move $s4, $a1
+
+001027B8  03E0302D  move $a2, $ra
+
+001027BC  8DE20000  lw $v0, ($t7)
+
+001027C0  0040F809  jalr $v0
+
+001027C4  24050048  addiu $a1, $zero, 0x48
+
+001027C8  0040802D  move $s0, $v0
+
+001027CC  0040202D  move $a0, $v0

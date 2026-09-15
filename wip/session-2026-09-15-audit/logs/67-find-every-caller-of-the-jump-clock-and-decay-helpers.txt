@@ -1,0 +1,38 @@
+# Find every caller of the jump clock and decay helpers
+# (foreground run, transcript line 3369)
+--- input (line 3366) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+"== callers 0017C870"; python tools\elfscan.py callers 0017C870
+"== callers 00184540"; python tools\elfscan.py callers 00184540
+--- result ---
+== callers 0017C870
+
+0017C870 is in the function starting 0017C81C
+
+  0017C81C: jumps []
+
+  0017C81C: data pointers []
+
+  0017C81C: lui/addiu loads []
+
+  0017C870: jumps ['jal 0017C914', 'jal 001B2C88', 'jal 001B6F6C', 'jal 001CE800', 'jal 002EC48C']
+
+  0017C870: data pointers []
+
+  0017C870: lui/addiu loads []
+
+== callers 00184540
+
+00184540 is in the function starting 0018453C
+
+  0018453C: jumps []
+
+  0018453C: data pointers []
+
+  0018453C: lui/addiu loads []
+
+  00184540: jumps ['jal 0017C2B8', 'jal 0017C8AC', 'jal 0019FE60', 'jal 001A0AE0', 'jal 001B219C', 'jal 001B2B30', 'jal 001C9510', 'jal 001D23B4', 'jal 001D2628', 'jal 001D2E48', 'jal 002BEC54', 'jal 002C1A38', 'jal 002D6EF4', 'jal 002E1928', 'jal 002E2F28', 'jal 002EAE44', 'jal 002EB6B4', 'jal 002EC830', 'jal 002ED148']
+
+  00184540: data pointers []
+
+  00184540: lui/addiu loads []

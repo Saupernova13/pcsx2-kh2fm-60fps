@@ -1,0 +1,166 @@
+# Find and disassemble the caller that switches Sora's jump phase
+# (foreground run, transcript line 3234)
+--- input (line 3233) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$py = @'
+import sys, struct
+sys.path.insert(0, "tools")
+import _bootstrap
+import ratediff
+from game import sandlot
+roo = sandlot.connect()
+OBJ = 0x01A94440
+ratediff.start_arm(roo, "60", 1)
+roo.frame_advance(6)
+roo.input_set("Circle"); roo.frame_advance(6); roo.input_release()
+roo.frame_advance(5)
+roo.mc_clear()
+roo.mc_add(OBJ + 0xD4, OBJ + 0xD8, on=("write",))
+try:
+    seq = roo.seq(); roo.resume(); st = roo.wait(seq, timeout_ms=4000)
+    r = roo.regs("GPR")
+    sp = r["sp"]
+    print(f"stop pc {st.pc:08X} sp {sp:08X} f-args: a0 {r['a0']:08X}")
+    words = struct.unpack("<16I", roo.read_bytes(sp, 64))
+    print("stack: " + " ".join(f"{w:08X}" for w in words))
+    saved_ra = words[2]
+    print(f"saved ra (caller of 0017C42C) {saved_ra:08X}")
+    fr = roo.read_bytes(0x01A94440 + 0xC0, 0x28)
+    print("obj +C0..+E4 floats: " + " ".join(f"{v:.3f}" for v in struct.unpack("<10f", fr)))
+    for a, text in roo.dis(saved_ra - 160, 60):
+        print(f"  {'->' if a == saved_ra else '  '} {a:08X}  {text}")
+finally:
+    roo.mc_clear()
+    if not roo.paused():
+        roo.pause()
+'@
+$f = "$env:TEMP\kh2_jump_caller.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+stop pc 0017C460 sp 003810B0 f-args: a0 01A94440
+
+stack: 01A94440 00000000 0017A950 00000000 01A94440 00000000 0017C7F4 00000000 001B8EBC 00000000 0034D6C0 00000000 01A94440 00000000 FFFFFFFF FFFFFFFF
+
+saved ra (caller of 0017C42C) 0017A950
+
+obj +C0..+E4 floats: 0.000 0.000 -0.000 1.000 0.000 30.108 0.000 -5.102 0.000 -0.467
+
+     0017A8B0  addiu	sp, 0x30
+
+     0017A8B4  nop
+
+     0017A8B8  addiu	sp, -0x10
+
+     0017A8BC  li	a0, 0x1
+
+     0017A8C0  sd	ra,(sp)
+
+     0017A8C4  li	a1, 0xFFFF
+
+     0017A8C8  ld	ra,(sp)
+
+     0017A8CC  j	->$0x0017A7E0
+
+     0017A8D0  addiu	sp, 0x10
+
+     0017A8D4  nop
+
+     0017A8D8  addiu	sp, -0x10
+
+     0017A8DC  dmove	a0, zero
+
+     0017A8E0  sd	ra,(sp)
+
+     0017A8E4  li	a1, 0xFFFF
+
+     0017A8E8  ld	ra,(sp)
+
+     0017A8EC  j	->$0x0017A7E0
+
+     0017A8F0  addiu	sp, 0x10
+
+     0017A8F4  nop
+
+     0017A8F8  addiu	sp, -0x20
+
+     0017A8FC  sd	s0, 0x  10(sp)
+
+     0017A900  sd	ra, 0x  18(sp)
+
+     0017A904  dmove	s0, a1
+
+     0017A908  lq	t0,(a2)
+
+     0017A90C  sq	t0,(sp)
+
+     0017A910  dmove	a1, sp
+
+     0017A914  jal	->$0x0017C4C8
+
+     0017A918  dmove	a0, s0
+
+     0017A91C  dmove	a0, s0
+
+     0017A920  jal	->$0x0016BD60
+
+     0017A924  li	a1, 0x1
+
+     0017A928  ld	s0, 0x  10(sp)
+
+     0017A92C  ld	ra, 0x  18(sp)
+
+     0017A930  jr	->ra
+
+     0017A934  addiu	sp, 0x20
+
+     0017A938  addiu	sp, -0x10
+
+     0017A93C  dmove	a0, a1
+
+     0017A940  sd	s0,(sp)
+
+     0017A944  sd	ra, 0x   8(sp)
+
+     0017A948  jal	->$0x0017C430
+
+     0017A94C  dmove	s0, a1
+
+  -> 0017A950  dmove	a0, s0
+
+     0017A954  ld	ra, 0x   8(sp)
+
+     0017A958  ld	s0,(sp)
+
+     0017A95C  li	a1, 0x1
+
+     0017A960  j	->$0x0016BD60
+
+     0017A964  addiu	sp, 0x10
+
+     0017A968  addiu	sp, -0x20
+
+     0017A96C  lui	t5, 0x01C6
+
+     0017A970  sd	s0,(sp)
+
+     0017A974  sd	s1, 0x   8(sp)
+
+     0017A978  sd	ra, 0x  10(sp)
+
+     0017A97C  lb	t7, 0x 500(t5)
+
+     0017A980  bnez	t7, ->$0x0017A9DC
+
+     0017A984  dmove	s0, a0
+
+     0017A988  mtc1	zero, f00
+
+     0017A98C  lui	s1, 0x01C6
+
+     0017A990  addiu	t6,s1, 0x510
+
+     0017A994  li	t7, 0x1
+
+     0017A998  swc1	f00, 0x   C(t6)
+
+     0017A99C  lui	a0, 0x0018

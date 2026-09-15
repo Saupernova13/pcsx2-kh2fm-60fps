@@ -1,0 +1,165 @@
+gametitle=Kingdom Hearts II Final Mix+ (NTSC-J, English undub) SLPM-66675 FAF99301 - pcsx2-kh2fm-60fps additions
+
+// pcsx2-kh2fm-60fps - this project's groups for Kingdom Hearts II Final Mix+.
+// ---------------------------------------------------------------------------
+// This is NOT a complete patch file and does not replace PCSX2's. It holds only
+// the groups this project wrote. tools/install.py adds them to the database
+// patch PCSX2 already has for the game - patches/SLPM-66675_FAF99301.pnach if it
+// exists, otherwise the entry in PCSX2's resources/patches.zip - and leaves every
+// other author's group in that file untouched.
+//
+// Requires, from PCSX2's own database patch (not shipped here, not ours):
+//   [60 FPS]            by PeterDelta   needed by every group below
+//   [Widescreen 16:9]   by ElHecht      the base the 19.5:9 group is built from
+//
+// The 19.5:9 widescreen group is not in this file: it is ElHecht's hack with five
+// words changed, so the repo keeps only those changes, in
+// patch/widescreen-19.5x9-s24.json, and the installer builds the group from the
+// 16:9 group on the user's own machine.
+//
+// Groups (enable all of them, together with 60 FPS; each does nothing at 30fps):
+//   60 FPS - ball physics    thrown props: drag and gravity at real speed
+//   60 FPS - short hop       released jumps rise as high as at 30fps
+//   60 FPS - friction        friction, lunges and acceleration at real speed for
+//                            everything that uses the shared velocity step
+//
+// KNOWN NOT FIXED:
+//   Juggling the Sandlot ball by mashing: with every group on, the ball still stays
+//   up longer than at 30fps. Sora's swings land weak hits and side swipes that the
+//   30fps game does not, after contact push-outs leave the ball a few units over.
+//   Collision resolution at the finer step, not a rate bug found yet.
+//   Effects run at double speed: [60 FPS] also lowers the particle step threshold.
+//   Enemy movement is covered by the friction group where enemies use the shared
+//   velocity step, but no enemy has been measured. See docs/findings.md.
+
+// 60 FPS - ball physics. Derived 2026-09-15 on the Sandlot ball (save state 1),
+// A/B against the unpatched game at 30fps in PCSXROO: same state, same input.
+//
+// The airborne motion routine for this prop class (vtable 00363410, +0x1C =
+// 002EA450) updates velocity once per game tick with no delta term:
+//   horizontal speed *= [[00352130]+0x18]  (0.8)
+//   if rising:  vy   *= [[00352130]+0x20]  (0.8)   002EA548
+//   vy = min(vy + [00363404] (0.408163), [obj+0x120] (10.0))
+// but moves the ball by velocity * delta (002EAA04), and the 60 FPS group sets
+// delta to 1.0. So at 60fps drag and gravity act twice per real second.
+// Measured, 60fps vs 30fps: peak 209 vs 342, fall 0.355 vs 0.187 per vsync^2,
+// airtime 47 vs 88 vsyncs - the ball barely clears Sora and drops in half the time.
+//
+// Fix: while the 60 FPS group is active ([00349E1C] == 0), run that velocity
+// block only on even game ticks ([0032B920] & 1). Two 60 Hz ticks then do exactly
+// what one 30 Hz tick did. Hook at 002EA498 into a cave at 000FE000 - zero in the
+// game and in save state 1, and clear of Swap X and O at 000FD050..000FD090.
+// Nothing else in the game branches into the skipped block. The three words at
+// 000FE030..000FE03C are the game's own instructions from 002EA4A0..002EA4A8,
+// replayed because the hook overwrote the branch in front of them.
+//
+// Verified: one hit, at both game-tick phases, matches 30fps - peak 342-344 vs
+// 341.8, arch contact 14 vs 14 vsyncs, airtime 88-89 vs 88, fall 0.189 vs 0.187.
+// Side-hit horizontal decay also matches (0.8 per 30 Hz tick).
+//
+// Needs [60 FPS] enabled. Without it the gate never fires.
+[60 FPS - ball physics]
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+description=Ball and prop juggling physics at real speed with 60 FPS. Needs 60 FPS enabled.
+patch=1,EE,000FE000,word,3C080035 // lui  t0, 0x35
+patch=1,EE,000FE004,word,8D089E1C // lw   t0, -0x61E4(t0)     [00349E1C] extra vsync wait: 0 = 60fps
+patch=1,EE,000FE008,word,15000007 // bnez t0, update          30fps: never gate
+patch=1,EE,000FE00C,word,3C090033 // lui  t1, 0x33
+patch=1,EE,000FE010,word,8D29B920 // lw   t1, -0x46E0(t1)     [0032B920] game tick counter
+patch=1,EE,000FE014,word,31290001 // andi t1, t1, 1
+patch=1,EE,000FE018,word,11200003 // beqz t1, update          even tick: update as normal
+patch=1,EE,000FE01C,word,00000000 // nop
+patch=1,EE,000FE020,word,080BA95D // j    002EA574            odd tick: keep last velocity
+patch=1,EE,000FE024,word,00000000 // nop
+patch=1,EE,000FE028,word,13B60003 // beq  sp, s6, L1          replay the overwritten beql
+patch=1,EE,000FE02C,word,00000000 // nop
+patch=1,EE,000FE030,word,7AC80000 // lq   t0, 0(s6)            (copied from 002EA4A0)
+patch=1,EE,000FE034,word,7FA80000 // sq   t0, 0(sp)            (copied from 002EA4A4)
+patch=1,EE,000FE038,word,080BA92B // j    002EA4AC
+patch=1,EE,000FE03C,word,AFA00004 // sw   zero, 4(sp)          (copied from 002EA4A8, both paths end with it)
+patch=1,EE,002EA498,word,0803F800 // j    000FE000          (was 53B60004 beql sp, s6)
+patch=1,EE,002EA49C,word,00000000 // nop                      (was AFA00004 sw zero, 4(sp))
+
+// 60 FPS - short hop. Derived 2026-09-15 on Sora in Twilight Town, A/B against
+// the unpatched game at 30fps in PCSXROO: same state, same input.
+//
+// A jump is a closed-form arc on a clock (obj+0xD0) that advances by delta, so a
+// held jump already matches 30fps. Releasing the button cuts the rise into a short
+// apex arc once the clock is past 6.0 (jump controller 0017C690, [0036C518]). At
+// 30fps the clock steps 2, 4, 6, 8, so a tap cuts at 8; at 60fps it cuts at 7, one
+// unit of rise early: a tap peaked 103.5 instead of 115.1. This lets the cut happen
+// only on an even clock - unchanged at 30fps, where the clock is always even.
+//
+// Hook at 0017C798 into a cave at 000FE040, after the ball physics cave. Nothing
+// branches into the displaced words; the delay-slot lui is replayed on both paths.
+[60 FPS - short hop]
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+description=Short hops and released jumps rise as high as at 30fps. Needs 60 FPS enabled.
+patch=1,EE,000FE040,word,46010034 // c.olt.s f0, f1        6.0 < clock (copied from 0017C798)
+patch=1,EE,000FE044,word,45000006 // bc1f   not_yet
+patch=1,EE,000FE048,word,00000000 // nop
+patch=1,EE,000FE04C,word,460008E4 // cvt.w.s f3, f1        clock as an integer
+patch=1,EE,000FE050,word,44081800 // mfc1   t0, f3
+patch=1,EE,000FE054,word,31080001 // andi   t0, t0, 1
+patch=1,EE,000FE058,word,11000004 // beq    t0, zero, go   even: cut as the game does
+patch=1,EE,000FE05C,word,00000000 // nop
+patch=1,EE,000FE060,word,0805F207 // j      0017C81C       not_yet: odd, or not past 6.0
+patch=1,EE,000FE064,word,3C0F0037 // lui    t7, 0x37       (copied from 0017C7A0, the displaced delay slot)
+patch=1,EE,000FE068,word,00000000 // nop
+patch=1,EE,000FE06C,word,0805F1E9 // j      0017C7A4       go
+patch=1,EE,000FE070,word,3C0F0037 // lui    t7, 0x37       (copied from 0017C7A0)
+patch=1,EE,0017C798,word,0803F810 // j      000FE040       (was 46010034 c.olt.s f0, f1)
+patch=1,EE,0017C79C,word,00000000 // nop                   (was 4500001F bc1f 0017C81C)
+
+// 60 FPS - friction. Derived 2026-09-15 on Sora in Twilight Town, A/B against the
+// unpatched game at 30fps in PCSXROO: same state, same input.
+//
+// 00184540 is the shared velocity step behind 19 motion routines (Sora on the
+// ground and in the air, objects, enemies). Once per frame, with no delta, it
+// blends velocity toward the input target by k1 or decays it by k2, then moves by
+// velocity * delta. At 60fps both ran twice per real second: an air-combo lunge
+// travelled 131.4 instead of 195.0, a ground combo 286.6 instead of 244.5.
+//
+// Fix: at 60fps use sqrt(k1) and sqrt(k2) - the same decay per real second. The
+// blend settles on the target itself, so top speeds are unchanged; nothing
+// depends on tick phase. Unchanged at 30fps.
+//
+// Hook at 00184558 into a cave at 000FE080, after the short hop cave.
+[60 FPS - friction]
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+description=Friction, lunges and acceleration at real speed for every object that uses the shared velocity step. Needs 60 FPS enabled.
+patch=1,EE,000FE080,word,46006506 // mov.s  f20, f12       (copied from 00184558)
+patch=1,EE,000FE084,word,3C080035 // lui    t0, 0x35
+patch=1,EE,000FE088,word,8D089E1C // lw     t0, -0x61E4(t0) [00349E1C] vsync wait: 0 = 60fps
+patch=1,EE,000FE08C,word,15000009 // bnez   t0, back       30fps: unchanged
+patch=1,EE,000FE090,word,00000000 // nop
+patch=1,EE,000FE094,word,4600A036 // c.le.s f20, f0        f0 is zero here
+patch=1,EE,000FE098,word,45010002 // bc1t   skip           k1 <= 0: leave it
+patch=1,EE,000FE09C,word,00000000 // nop
+patch=1,EE,000FE0A0,word,46140504 // sqrt   f20 <- f20     k1 per 60 Hz frame (R5900: operand in ft)
+patch=1,EE,000FE0A4,word,4600A836 // c.le.s f21, f0        skip:
+patch=1,EE,000FE0A8,word,45010002 // bc1t   back           k2 <= 0: leave it
+patch=1,EE,000FE0AC,word,00000000 // nop
+patch=1,EE,000FE0B0,word,46150544 // sqrt   f21 <- f21     k2 per 60 Hz frame (R5900: operand in ft)
+patch=1,EE,000FE0B4,word,08061158 // j      00184560       back:
+patch=1,EE,000FE0B8,word,00000000 // nop
+patch=1,EE,00184558,word,0803F820 // j      000FE080       (was 46006506 mov.s f20, f12; delay slot keeps sd s1)
+
+// NEVER SHIP. The other candidate for the same bug (FIX-B in docs/findings.md):
+// scale the per-tick constants instead of gating the update. Rising drag becomes
+// sqrt(0.8) by rewriting the multiply in place, and gravity is halved in data
+// (single reader, 002EA55C). No code cave. It passed the single-hit acceptance
+// test at both tick phases (peak 342.9, contact 14, airtime 89, fall 0.1889) but:
+//   - it leaves the per-tick horizontal decay ([[00352130]+0x18], 0.8) and the
+//     horizontal floor uncompensated, so side hits still slow twice as fast;
+//   - in free flight it peaks 5.5% low (394.6 vs 417.6, simulated), because the
+//     semi-implicit step order does not reduce to the 30Hz step;
+//   - it is active at 30fps too, where it would halve the ball's physics.
+// Enabled together with [60 FPS - ball physics] it compensates twice.
+[EXPERIMENT ball physics constant scaling]
+author=Claude, from the 2026-09-15 PCSXROO A/B investigation
+description=Withdrawn alternative to 60 FPS - ball physics. Never enable.
+patch=1,EE,002EA548,word,46000004 // sqrt.s f00, f00          (was mul.s f00, f03, f00)
+patch=1,EE,002EA54C,word,460018C2 // mul.s  f03, f03, f00     (was mov.s f03, f00)
+patch=1,EE,002EA550,word,E6430024 // swc1   f03, 0x24(s2)     (was swc1 f00, 0x24(s2))
+patch=1,EE,00363404,word,3E50FAC6 // gravity 0.408163 -> 0.204082 (single reader 002EA55C)

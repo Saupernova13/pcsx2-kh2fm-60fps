@@ -1,0 +1,67 @@
+# Read stock timing values from the ELF
+# (foreground run, transcript line 515)
+--- input (line 512) ---
+python -c @"
+import struct
+p = r'<session scratchpad>\SLPM_666.75'
+elf = open(p, 'rb').read()
+e_phoff, = struct.unpack_from('<I', elf, 0x1C)
+e_phentsize, e_phnum = struct.unpack_from('<HH', elf, 0x2A)
+segs = []
+for i in range(e_phnum):
+    t, off, vaddr, paddr, filesz, memsz, flags, align = struct.unpack_from('<8I', elf, e_phoff + i * e_phentsize)
+    print(f'seg type {t} off {off:08X} vaddr {vaddr:08X} filesz {filesz:08X} memsz {memsz:08X} flags {flags}')
+    if t == 1:
+        segs.append((vaddr, off, filesz, memsz))
+def at(a):
+    for v, o, fs, ms in segs:
+        if v <= a < v + fs:
+            return struct.unpack_from('<I', elf, o + a - v)[0]
+        if v <= a < v + ms:
+            return 'bss'
+    return None
+for a in (0x349E08, 0x349E0C, 0x349E10, 0x349E14, 0x349E18, 0x349E1C, 0x349E20, 0x36B0EC, 0x36B0F0, 0x36B0F4, 0x36B0F8, 0x36B0FC, 0x36EF20, 0x352BE0, 0x32BA24, 0x36A0BC):
+    w = at(a)
+    if isinstance(w, int):
+        print(f'{a:08X}  {w:08X}  f={struct.unpack(\"<f\", struct.pack(\"<I\", w))[0]:.6f}')
+    else:
+        print(f'{a:08X}  {w}')
+"@
+--- result ---
+seg type 1 off 00001000 vaddr 00100000 filesz 0027A800 memsz 01D4C868 flags 7
+
+seg type 1 off 0027C000 vaddr 01F18000 filesz 00000000 memsz 00000098 flags 5
+
+seg type 1 off 00281EF4 vaddr 01E50000 filesz 00000400 memsz 000C8000 flags 5
+
+00349E08  00000000  f=0.000000
+
+00349E0C  3F800000  f=1.000000
+
+00349E10  3F800000  f=1.000000
+
+00349E14  3F800000  f=1.000000
+
+00349E18  3F800000  f=1.000000
+
+00349E1C  00000000  f=0.000000
+
+00349E20  00000001  f=0.000000
+
+0036B0EC  3F800000  f=1.000000
+
+0036B0F0  3F800000  f=1.000000
+
+0036B0F4  40000000  f=2.000000
+
+0036B0F8  40C00000  f=6.000000
+
+0036B0FC  3F800000  f=1.000000
+
+0036EF20  40000000  f=2.000000
+
+00352BE0  00000000  f=0.000000
+
+0032BA24  00000000  f=0.000000
+
+0036A0BC  43D00000  f=416.000000

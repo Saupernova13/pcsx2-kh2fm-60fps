@@ -1,0 +1,21 @@
+# Wait for PCSXROO to finish booting the game
+# (foreground run, transcript line 2717)
+--- input (line 2715) ---
+$py = @'
+import sys, time
+sys.path.insert(0, r"%USERPROFILE%\Documents\GitHub\pcsxroo\pcsxroo")
+from ps2ee.roo import Roo
+r = Roo().connect()
+t0 = time.time()
+while time.time() - t0 < 110:
+    st = r.status()
+    state = st.get("vm_state") or st.get("state")
+    if state in ("running", "paused"):
+        break
+    time.sleep(2)
+print({k: st.get(k) for k in ("vm_state", "state", "game", "serial", "crc", "title") if k in st} or st)
+'@
+$f = "$env:TEMP\kh2_wait_boot.py"; Set-Content -Path $f -Value $py -Encoding utf8
+python $f
+--- result ---
+{'vm_state': 'running', 'game': {'serial': 'SLPM-66675', 'title': 'キングダム ハーツ Ⅱ - ファイナル ミックス＋ [通常版] [ディスク 1]', 'version': '1.01', 'crc': 4210660097, 'crc_hex': '0xfaf99301'}}

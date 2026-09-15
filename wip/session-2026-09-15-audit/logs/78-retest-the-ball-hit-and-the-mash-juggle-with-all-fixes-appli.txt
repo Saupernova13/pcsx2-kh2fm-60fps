@@ -1,0 +1,32 @@
+# Retest the ball hit and the mash juggle with all fixes applied
+# (foreground run, transcript line 3507)
+--- input (line 3506) ---
+Set-Location "%USERPROFILE%\Documents\GitHub\pcsx2-kh2fm-60fps"
+$g = @("--group", "60 FPS - ball physics", "--group", "60 FPS - short hop", "--group", "60 FPS - friction")
+"==================== ball: one hit, all groups"
+python tools\movetest.py --pos 01ADEAC0 --script "wait:6,hold:LLeft+LDown:8,tap:Cross,wait:170" --what jump @g
+"==================== ball: 6 s mash, all groups"
+$mash = "wait:6,hold:LLeft+LDown:8" + (",tap:Cross,wait:6" * 45)
+python tools\movetest.py --pos 01ADEAC0 --script $mash --what all --air 5 --save work\mash-allfix.npz
+"exit $LASTEXITCODE"
+--- result ---
+Exit code 1
+==================== ball: one hit, all groups
+
+  30fps oracle     peak   341.85 at  71  air  88  fall   0.1953  path    61.53  net    44.48
+
+  60fps            peak   208.82 at  55  air  47  fall   0.3666  path    55.13  net    40.49
+
+  60fps + fix      peak   342.24 at  70  air  88  fall   0.1966  path    54.03  net    42.79
+
+PASS: 60fps + fix matches 30fps within tolerance
+
+==================== ball: 6 s mash, all groups
+
+  30fps oracle     peak   345.90 at 227  air 246  fall   0.1953  path   190.90  net    78.51
+
+  60fps            peak   403.92 at 269  air 278  fall   0.1724  path   629.57  net   370.42
+
+FAIL: 60fps unpatched differs from 30fps: peak 403.92 vs 345.90; airtime 278 vs 246; fall 0.1724 vs 0.1953; path 629.57 vs 190.90
+
+exit 1

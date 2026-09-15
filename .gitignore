@@ -1,0 +1,22 @@
+# Game data - never commit
+work/
+*.iso
+*.cso
+*.chd
+*.bin
+*.elf
+SLPM_*
+*.p2s
+*.p2s.backup
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Machine-local overrides
+local.json
+
+# Screenshots are game imagery; captures stay in work/
+*.png
+scratch/
