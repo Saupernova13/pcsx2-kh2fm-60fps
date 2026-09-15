@@ -13,7 +13,9 @@ Arms: 30fps, 60fps unpatched, 60fps + the constant-scaling experiment, 60fps +
   60fps + gate    airborne 100%  landings 0  mean height 374  max 561  travel 662
 The arch caps the ball at ~346 at 30fps; with either fix it is knocked out from
 under it. The same run's attempt to find Sora's position by RAM diff found only
-copies of the second prop - Sora is not a plain vec4 near the ball.
+copies of what was then called the second prop, and concluded Sora is not a plain
+vec4 near the ball. Wrong: that object is Sora, so the copies were his
+(tools/findplayer.py).
 """
 
 from __future__ import annotations

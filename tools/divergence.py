@@ -13,8 +13,9 @@ horizontal speed after a side swipe, per vsync (the fix decays 0.8 every other
 vsync, like 30fps; unpatched decays 0.8 every vsync); sideways motion not
 explained by velocity; and every impulse in each arm.
 
-2026-09-15: two ground props start sliding at vsync 36-37 at 60fps, fixed or not,
-against 43-45 at 30fps - something pushes them sooner. The ball matched to within
+2026-09-15: two objects then called ground props - Donald and Goofy, it turned
+out - start sliding at vsync 36-37 at 60fps, fixed or not, against 43-45 at 30fps:
+something pushes them sooner. The ball matched to within
 a tick's phase until its arch slide, offset only ~5 units in z from its launch.
 """
 

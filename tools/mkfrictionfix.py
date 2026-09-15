@@ -4,9 +4,9 @@
     python tools/mkfrictionfix.py --write    # write or replace the group in wip/working.pnach
     python tools/mkfrictionfix.py --check    # wip/working.pnach (and patch/, if it has it) agree
 
-00184540 is the game's shared velocity step, called by 19 motion routines -
-Sora on the ground (0017C2B8) and in the air (0017C8AC), and many object and
-enemy states. Once per frame, with no delta:
+00184540 is the game's shared velocity step, called from 19 places - Sora on
+the ground (0017C2B8) and in the air (0017C8AC), and 17 not yet identified (listed
+in docs/addresses.md). Once per frame, with no delta:
 
     with movement input (speed at obj+0x1C):
         velocity = velocity * k1 + (facing obj+0x10 * speed) * (1 - k1)     f12 -> f20

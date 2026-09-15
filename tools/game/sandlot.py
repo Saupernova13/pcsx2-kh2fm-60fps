@@ -26,8 +26,10 @@ SLOT = 1
 
 BALL = 0x01ADD9D0
 BALL_COLLISION = 0x01ADEAC0   # collision-shape centre x, y, z (y negative-up), written by 0018A924
-PROP2 = 0x01A94440            # the second prop, which flies as class 01C60040
-GROUND_PROPS = (0x01AC2490, 0x01AADB90)
+# First named as props. Walking the player away and back (tools/findplayer.py)
+# showed they are the party: class 01C60030 on the ground, 01C60040 in the air.
+SORA = 0x01A94440                  # position at +0x540
+PARTY = (0x01AC2490, 0x01AADB90)   # Donald and Goofy; which is which was not established
 PARAM_BLOCK = 0x01CE36CC
 
 # A stack scratch slot that looked like the ball and is not: 0037EC30 is the AABB

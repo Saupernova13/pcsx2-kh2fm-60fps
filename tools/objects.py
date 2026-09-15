@@ -8,9 +8,11 @@ collect the objects it moves, prints each one's class, vtable and motion routine
 130 vsyncs of the mash schedule at 30fps, 60fps and 60fps + [60 FPS - ball
 physics]. Writes work/objtrace.npz, which tools/divergence.py reads.
 
-2026-09-15: eleven objects, all prop classes (01C60030 at rest); Sora is not one
-of them - the player moves through another system. The only other object that
-flew was 01A94440, a second prop.
+2026-09-15: eleven objects, eight of class 01C60030 at rest and three of 01C60060
+at the origin. The report then said Sora is not among them, and that the only
+other object that flew, 01A94440, was a second prop. Both were wrong: 01A94440 is
+Sora, and 01AADB90 and 01AC2490 are Donald and Goofy (tools/findplayer.py).
+Characters go through the same builder and classes as props.
 """
 
 from __future__ import annotations
@@ -64,7 +66,7 @@ def main() -> int:
         vt = roo.read(cls) if 0x00100000 <= cls < 0x02000000 else 0
         motion = roo.read(vt + 0x1C) if 0x00100000 <= vt < 0x02000000 else 0
         pos = f3(roo, o + physics.OFF_POSITION)
-        tag = "BALL" if o == sandlot.BALL else "PROP2" if o == sandlot.PROP2 else ""
+        tag = "BALL" if o == sandlot.BALL else "SORA" if o == sandlot.SORA else "PARTY" if o in sandlot.PARTY else ""
         print(f"  obj {o:08X} calls {objs[o]:2d}  class {cls:08X}  vtable {vt:08X}  motion {motion:08X}  "
               f"pos ({pos[0]:8.1f},{pos[1]:8.1f},{pos[2]:8.1f}) {tag}")
 
